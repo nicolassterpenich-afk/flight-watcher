@@ -31,6 +31,11 @@
     "last_checked_at": "2026-08-31T18:18:17Z",
     "last_price": 635.0
   },
+  "jeff": {
+    "best_ever": 157.0,
+    "last_checked_at": "2026-08-31T18:40:21Z",
+    "last_price": 157.0
+  },
   "test": {
     "best_ever": 96.0,
     "last_alert_at": "2026-08-31T13:15:37Z",
