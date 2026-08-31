@@ -364,10 +364,12 @@ async function stateResponse(env) {
 
   const byId = Object.fromEntries((states.results || []).map((s) => [s.watch_id, s]));
   const lastRun = await env.DB.prepare("SELECT value FROM settings WHERE key = 'meta:last_run'").first();
+  const lastCron = await env.DB.prepare("SELECT value FROM settings WHERE key = 'meta:last_cron'").first();
 
   return json({
     ran_at: lastRun ? JSON.parse(lastRun.value).ran_at : null,
     last_run: lastRun ? JSON.parse(lastRun.value) : null,
+    last_cron: lastCron ? JSON.parse(lastCron.value) : null,
     settings,
     watches: (watches.results || []).map((r) => {
       const s = byId[r.id] || {};
@@ -470,9 +472,55 @@ async function triggerRun(env, body) {
   return fail(502, `GitHub a refusé le déclenchement (${res.status}) : ${(await res.text()).slice(0, 300)}`);
 }
 
+/* ---------------------------------------------------- relance planifiée */
+
+/** Âge du dernier relevé, en minutes ; null si on n'en a jamais vu. */
+async function minutesSinceLastRun(env) {
+  const row = await env.DB.prepare("SELECT value FROM settings WHERE key = 'meta:last_run'").first();
+  if (!row) return null;
+  try {
+    const ranAt = Date.parse(JSON.parse(row.value).ran_at);
+    return Number.isFinite(ranAt) ? (Date.now() - ranAt) / 60000 : null;
+  } catch {
+    return null;
+  }
+}
+
+const STALE_MINUTES = 25;
+
+/**
+ * Ne déclenche un relevé que si GitHub ne l'a pas fait. Tant que son
+ * planificateur tient ses créneaux de :00 et :30, ce handler ne fait rien.
+ */
+async function scheduled(env) {
+  const age = await minutesSinceLastRun(env);
+  if (age !== null && age < STALE_MINUTES) {
+    console.log(`Relevé vieux de ${age.toFixed(0)} min — GitHub assure, rien à faire.`);
+    await noteCron(env, 'skip', age);
+    return;
+  }
+
+  const res = await triggerRun(env, {});
+  const ok = res.status === 200;
+  console.log(ok
+    ? `Relevé déclenché (dernier il y a ${age === null ? 'jamais' : age.toFixed(0) + ' min'}).`
+    : `Déclenchement refusé : ${await res.clone().text()}`);
+  await noteCron(env, ok ? 'dispatch' : 'error', age);
+}
+
+async function noteCron(env, action, age) {
+  await env.DB.prepare(
+    "INSERT INTO settings (key, value) VALUES ('meta:last_cron', ?1) ON CONFLICT(key) DO UPDATE SET value = ?1"
+  ).bind(JSON.stringify({ at: nowIso(), action, age_min: age === null ? null : Math.round(age) })).run();
+}
+
 /* ------------------------------------------------------------------- entrée */
 
 export default {
+  async scheduled(event, env, ctx) {
+    ctx.waitUntil(scheduled(env));
+  },
+
   async fetch(request, env) {
     const url = new URL(request.url);
     const path = url.pathname.replace(/\/+$/, '') || '/';

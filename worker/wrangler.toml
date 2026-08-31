@@ -10,6 +10,13 @@ binding = "DB"
 database_name = "flight-watcher"
 database_id = "ebb778fd-3a71-4f57-a186-4ee5595b786e"
 
+# Filet de sécurité : le planificateur de GitHub saute des créneaux (constaté
+# le 31/08/2026, six de suite). Décalé à :15 et :45 pour laisser passer le cron
+# GitHub de :00 et :30 quand il fonctionne — le handler s'efface alors de
+# lui-même en voyant un relevé récent.
+[triggers]
+crons = ["15,45 * * * *"]
+
 [vars]
 GITHUB_REPO = "nicolassterpenich-afk/flight-watcher"
 GITHUB_WORKFLOW = "watch.yml"
