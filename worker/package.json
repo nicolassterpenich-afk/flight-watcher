@@ -1,0 +1,15 @@
+{
+  "name": "flight-watcher-worker",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "wrangler dev",
+    "deploy": "wrangler deploy",
+    "schema": "wrangler d1 execute flight-watcher --remote --file=schema.sql",
+    "schema:local": "wrangler d1 execute flight-watcher --local --file=schema.sql",
+    "hash": "node scripts/hash-password.mjs"
+  },
+  "devDependencies": {
+    "wrangler": "^4.42.0"
+  }
+}

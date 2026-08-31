@@ -10,7 +10,7 @@ from datetime import datetime, timedelta
 from typing import Any
 from zoneinfo import ZoneInfo
 
-from . import store
+from . import remote, store
 from .alerts import Telegram, esc
 from .config import expand_dates, load_watches
 from .models import Quote, Watch, WatchResult
@@ -218,9 +218,36 @@ def format_alert(watch: Watch, best: Quote, reason: str, ctx: dict[str, Any]) ->
 # Boucle principale
 # --------------------------------------------------------------------------
 
+def load_config(source: str = "auto") -> tuple[list[Watch], dict[str, Any], str]:
+    """Charge les surveillances depuis le Worker ou depuis watches.yaml.
+
+    `auto` privilégie le Worker et retombe sur le fichier s'il est injoignable :
+    une panne de l'interface ne doit pas interrompre la surveillance.
+    """
+    if source not in ("auto", "api", "file"):
+        raise ValueError(f"source inconnue : {source}")
+
+    if source in ("auto", "api"):
+        if not remote.configured():
+            if source == "api":
+                raise remote.RemoteError("WORKER_URL ou AGENT_TOKEN absent de l'environnement")
+        else:
+            try:
+                watches, settings = remote.load_watches()
+                log.info("Configuration lue depuis le Worker (%s surveillance(s))", len(watches))
+                return watches, settings, "api"
+            except remote.RemoteError as exc:
+                if source == "api":
+                    raise
+                log.warning("Worker injoignable (%s) — repli sur watches.yaml", exc)
+
+    watches, settings = load_watches()
+    return watches, settings, "file"
+
+
 def run(force_notify: bool = False, only: str | None = None,
-        dry_run: bool = False) -> dict[str, Any]:
-    watches, raw_settings = load_watches()
+        dry_run: bool = False, source: str = "auto") -> dict[str, Any]:
+    watches, raw_settings, config_source = load_config(source)
     settings = {**DEFAULT_SETTINGS, **(raw_settings or {})}
     telegram = Telegram()
     state = store.load_state()
@@ -230,6 +257,7 @@ def run(force_notify: bool = False, only: str | None = None,
 
     summary: dict[str, Any] = {
         "ran_at": iso(),
+        "source": config_source,
         "watches": [],
         "alerts_sent": 0,
         "errors": [],
@@ -323,5 +351,19 @@ def run(force_notify: bool = False, only: str | None = None,
                                              days=int(settings.get("history_days", 30)))
         store.save_state(state)
         store.save_latest(summary)
+
+        # Le Worker reçoit les prix même quand la config vient du fichier : le
+        # repli n'a pu concerner qu'un GET, et l'échec d'un envoi ne doit
+        # jamais faire échouer un relevé déjà abouti.
+        if remote.configured():
+            try:
+                pushed = remote.push_results(summary["ran_at"], summary["watches"], to_store, state)
+                log.info("Worker mis à jour : %s prix sur %s surveillance(s)",
+                         pushed.get("quotes"), pushed.get("watches"))
+                summary["pushed"] = True
+            except remote.RemoteError as exc:
+                log.error("Envoi au Worker impossible : %s", exc)
+                summary["errors"].append(f"Worker : {exc}")
+                summary["pushed"] = False
 
     return summary

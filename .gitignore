@@ -4,3 +4,9 @@ __pycache__/
 venv/
 .env
 .DS_Store
+
+# Worker Cloudflare
+worker/node_modules/
+worker/.wrangler/
+worker/.dev.vars
+worker/migration.sql

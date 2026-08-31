@@ -1,0 +1,22 @@
+name = "flight-watcher"
+main = "src/index.js"
+compatibility_date = "2026-08-01"
+
+# L'interface est servie depuis le Worker : on importe le HTML comme module texte.
+rules = [{ type = "Text", globs = ["**/*.html"] }]
+
+[[d1_databases]]
+binding = "DB"
+database_name = "flight-watcher"
+database_id = "ebb778fd-3a71-4f57-a186-4ee5595b786e"
+
+[vars]
+GITHUB_REPO = "nicolassterpenich-afk/flight-watcher"
+GITHUB_WORKFLOW = "watch.yml"
+GITHUB_REF = "main"
+
+# Secrets (jamais dans ce fichier — `npx wrangler secret put <NOM>`) :
+#   APP_PASSWORD_HASH  pbkdf2$<iterations>$<salt_b64>$<hash_b64>
+#   SESSION_SECRET     chaîne aléatoire, signe le cookie de session
+#   AGENT_TOKEN        jeton partagé avec GitHub Actions
+#   GITHUB_TOKEN       PAT fine-grained, permission Actions:write sur le dépôt

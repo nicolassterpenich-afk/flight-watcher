@@ -5,12 +5,12 @@ from __future__ import annotations
 import argparse
 import json
 import logging
+import os
 import sys
 
-from . import bot, store
+from . import bot, remote, store
 from .alerts import Telegram
-from .config import load_watches
-from .engine import DEFAULT_SETTINGS, run
+from .engine import DEFAULT_SETTINGS, load_config, run
 
 
 def _setup_logging(verbose: bool) -> None:
@@ -32,9 +32,15 @@ def main(argv: list[str] | None = None) -> int:
     p_run.add_argument("--force-notify", action="store_true", help="Alerter même si le seuil n'est pas atteint")
     p_run.add_argument("--dry-run", action="store_true", help="Afficher les alertes sans les envoyer")
     p_run.add_argument("--no-commands", action="store_true", help="Ne pas lire les commandes Telegram")
+    p_run.add_argument("--source", choices=("auto", "api", "file"),
+                       default=os.environ.get("WATCH_SOURCE", "auto"),
+                       help="D'où viennent les surveillances : auto (Worker puis repli fichier), "
+                            "api (Worker obligatoire) ou file (watches.yaml)")
 
     sub.add_parser("commands", help="Traiter uniquement les commandes Telegram en attente")
-    sub.add_parser("list", help="Afficher les surveillances configurées")
+    p_list = sub.add_parser("list", help="Afficher les surveillances configurées")
+    p_list.add_argument("--source", choices=("auto", "api", "file"),
+                        default=os.environ.get("WATCH_SOURCE", "auto"))
     sub.add_parser("selftest", help="Vérifier la config, les fournisseurs et Telegram")
 
     p_stats = sub.add_parser("stats", help="Statistiques d'une surveillance")
@@ -46,8 +52,14 @@ def main(argv: list[str] | None = None) -> int:
     _setup_logging(args.verbose)
 
     if args.command == "list":
-        watches, settings = load_watches()
-        print(f"{len(watches)} surveillance(s) — réglages : {json.dumps({**DEFAULT_SETTINGS, **settings})}\n")
+        try:
+            watches, settings, source = load_config(args.source)
+        except remote.RemoteError as exc:
+            print(f"Worker injoignable : {exc}", file=sys.stderr)
+            return 2
+        origin = "Worker Cloudflare" if source == "api" else "watches.yaml"
+        print(f"{len(watches)} surveillance(s) depuis {origin}"
+              f" — réglages : {json.dumps({**DEFAULT_SETTINGS, **settings})}\n")
         for w in watches:
             flag = "" if w.enabled else "  [en pause]"
             print(f"  {w.id:<24} {w.display()}  seuil={w.threshold}{flag}")
@@ -80,8 +92,13 @@ def main(argv: list[str] | None = None) -> int:
     if force_check:
         logging.info("Relevé demandé depuis Telegram — notification forcée")
 
-    summary = run(force_notify=args.force_notify or force_check,
-                  only=args.watch, dry_run=args.dry_run)
+    try:
+        summary = run(force_notify=args.force_notify or force_check,
+                      only=args.watch, dry_run=args.dry_run, source=args.source)
+    except remote.RemoteError as exc:
+        # --source api : l'utilisateur a explicitement exclu le repli fichier.
+        print(f"Worker injoignable et repli refusé (--source api) : {exc}", file=sys.stderr)
+        return 2
     print(json.dumps(summary, indent=2, ensure_ascii=False))
     return 0                                        # les erreurs partielles ne font pas échouer le job
 
@@ -89,10 +106,15 @@ def main(argv: list[str] | None = None) -> int:
 def selftest() -> int:
     ok = True
     print("== Configuration ==")
-    watches, settings = load_watches()
+    watches, settings, source = load_config("auto")
+    origin = "Worker Cloudflare" if source == "api" else "watches.yaml"
+    print(f"  source : {origin}")
     print(f"  {len(watches)} surveillance(s), {sum(1 for w in watches if w.enabled)} active(s)")
     if not watches:
-        print("  ⚠️  aucune surveillance dans watches.yaml")
+        print(f"  ⚠️  aucune surveillance dans {origin}")
+    if remote.configured() and source == "file":
+        ok = False
+        print("  ❌ WORKER_URL est défini mais le Worker n'a pas répondu — repli sur le fichier")
 
     print("\n== Fournisseurs ==")
     from .models import Watch as W

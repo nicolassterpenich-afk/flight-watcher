@@ -42,6 +42,9 @@ jobs:
         env:
           TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
           TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+          # Secrets absents = chaînes vides : le moteur repart sur watches.yaml.
+          WORKER_URL: ${{ secrets.WORKER_URL }}
+          AGENT_TOKEN: ${{ secrets.AGENT_TOKEN }}
           FORCE_NOTIFY: ${{ inputs.force_notify }}
           ONLY_WATCH: ${{ inputs.watch }}
         run: |

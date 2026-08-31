@@ -1,0 +1,492 @@
+/**
+ * flight-watcher — Worker Cloudflare.
+ *
+ * Sert l'interface, l'API du navigateur (session par cookie signé) et l'API du
+ * moteur Python tournant sur GitHub Actions (jeton partagé AGENT_TOKEN).
+ * La base D1 est la source de vérité des surveillances ; `watches.yaml` ne sert
+ * plus que de secours quand le Worker est injoignable.
+ */
+
+import UI from './ui.html';
+import AIRPORTS from './airports.js';
+
+const SESSION_COOKIE = 'fw_session';
+const SESSION_TTL_S = 60 * 60 * 24 * 90;      // 90 jours : « mémorisé sur l'appareil »
+
+const DEFAULT_SETTINGS = {
+  cooldown_hours: 12,
+  renotify_drop_pct: 5,
+  drop_pct: 15,
+  drop_min_samples: 8,
+  flex_mode: 'shift',
+  max_queries_per_run: 120,
+  workers: 3,
+};
+
+/* ------------------------------------------------------------------ outils */
+
+const enc = new TextEncoder();
+const nowIso = () => new Date().toISOString().replace(/\.\d+Z$/, 'Z');
+
+const json = (data, status = 200, headers = {}) =>
+  new Response(JSON.stringify(data), {
+    status,
+    headers: { 'content-type': 'application/json; charset=utf-8', 'cache-control': 'no-store', ...headers },
+  });
+
+const fail = (status, message) => json({ error: message }, status);
+
+const b64 = (buf) => btoa(String.fromCharCode(...new Uint8Array(buf)));
+const unb64 = (s) => Uint8Array.from(atob(s), (c) => c.charCodeAt(0));
+const b64url = (s) => s.replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+const unb64url = (s) => atob(s.replace(/-/g, '+').replace(/_/g, '/'));
+
+/** Comparaison à temps constant : évite de fuiter le secret octet par octet. */
+function timingSafeEqual(a, b) {
+  if (a.length !== b.length) return false;
+  let diff = 0;
+  for (let i = 0; i < a.length; i++) diff |= a.charCodeAt(i) ^ b.charCodeAt(i);
+  return diff === 0;
+}
+
+async function hmac(secret, message) {
+  const key = await crypto.subtle.importKey('raw', enc.encode(secret), { name: 'HMAC', hash: 'SHA-256' }, false, ['sign']);
+  return b64url(b64(await crypto.subtle.sign('HMAC', key, enc.encode(message))));
+}
+
+/** Vérifie un mot de passe contre `pbkdf2$<iter>$<salt_b64>$<hash_b64>`. */
+async function verifyPassword(password, stored) {
+  const parts = String(stored || '').split('$');
+  if (parts.length !== 4 || parts[0] !== 'pbkdf2') return false;
+  const iterations = Number(parts[1]);
+  if (!Number.isFinite(iterations) || iterations < 1000) return false;
+  const key = await crypto.subtle.importKey('raw', enc.encode(password), 'PBKDF2', false, ['deriveBits']);
+  const bits = await crypto.subtle.deriveBits(
+    { name: 'PBKDF2', salt: unb64(parts[2]), iterations, hash: 'SHA-256' }, key, 256);
+  return timingSafeEqual(b64(bits), parts[3]);
+}
+
+async function makeSession(secret) {
+  const payload = b64url(btoa(JSON.stringify({ exp: Math.floor(Date.now() / 1000) + SESSION_TTL_S })));
+  return `${payload}.${await hmac(secret, payload)}`;
+}
+
+async function readSession(request, secret) {
+  const raw = (request.headers.get('cookie') || '')
+    .split(';').map((c) => c.trim())
+    .find((c) => c.startsWith(`${SESSION_COOKIE}=`));
+  if (!raw) return null;
+  const [payload, sig] = raw.slice(SESSION_COOKIE.length + 1).split('.');
+  if (!payload || !sig) return null;
+  if (!timingSafeEqual(sig, await hmac(secret, payload))) return null;
+  try {
+    const data = JSON.parse(unb64url(payload));
+    return data.exp > Math.floor(Date.now() / 1000) ? data : null;
+  } catch {
+    return null;
+  }
+}
+
+const sessionCookie = (value, maxAge) =>
+  `${SESSION_COOKIE}=${value}; HttpOnly; Secure; SameSite=Lax; Path=/; Max-Age=${maxAge}`;
+
+/* ------------------------------------------------- validation d'une surveillance */
+
+const IATA = /^[A-Z]{3}$/;
+const DATE = /^\d{4}-\d{2}-\d{2}$/;
+
+function codes(value, field) {
+  const list = (Array.isArray(value) ? value : String(value ?? '').split(/[,;\s]+/))
+    .map((v) => String(v).trim().toUpperCase()).filter(Boolean);
+  if (!list.length) throw new HttpError(400, `${field} : au moins un code IATA est requis`);
+  for (const c of list) if (!IATA.test(c)) throw new HttpError(400, `${field} : « ${c} » n'est pas un code IATA`);
+  return [...new Set(list)];
+}
+
+function isoDate(value, field, { optional = false } = {}) {
+  if (value === null || value === undefined || value === '') {
+    if (optional) return null;
+    throw new HttpError(400, `${field} est requis`);
+  }
+  const s = String(value).trim();
+  if (!DATE.test(s) || Number.isNaN(Date.parse(`${s}T00:00:00Z`))) {
+    throw new HttpError(400, `${field} : date invalide (attendu AAAA-MM-JJ)`);
+  }
+  return s;
+}
+
+function num(value, field, { min = null, max = null, integer = false, optional = true } = {}) {
+  if (value === null || value === undefined || value === '') {
+    if (optional) return null;
+    throw new HttpError(400, `${field} est requis`);
+  }
+  const n = Number(value);
+  if (!Number.isFinite(n)) throw new HttpError(400, `${field} : nombre attendu`);
+  if (integer && !Number.isInteger(n)) throw new HttpError(400, `${field} : entier attendu`);
+  if (min !== null && n < min) throw new HttpError(400, `${field} : minimum ${min}`);
+  if (max !== null && n > max) throw new HttpError(400, `${field} : maximum ${max}`);
+  return n;
+}
+
+class HttpError extends Error {
+  constructor(status, message) { super(message); this.status = status; }
+}
+
+const slugify = (s) =>
+  String(s).normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 48);
+
+function watchFromBody(body, existing = null) {
+  const get = (k, dflt) => (body[k] === undefined ? (existing ? existing[k] : dflt) : body[k]);
+
+  const origins = body.origins === undefined && existing ? JSON.parse(existing.origins) : codes(body.origins, 'origins');
+  const destinations = body.destinations === undefined && existing
+    ? JSON.parse(existing.destinations) : codes(body.destinations, 'destinations');
+  const depart = body.depart === undefined && existing ? existing.depart : isoDate(body.depart, 'depart');
+  const ret = body.ret === undefined && existing ? existing.ret : isoDate(body.ret, 'ret', { optional: true });
+  if (ret && ret < depart) throw new HttpError(400, 'La date de retour précède celle de l’aller');
+
+  const pax = body.passengers === undefined && existing
+    ? JSON.parse(existing.passengers)
+    : {
+        adults: num(body.passengers?.adults ?? 1, 'adults', { min: 1, max: 9, integer: true, optional: false }),
+        children: num(body.passengers?.children ?? 0, 'children', { min: 0, max: 8, integer: true, optional: false }),
+        infants_in_seat: num(body.passengers?.infants_in_seat ?? 0, 'infants_in_seat', { min: 0, max: 8, integer: true, optional: false }),
+        infants_on_lap: num(body.passengers?.infants_on_lap ?? 0, 'infants_on_lap', { min: 0, max: 8, integer: true, optional: false }),
+      };
+
+  const providers = body.providers === undefined && existing
+    ? JSON.parse(existing.providers)
+    : (Array.isArray(body.providers) && body.providers.length ? body.providers : ['google_flights'])
+        .map(String).filter((p) => ['google_flights', 'ryanair'].includes(p));
+  if (!providers.length) throw new HttpError(400, 'providers : aucun fournisseur connu');
+
+  const seat = String(get('seat', 'economy'));
+  if (!['economy', 'premium-economy', 'business', 'first'].includes(seat)) {
+    throw new HttpError(400, `seat : « ${seat} » inconnu`);
+  }
+
+  const label = String(get('label', '')).trim().slice(0, 120);
+  const id = existing
+    ? existing.id
+    : (slugify(body.id || label || `${origins[0]}-${destinations[0]}-${depart}`)
+       || `watch-${Date.now().toString(36)}`);
+
+  return {
+    id,
+    label,
+    origins: JSON.stringify(origins),
+    destinations: JSON.stringify(destinations),
+    depart,
+    ret,
+    threshold: body.threshold === undefined && existing
+      ? existing.threshold : num(body.threshold, 'threshold', { min: 0, max: 100000 }),
+    currency: String(get('currency', 'EUR')).toUpperCase().slice(0, 3),
+    seat,
+    max_stops: body.max_stops === undefined && existing
+      ? existing.max_stops : num(body.max_stops, 'max_stops', { min: 0, max: 3, integer: true }),
+    flex_days: body.flex_days === undefined && existing
+      ? existing.flex_days : (num(body.flex_days, 'flex_days', { min: 0, max: 7, integer: true }) ?? 0),
+    passengers: JSON.stringify(pax),
+    providers: JSON.stringify(providers),
+    enabled: Number(Boolean(get('enabled', true) === true || get('enabled', true) === 1)),
+    alert_on_drop: Number(Boolean(get('alert_on_drop', true) === true || get('alert_on_drop', true) === 1)),
+    notes: String(get('notes', '')).slice(0, 500),
+  };
+}
+
+/** Ligne D1 → objet consommé par l'interface et par le moteur Python. */
+const rowToWatch = (r) => ({
+  id: r.id,
+  label: r.label,
+  origins: JSON.parse(r.origins),
+  destinations: JSON.parse(r.destinations),
+  depart: r.depart,
+  ret: r.ret,
+  threshold: r.threshold,
+  currency: r.currency,
+  seat: r.seat,
+  max_stops: r.max_stops,
+  flex_days: r.flex_days,
+  passengers: JSON.parse(r.passengers),
+  providers: JSON.parse(r.providers),
+  enabled: Boolean(r.enabled),
+  alert_on_drop: Boolean(r.alert_on_drop),
+  notes: r.notes,
+  created_at: r.created_at,
+  updated_at: r.updated_at,
+});
+
+/* ------------------------------------------------------------------ réglages */
+
+async function loadSettings(env) {
+  const { results } = await env.DB.prepare('SELECT key, value FROM settings').all();
+  const out = { ...DEFAULT_SETTINGS };
+  for (const row of results || []) {
+    if (row.key.includes(':')) continue;          // « meta:last_run » et consorts
+    try { out[row.key] = JSON.parse(row.value); } catch { out[row.key] = row.value; }
+  }
+  return out;
+}
+
+/* --------------------------------------------------------------------- API */
+
+async function handleApi(request, env, url, path) {
+  const method = request.method;
+  const body = ['POST', 'PATCH', 'PUT'].includes(method)
+    ? await request.json().catch(() => { throw new HttpError(400, 'Corps JSON invalide'); })
+    : {};
+
+  /* --- API du moteur (GitHub Actions) : jeton partagé, pas de cookie --- */
+  if (path.startsWith('/api/agent/')) {
+    const auth = request.headers.get('authorization') || '';
+    const token = auth.startsWith('Bearer ') ? auth.slice(7) : '';
+    if (!env.AGENT_TOKEN || !timingSafeEqual(token, env.AGENT_TOKEN)) return fail(401, 'Jeton invalide');
+
+    if (path === '/api/agent/watches' && method === 'GET') {
+      const { results } = await env.DB.prepare(
+        'SELECT * FROM watches WHERE enabled = 1 ORDER BY created_at').all();
+      return json({ settings: await loadSettings(env), watches: (results || []).map(rowToWatch) });
+    }
+
+    if (path === '/api/agent/results' && method === 'POST') return agentResults(env, body);
+    return fail(404, 'Route inconnue');
+  }
+
+  /* --- API du navigateur : session obligatoire sauf /api/login --- */
+  if (path === '/api/login' && method === 'POST') {
+    if (!env.APP_PASSWORD_HASH || !env.SESSION_SECRET) return fail(500, 'Worker non configuré');
+    if (!(await verifyPassword(String(body.password || ''), env.APP_PASSWORD_HASH))) {
+      return fail(401, 'Mot de passe incorrect');
+    }
+    const token = await makeSession(env.SESSION_SECRET);
+    return json({ ok: true }, 200, { 'set-cookie': sessionCookie(token, SESSION_TTL_S) });
+  }
+
+  if (path === '/api/logout' && method === 'POST') {
+    return json({ ok: true }, 200, { 'set-cookie': sessionCookie('', 0) });
+  }
+
+  if (!(await readSession(request, env.SESSION_SECRET || ''))) return fail(401, 'Session expirée');
+
+  if (path === '/api/state' && method === 'GET') return stateResponse(env);
+
+  // Référentiel figé : le navigateur peut le garder une journée.
+  if (path === '/api/airports' && method === 'GET') {
+    return json({ airports: AIRPORTS }, 200, { 'cache-control': 'private, max-age=86400' });
+  }
+
+  if (path === '/api/history' && method === 'GET') {
+    const watchId = url.searchParams.get('watch');
+    const days = Math.min(Math.max(Number(url.searchParams.get('days')) || 90, 1), 400);
+    const since = new Date(Date.now() - days * 86400000).toISOString();
+    const stmt = watchId
+      ? env.DB.prepare('SELECT * FROM history WHERE watch_id = ?1 AND checked_at >= ?2 ORDER BY checked_at').bind(watchId, since)
+      : env.DB.prepare('SELECT * FROM history WHERE checked_at >= ?1 ORDER BY checked_at').bind(since);
+    const { results } = await stmt.all();
+    return json({ rows: results || [] });
+  }
+
+  if (path === '/api/watches' && method === 'POST') {
+    const w = watchFromBody(body);
+    const exists = await env.DB.prepare('SELECT id FROM watches WHERE id = ?1').bind(w.id).first();
+    if (exists) throw new HttpError(409, `Une surveillance « ${w.id} » existe déjà`);
+    const ts = nowIso();
+    await env.DB.prepare(
+      `INSERT INTO watches (id, label, origins, destinations, depart, ret, threshold, currency, seat,
+                            max_stops, flex_days, passengers, providers, enabled, alert_on_drop, notes,
+                            created_at, updated_at)
+       VALUES (?1,?2,?3,?4,?5,?6,?7,?8,?9,?10,?11,?12,?13,?14,?15,?16,?17,?17)`
+    ).bind(w.id, w.label, w.origins, w.destinations, w.depart, w.ret, w.threshold, w.currency, w.seat,
+           w.max_stops, w.flex_days, w.passengers, w.providers, w.enabled, w.alert_on_drop, w.notes, ts).run();
+    return json({ ok: true, watch: rowToWatch({ ...w, created_at: ts, updated_at: ts }) }, 201);
+  }
+
+  const watchMatch = path.match(/^\/api\/watches\/([A-Za-z0-9._-]{1,64})$/);
+  if (watchMatch) {
+    const id = watchMatch[1];
+    const existing = await env.DB.prepare('SELECT * FROM watches WHERE id = ?1').bind(id).first();
+    if (!existing) return fail(404, 'Surveillance inconnue');
+
+    if (method === 'PATCH') {
+      const w = watchFromBody(body, existing);
+      const ts = nowIso();
+      await env.DB.prepare(
+        `UPDATE watches SET label=?2, origins=?3, destinations=?4, depart=?5, ret=?6, threshold=?7,
+                            currency=?8, seat=?9, max_stops=?10, flex_days=?11, passengers=?12,
+                            providers=?13, enabled=?14, alert_on_drop=?15, notes=?16, updated_at=?17
+         WHERE id = ?1`
+      ).bind(id, w.label, w.origins, w.destinations, w.depart, w.ret, w.threshold, w.currency, w.seat,
+             w.max_stops, w.flex_days, w.passengers, w.providers, w.enabled, w.alert_on_drop, w.notes, ts).run();
+      return json({ ok: true, watch: rowToWatch({ ...w, created_at: existing.created_at, updated_at: ts }) });
+    }
+
+    if (method === 'DELETE') {
+      await env.DB.batch([
+        env.DB.prepare('DELETE FROM history WHERE watch_id = ?1').bind(id),
+        env.DB.prepare('DELETE FROM alert_state WHERE watch_id = ?1').bind(id),
+        env.DB.prepare('DELETE FROM watches WHERE id = ?1').bind(id),
+      ]);
+      return json({ ok: true });
+    }
+    return fail(405, 'Méthode non autorisée');
+  }
+
+  if (path === '/api/settings' && method === 'PATCH') {
+    const stmts = [];
+    for (const [key, value] of Object.entries(body)) {
+      if (!(key in DEFAULT_SETTINGS)) continue;
+      stmts.push(env.DB.prepare(
+        'INSERT INTO settings (key, value) VALUES (?1, ?2) ON CONFLICT(key) DO UPDATE SET value = ?2'
+      ).bind(key, JSON.stringify(value)));
+    }
+    if (stmts.length) await env.DB.batch(stmts);
+    return json({ ok: true, settings: await loadSettings(env) });
+  }
+
+  if (path === '/api/run' && method === 'POST') return triggerRun(env, body);
+
+  return fail(404, 'Route inconnue');
+}
+
+/* ----------------------------------------------------------------- lectures */
+
+async function stateResponse(env) {
+  const since = new Date(Date.now() - 90 * 86400000).toISOString();
+  const [watches, states, history, settings] = await Promise.all([
+    env.DB.prepare('SELECT * FROM watches ORDER BY created_at').all(),
+    env.DB.prepare('SELECT * FROM alert_state').all(),
+    env.DB.prepare(
+      'SELECT watch_id, price, currency, checked_at, origin, destination, depart, ret, airlines, stops, booking_url'
+      + ' FROM history WHERE checked_at >= ?1 ORDER BY checked_at').bind(since).all(),
+    loadSettings(env),
+  ]);
+
+  const byId = Object.fromEntries((states.results || []).map((s) => [s.watch_id, s]));
+  const lastRun = await env.DB.prepare("SELECT value FROM settings WHERE key = 'meta:last_run'").first();
+
+  return json({
+    ran_at: lastRun ? JSON.parse(lastRun.value).ran_at : null,
+    last_run: lastRun ? JSON.parse(lastRun.value) : null,
+    settings,
+    watches: (watches.results || []).map((r) => {
+      const s = byId[r.id] || {};
+      return {
+        ...rowToWatch(r),
+        best_price: s.last_price ?? null,
+        best_ever: s.best_ever ?? null,
+        best_route: s.best_route ?? null,
+        booking_url: s.booking_url ?? null,
+        status: s.status ?? (r.enabled ? 'pending' : 'paused'),
+        last_checked_at: s.last_checked_at ?? null,
+        last_alert_at: s.last_alert_at ?? null,
+        errors: s.errors ? JSON.parse(s.errors) : [],
+      };
+    }),
+    history: history.results || [],
+  });
+}
+
+/* ---------------------------------------------------- écriture par le moteur */
+
+async function agentResults(env, body) {
+  const ranAt = typeof body.ran_at === 'string' ? body.ran_at : nowIso();
+  const results = Array.isArray(body.results) ? body.results : [];
+  const stmts = [];
+  let inserted = 0;
+
+  for (const r of results) {
+    const watchId = String(r.watch_id || '');
+    if (!watchId) continue;
+
+    for (const q of Array.isArray(r.quotes) ? r.quotes : []) {
+      if (!Number.isFinite(Number(q.price)) || Number(q.price) <= 0) continue;
+      inserted++;
+      stmts.push(env.DB.prepare(
+        `INSERT OR IGNORE INTO history (watch_id, provider, origin, destination, depart, ret, price,
+                                        currency, airlines, stops, duration_min, booking_url, checked_at)
+         VALUES (?1,?2,?3,?4,?5,?6,?7,?8,?9,?10,?11,?12,?13)`
+      ).bind(watchId, String(q.provider || 'unknown'), String(q.origin || ''), String(q.destination || ''),
+             String(q.depart || ''), q.ret ?? null, Number(q.price), String(q.currency || 'EUR'),
+             JSON.stringify(q.airlines || []), q.stops ?? null, q.duration_min ?? null,
+             q.booking_url ?? null, String(q.checked_at || ranAt)));
+    }
+
+    const s = r.state || {};
+    stmts.push(env.DB.prepare(
+      `INSERT INTO alert_state (watch_id, last_price, best_ever, last_alert_price, last_alert_at,
+                                last_alert_reason, last_checked_at, status, best_route, booking_url, errors)
+       VALUES (?1,?2,?3,?4,?5,?6,?7,?8,?9,?10,?11)
+       ON CONFLICT(watch_id) DO UPDATE SET
+         last_price=?2,
+         -- best_ever ne remonte jamais, et un envoi partiel n'efface ni le meilleur
+         -- prix connu ni l'horodatage de la dernière alerte : perdre celui-ci
+         -- relancerait le cooldown anti-spam à zéro.
+         best_ever=CASE WHEN ?3 IS NULL THEN best_ever
+                        WHEN best_ever IS NULL THEN ?3
+                        ELSE MIN(best_ever, ?3) END,
+         last_alert_price=COALESCE(?4, last_alert_price),
+         last_alert_at=COALESCE(?5, last_alert_at),
+         last_alert_reason=COALESCE(?6, last_alert_reason),
+         last_checked_at=?7, status=?8,
+         best_route=COALESCE(?9, best_route),
+         booking_url=COALESCE(?10, booking_url),
+         errors=?11`
+    ).bind(watchId, s.last_price ?? null, s.best_ever ?? null, s.last_alert_price ?? null,
+           s.last_alert_at ?? null, s.last_alert_reason ?? null, s.last_checked_at ?? ranAt,
+           String(s.status || 'ok'), s.best_route ?? null, s.booking_url ?? null,
+           JSON.stringify(r.errors || [])));
+  }
+
+  stmts.push(env.DB.prepare(
+    "INSERT INTO settings (key, value) VALUES ('meta:last_run', ?1) ON CONFLICT(key) DO UPDATE SET value = ?1"
+  ).bind(JSON.stringify({ ran_at: ranAt, watches: results.length, quotes: inserted })));
+
+  if (stmts.length) await env.DB.batch(stmts);
+  return json({ ok: true, watches: results.length, quotes: inserted, ran_at: ranAt });
+}
+
+/* ------------------------------------------------- relevé immédiat à la demande */
+
+async function triggerRun(env, body) {
+  if (!env.GITHUB_TOKEN) return fail(503, 'GITHUB_TOKEN absent : relevé immédiat indisponible');
+  const inputs = {};
+  if (body.watch) inputs.watch = String(body.watch).slice(0, 64);
+
+  const res = await fetch(
+    `https://api.github.com/repos/${env.GITHUB_REPO}/actions/workflows/${env.GITHUB_WORKFLOW}/dispatches`,
+    {
+      method: 'POST',
+      headers: {
+        authorization: `Bearer ${env.GITHUB_TOKEN}`,
+        accept: 'application/vnd.github+json',
+        'user-agent': 'flight-watcher-worker',
+        'content-type': 'application/json',
+      },
+      body: JSON.stringify({ ref: env.GITHUB_REF || 'main', inputs }),
+    });
+
+  if (res.status === 204) return json({ ok: true, queued: true });
+  return fail(502, `GitHub a refusé le déclenchement (${res.status}) : ${(await res.text()).slice(0, 300)}`);
+}
+
+/* ------------------------------------------------------------------- entrée */
+
+export default {
+  async fetch(request, env) {
+    const url = new URL(request.url);
+    const path = url.pathname.replace(/\/+$/, '') || '/';
+
+    try {
+      if (path.startsWith('/api/')) return await handleApi(request, env, url, path);
+      if (path === '/' && request.method === 'GET') {
+        return new Response(UI, { headers: { 'content-type': 'text/html; charset=utf-8', 'cache-control': 'no-cache' } });
+      }
+      return new Response('Not found', { status: 404 });
+    } catch (err) {
+      if (err instanceof HttpError) return fail(err.status, err.message);
+      console.error(err);
+      return fail(500, 'Erreur interne');
+    }
+  },
+};
