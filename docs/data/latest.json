@@ -1,5 +1,5 @@
 {
-  "ran_at": "2026-08-31T13:13:15Z",
+  "ran_at": "2026-08-31T13:15:25Z",
   "source": "api",
   "watches": [
     {
@@ -7,7 +7,7 @@
       "label": "Bangkok en février",
       "threshold": 600.0,
       "currency": "EUR",
-      "elapsed_s": 6.4,
+      "elapsed_s": 5.9,
       "quotes_found": 79,
       "errors": [],
       "status": "ok",
@@ -24,15 +24,54 @@
       "reason": "seuil déjà notifié (cooldown)",
       "alerted": false,
       "stats": {
-        "count": 7,
+        "count": 8,
         "min": 572.0,
         "max": 598.0,
         "median": 598.0,
-        "avg": 594.29,
+        "avg": 591.5,
         "last": 572.0
+      }
+    },
+    {
+      "id": "rarotonga-mai-2027",
+      "label": "Îles Cook — Rarotonga mai 2027",
+      "threshold": 2200.0,
+      "currency": "EUR",
+      "elapsed_s": 3.6,
+      "quotes_found": 0,
+      "errors": [],
+      "status": "aucun prix"
+    },
+    {
+      "id": "test",
+      "label": "Test",
+      "threshold": 300.0,
+      "currency": "EUR",
+      "elapsed_s": 1.4,
+      "quotes_found": 32,
+      "errors": [],
+      "status": "ok",
+      "best_price": 96.0,
+      "best_route": "BRU→LIS",
+      "best_depart": "2026-09-17",
+      "best_return": null,
+      "provider": "google_flights",
+      "airlines": [
+        "Vueling"
+      ],
+      "booking_url": "https://www.google.com/travel/flights/search?tfs=GhoSCjIwMjYtMDktMTdqBRIDQlJVcgUSA0xJU0IBAUgBmAEC&hl=fr&curr=EUR",
+      "reason": "seuil",
+      "alerted": true,
+      "stats": {
+        "count": 1,
+        "min": 96.0,
+        "max": 96.0,
+        "median": 96.0,
+        "avg": 96.0,
+        "last": 96.0
       }
     }
   ],
-  "alerts_sent": 0,
+  "alerts_sent": 1,
   "errors": []
 }

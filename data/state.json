@@ -7,7 +7,15 @@
     "last_alert_at": "2026-08-31T09:24:57Z",
     "last_alert_price": 598.0,
     "last_alert_reason": "seuil",
-    "last_checked_at": "2026-08-31T13:13:16Z",
+    "last_checked_at": "2026-08-31T13:15:27Z",
     "last_price": 572.0
+  },
+  "test": {
+    "best_ever": 96.0,
+    "last_alert_at": "2026-08-31T13:15:37Z",
+    "last_alert_price": 96.0,
+    "last_alert_reason": "seuil",
+    "last_checked_at": "2026-08-31T13:15:35Z",
+    "last_price": 96.0
   }
 }
