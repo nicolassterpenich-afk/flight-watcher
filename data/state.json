@@ -15,6 +15,14 @@
     "last_checked_at": "2026-08-31T13:40:48Z",
     "last_price": 131.0
   },
+  "fevrier-2026": {
+    "best_ever": 672.0,
+    "last_alert_at": "2026-08-31T13:56:56Z",
+    "last_alert_price": 672.0,
+    "last_alert_reason": "seuil",
+    "last_checked_at": "2026-08-31T13:56:49Z",
+    "last_price": 672.0
+  },
   "test": {
     "best_ever": 96.0,
     "last_alert_at": "2026-08-31T13:15:37Z",

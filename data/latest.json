@@ -1,43 +1,37 @@
 {
-  "ran_at": "2026-08-31T13:40:47Z",
+  "ran_at": "2026-08-31T13:56:48Z",
   "source": "api",
   "watches": [
     {
-      "id": "essai-sources",
-      "label": "Essai comparaison sources",
-      "threshold": null,
+      "id": "fevrier-2026",
+      "label": "FEVRIER 2026",
+      "threshold": 700.0,
       "currency": "EUR",
-      "elapsed_s": 1.0,
-      "quotes_found": 9,
-      "errors": [
-        "Ryanair injoignable CRL→LIS 2026-10-15: 409 Client Error: Conflict for url: https://www.ryanair.com/api/booking/v4/availability?ADT=1&CHD=0&TEEN=0&INF=0&Origin=CRL&Destination=LIS&DateOut=2026-10-15&FlexDaysBeforeOut=0&FlexDaysOut=0&RoundTrip=false&IncludeConnectingFlights=false&ToUs=AGREED&promoCode=",
-        "Ryanair injoignable BRU→LIS 2026-10-15: 409 Client Error: Conflict for url: https://www.ryanair.com/api/booking/v4/availability?ADT=1&CHD=0&TEEN=0&INF=0&Origin=BRU&Destination=LIS&DateOut=2026-10-15&FlexDaysBeforeOut=0&FlexDaysOut=0&RoundTrip=false&IncludeConnectingFlights=false&ToUs=AGREED&promoCode="
-      ],
+      "elapsed_s": 7.9,
+      "quotes_found": 94,
+      "errors": [],
       "status": "ok",
-      "best_price": 131.0,
-      "best_route": "BRU→LIS",
-      "best_depart": "2026-10-15",
-      "best_return": null,
+      "best_price": 672.0,
+      "best_route": "BRU→BKK",
+      "best_depart": "2027-02-18",
+      "best_return": "2027-03-04",
       "provider": "google_flights",
       "airlines": [
-        "Iberia"
+        "Lufthansa"
       ],
-      "booking_url": "https://www.google.com/travel/flights/search?tfs=GhoSCjIwMjYtMTAtMTVqBRIDQlJVcgUSA0xJU0IBAUgBmAEC&hl=fr&curr=EUR",
-      "reason": "au-dessus du seuil",
-      "alerted": false,
+      "booking_url": "https://www.google.com/travel/flights/search?tfs=GhwSCjIwMjctMDItMTgoAWoFEgNCUlVyBRIDQktLGhwSCjIwMjctMDMtMDQoAWoFEgNCS0tyBRIDQlJVQgEBSAGYAQE=&hl=fr&curr=EUR",
+      "reason": "seuil",
+      "alerted": true,
       "stats": {
         "count": 1,
-        "min": 131.0,
-        "max": 131.0,
-        "median": 131.0,
-        "avg": 131.0,
-        "last": 131.0
+        "min": 672.0,
+        "max": 672.0,
+        "median": 672.0,
+        "avg": 672.0,
+        "last": 672.0
       }
     }
   ],
-  "alerts_sent": 0,
-  "errors": [
-    "Ryanair injoignable CRL→LIS 2026-10-15: 409 Client Error: Conflict for url: https://www.ryanair.com/api/booking/v4/availability?ADT=1&CHD=0&TEEN=0&INF=0&Origin=CRL&Destination=LIS&DateOut=2026-10-15&FlexDaysBeforeOut=0&FlexDaysOut=0&RoundTrip=false&IncludeConnectingFlights=false&ToUs=AGREED&promoCode=",
-    "Ryanair injoignable BRU→LIS 2026-10-15: 409 Client Error: Conflict for url: https://www.ryanair.com/api/booking/v4/availability?ADT=1&CHD=0&TEEN=0&INF=0&Origin=BRU&Destination=LIS&DateOut=2026-10-15&FlexDaysBeforeOut=0&FlexDaysOut=0&RoundTrip=false&IncludeConnectingFlights=false&ToUs=AGREED&promoCode="
-  ]
+  "alerts_sent": 1,
+  "errors": []
 }
