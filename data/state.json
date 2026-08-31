@@ -7,7 +7,7 @@
     "last_alert_at": "2026-08-31T14:26:01Z",
     "last_alert_price": 588.0,
     "last_alert_reason": "seuil",
-    "last_checked_at": "2026-08-31T23:16:16Z",
+    "last_checked_at": "2026-08-31T23:46:16Z",
     "last_price": 588.0
   },
   "bangkok-fevrier": {
@@ -15,7 +15,7 @@
     "last_alert_at": "2026-08-31T21:46:02Z",
     "last_alert_price": 598.0,
     "last_alert_reason": "seuil_rappel",
-    "last_checked_at": "2026-08-31T23:16:00Z",
+    "last_checked_at": "2026-08-31T23:46:00Z",
     "last_price": 598.0
   },
   "essai-sources": {
@@ -28,12 +28,12 @@
     "last_alert_at": "2026-08-31T17:10:55Z",
     "last_alert_price": 598.0,
     "last_alert_reason": "nouveau_plus_bas",
-    "last_checked_at": "2026-08-31T23:16:10Z",
+    "last_checked_at": "2026-08-31T23:46:10Z",
     "last_price": 637.0
   },
   "jeff": {
     "best_ever": 157.0,
-    "last_checked_at": "2026-08-31T23:16:16Z",
+    "last_checked_at": "2026-08-31T23:46:17Z",
     "last_price": 157.0
   },
   "test": {
