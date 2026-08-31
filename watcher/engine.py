@@ -315,6 +315,12 @@ def run(force_notify: bool = False, only: str | None = None,
     if not dry_run:
         store.append_history(to_store)
         store.prune_history()
+        # Les stats ont été calculées avant l'enregistrement du relevé courant :
+        # on les rafraîchit pour que le dashboard affiche le bon total.
+        for entry in summary["watches"]:
+            if entry.get("status") == "ok":
+                entry["stats"] = store.stats(entry["id"],
+                                             days=int(settings.get("history_days", 30)))
         store.save_state(state)
         store.save_latest(summary)
 

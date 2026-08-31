@@ -597,10 +597,13 @@
     if (span <= 0) return [lo];
     const raw = span / count;
     const mag = Math.pow(10, Math.floor(Math.log10(raw)));
-    const step = [1, 2, 2.5, 5, 10].map(m => m * mag).find(s => s >= raw) || mag * 10;
+    // Les prix sont affichés à l'euro près : un pas plus fin produirait
+    // plusieurs graduations portant le même libellé.
+    const step = Math.max(1, [1, 2, 2.5, 5, 10].map(m => m * mag).find(s => s >= raw) || mag * 10);
     const out = [];
     for (let v = Math.ceil(lo / step) * step; v <= hi + 1e-9; v += step) out.push(v);
-    return out;
+    const seen = new Set();
+    return out.filter(v => { const k = Math.round(v); if (seen.has(k)) return false; seen.add(k); return true; });
   }
 
   function renderErrors() {
