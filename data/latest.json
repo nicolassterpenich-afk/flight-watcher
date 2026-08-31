@@ -1,33 +1,35 @@
 {
-  "ran_at": "2026-08-31T10:10:41Z",
+  "ran_at": "2026-08-31T13:13:15Z",
+  "source": "api",
   "watches": [
     {
       "id": "bangkok-fevrier",
       "label": "Bangkok en février",
       "threshold": 600.0,
       "currency": "EUR",
-      "elapsed_s": 6.3,
-      "quotes_found": 88,
+      "elapsed_s": 6.4,
+      "quotes_found": 79,
       "errors": [],
       "status": "ok",
-      "best_price": 598.0,
+      "best_price": 572.0,
       "best_route": "BRU→BKK",
-      "best_depart": "2027-02-09",
-      "best_return": "2027-02-23",
+      "best_depart": "2027-02-03",
+      "best_return": "2027-02-17",
       "provider": "google_flights",
       "airlines": [
-        "British Airways"
+        "Brussels Airlines",
+        "Austrian"
       ],
-      "booking_url": "https://www.google.com/travel/flights/search?tfs=GhwSCjIwMjctMDItMDkoAWoFEgNCUlVyBRIDQktLGhwSCjIwMjctMDItMjMoAWoFEgNCS0tyBRIDQlJVQgEBSAGYAQE=&hl=fr&curr=EUR",
+      "booking_url": "https://www.google.com/travel/flights/search?tfs=GhwSCjIwMjctMDItMDMoAWoFEgNCUlVyBRIDQktLGhwSCjIwMjctMDItMTcoAWoFEgNCS0tyBRIDQlJVQgEBSAGYAQE=&hl=fr&curr=EUR",
       "reason": "seuil déjà notifié (cooldown)",
       "alerted": false,
       "stats": {
-        "count": 6,
-        "min": 598.0,
+        "count": 7,
+        "min": 572.0,
         "max": 598.0,
         "median": 598.0,
-        "avg": 598.0,
-        "last": 598.0
+        "avg": 594.29,
+        "last": 572.0
       }
     }
   ],

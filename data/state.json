@@ -3,11 +3,11 @@
     "last_update_id": 729671255
   },
   "bangkok-fevrier": {
-    "best_ever": 598.0,
+    "best_ever": 572.0,
     "last_alert_at": "2026-08-31T09:24:57Z",
     "last_alert_price": 598.0,
     "last_alert_reason": "seuil",
-    "last_checked_at": "2026-08-31T10:10:44Z",
-    "last_price": 598.0
+    "last_checked_at": "2026-08-31T13:13:16Z",
+    "last_price": 572.0
   }
 }
