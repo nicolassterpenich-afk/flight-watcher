@@ -351,8 +351,13 @@ async function handleApi(request, env, url, path) {
 
 /* ----------------------------------------------------------------- lectures */
 
+// 48 relevés par jour et par surveillance : au-delà d'une semaine, la charge
+// utile de /api/state deviendrait lourde à chaque ouverture de page. Les
+// fenêtres plus longues passent par /api/history, à la demande.
+const STATE_HISTORY_DAYS = 7;
+
 async function stateResponse(env) {
-  const since = new Date(Date.now() - 90 * 86400000).toISOString();
+  const since = new Date(Date.now() - STATE_HISTORY_DAYS * 86400000).toISOString();
   const [watches, states, history, settings] = await Promise.all([
     env.DB.prepare('SELECT * FROM watches ORDER BY created_at').all(),
     env.DB.prepare('SELECT * FROM alert_state').all(),
@@ -386,6 +391,7 @@ async function stateResponse(env) {
       };
     }),
     history: history.results || [],
+    history_days: STATE_HISTORY_DAYS,
   });
 }
 
@@ -492,7 +498,7 @@ const STALE_MINUTES = 25;
  * Ne déclenche un relevé que si GitHub ne l'a pas fait. Tant que son
  * planificateur tient ses créneaux de :00 et :30, ce handler ne fait rien.
  */
-async function scheduled(env) {
+async function runScheduled(env) {
   const age = await minutesSinceLastRun(env);
   if (age !== null && age < STALE_MINUTES) {
     console.log(`Relevé vieux de ${age.toFixed(0)} min — GitHub assure, rien à faire.`);
@@ -518,7 +524,7 @@ async function noteCron(env, action, age) {
 
 export default {
   async scheduled(event, env, ctx) {
-    ctx.waitUntil(scheduled(env));
+    ctx.waitUntil(runScheduled(env));
   },
 
   async fetch(request, env) {

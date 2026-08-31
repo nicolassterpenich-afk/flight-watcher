@@ -91,7 +91,18 @@
           transition: border-color .12s, transform .12s; text-align: left; width: 100%;
           font: inherit; color: inherit; display: block; }
   .card:hover { border-color: var(--ink-muted); }
-  .card[aria-pressed="true"] { border-color: var(--series-1); box-shadow: var(--shadow), 0 0 0 1px var(--series-1); }
+  .card.selected { border-color: var(--series-1); box-shadow: var(--shadow), 0 0 0 1px var(--series-1); }
+  /* La zone cliquable est un bouton ; le lien vers l'offre vit à côté, pas
+     dedans — un <a> dans un <button> n'est pas du HTML valide. */
+  .card-hit { display: block; width: 100%; padding: 0; border: 0; background: none;
+              font: inherit; color: inherit; text-align: left; cursor: pointer; }
+  .card-link, .table-link { color: var(--series-1); text-decoration: none; font-weight: 600; }
+  .card-link { display: inline-block; margin-top: 12px; font-size: 12.5px; }
+  .card-link:hover, .table-link:hover { text-decoration: underline; }
+  a.offer { background: var(--ink); color: var(--page); border: 1px solid var(--ink);
+            border-radius: 8px; padding: 9px 16px; font-size: 13px; font-weight: 600;
+            text-decoration: none; display: inline-block; }
+  a.offer:hover { opacity: .88; }
   .card .name { font-weight: 620; font-size: 15px; letter-spacing: -.005em; }
   .card .route { color: var(--ink-2); font-size: 12.5px; margin-top: 3px;
                  font-variant-numeric: tabular-nums; }
@@ -109,7 +120,8 @@
            border: 1px solid var(--border); color: var(--ink-2); }
   .badge .dot { width: 7px; height: 7px; border-radius: 50%; flex: 0 0 auto; }
   .badge.good  .dot { background: var(--good); }
-  .badge.over  .dot { background: var(--warning); }
+  .badge.bad   .dot { background: var(--critical); }   /* prix au-dessus du seuil */
+  .badge.over  .dot { background: var(--warning); }    /* ennui technique, pas un verdict de prix */
   .badge.none  .dot { background: var(--ink-muted); }
   .badge.paused .dot { background: var(--axis); }
 
@@ -235,6 +247,16 @@
   .badge.checking .dot { background: var(--series-1); animation: pulse 1.2s ease-in-out infinite; }
   @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: .25; } }
   @media (prefers-reduced-motion: reduce) { .badge.checking .dot { animation: none; } }
+
+  .detail-price { display: flex; flex-wrap: wrap; align-items: baseline; gap: 10px 16px;
+                  margin: 14px 0 4px; }
+  .detail-price .v { font-size: 34px; font-weight: 620; letter-spacing: -.02em; line-height: 1;
+                     font-variant-numeric: tabular-nums; }
+  .detail-price .d { color: var(--ink-2); font-size: 12.5px; }
+
+  #d-range { margin: 12px 0 8px; }
+  #d-stats { margin: 0 0 4px; font-variant-numeric: tabular-nums; }
+  #d-stats b { font-weight: 640; color: var(--ink); }
 </style>
 </head>
 <body>
@@ -283,7 +305,15 @@
         <button class="chip danger" id="d-delete">Supprimer</button>
       </div>
     </div>
+    <div class="detail-price" id="d-price"></div>
     <p class="sub" id="d-sub"></p>
+    <div class="controls" id="d-range">
+      <button type="button" class="chip" data-days="1">24 h</button>
+      <button type="button" class="chip" data-days="7">7 jours</button>
+      <button type="button" class="chip" data-days="30">30 jours</button>
+      <button type="button" class="chip" data-days="90">tout</button>
+    </div>
+    <p class="hint" id="d-stats"></p>
     <div class="legend">
       <span><i class="key"></i> meilleur prix relevé</span>
       <span><i class="key thr"></i> seuil</span>
@@ -464,7 +494,7 @@ function renderKpis() {
   tile('Surveillances', String(active.length), `${STATE.watches.length - active.length} en pause`);
   tile('Sous le seuil', String(under.length), under.length ? under.map((w) => w.label || w.id).join(', ') : 'aucune pour l’instant');
   tile('Meilleur prix', best ? eur(best.best_price, best.currency) : '—', best ? (best.label || best.id) : '');
-  tile('Relevés (90 j)', String(STATE.history.length), 'lignes d’historique');
+  tile(`Relevés (${STATE.history_days || 7} j)`, String(STATE.history.length), 'lignes d’historique');
 }
 
 function statusBadge(w) {
@@ -473,11 +503,24 @@ function statusBadge(w) {
   else if (!w.enabled) { cls = 'paused'; text = 'en pause'; }
   else if (w.errors && w.errors.length) { cls = 'over'; text = 'erreur'; }
   else if (w.best_price == null) { cls = 'none'; text = 'en attente'; }
-  else if (w.threshold != null && w.best_price <= w.threshold) { cls = 'good'; text = 'sous le seuil'; }
-  else { cls = 'over'; text = 'au-dessus'; }
+  else if (w.threshold == null) { cls = 'none'; text = 'sans seuil'; }
+  else if (w.best_price <= w.threshold) { cls = 'good'; text = 'sous le seuil'; }
+  else { cls = 'bad'; text = 'au-dessus du seuil'; }
   const b = el('span', `badge ${cls}`);
   b.append(el('span', 'dot'), document.createTextNode(text));
   return b;
+}
+
+/** Lien vers l'offre effectivement relevée : route et dates exactes, pas une recherche vague. */
+function offerLink(w, cls, label) {
+  const a = el('a', cls, label);
+  a.href = w.booking_url;
+  a.target = '_blank';
+  a.rel = 'noopener noreferrer';
+  a.title = `${w.best_route || ''} à ${eur(w.best_price, w.currency)}`;
+  a.setAttribute('aria-label', `Ouvrir l’offre pour ${w.label || w.id}`);
+  a.addEventListener('click', (e) => e.stopPropagation());
+  return a;
 }
 
 function renderCards() {
@@ -485,9 +528,10 @@ function renderCards() {
   $('#cards-empty').classList.toggle('hidden', STATE.watches.length > 0);
 
   for (const w of STATE.watches) {
-    const card = el('button', 'card');
-    card.type = 'button';
-    card.setAttribute('aria-pressed', String(selected === w.id));
+    const card = el('div', `card${selected === w.id ? ' selected' : ''}`);
+    const hit = el('button', 'card-hit');
+    hit.type = 'button';
+    hit.setAttribute('aria-pressed', String(selected === w.id));
 
     const head = el('div', 'card-head');
     const left = el('div');
@@ -505,14 +549,41 @@ function renderCards() {
                     el('div', 'thr', w.threshold != null ? `seuil ${eur(w.threshold, w.currency)}` : 'aucun seuil'));
     row.append(priceBox, sparkline(w.id, w.currency));
 
-    card.append(head, row);
-    card.addEventListener('click', () => { selected = (selected === w.id ? null : w.id); renderCards(); renderDetail(); });
+    hit.append(head, row);
+    hit.addEventListener('click', async () => {
+      selected = (selected === w.id ? null : w.id);
+      renderCards(); renderDetail();
+      if (selected) { await ensureHistory(selected); renderDetail(); }
+    });
+    card.append(hit);
+    if (w.booking_url) card.append(offerLink(w, 'card-link', 'Ouvrir l’offre ↗'));
     box.append(card);
   }
 }
 
-const seriesFor = (watchId) => STATE.history
-  .filter((h) => h.watch_id === watchId)
+let rangeDays = 30;              // fenêtre affichée dans le panneau de détail
+const DEEP = new Map();          // relevés au-delà de ce que /api/state transporte
+
+/** Relevés d'une surveillance sur la fenêtre courante, quitte à aller les chercher. */
+function historyFor(watchId) {
+  const deep = DEEP.get(`${watchId}:${rangeDays}`);
+  return deep || STATE.history.filter((h) => h.watch_id === watchId);
+}
+
+async function ensureHistory(watchId) {
+  const span = STATE.history_days || 7;
+  const key = `${watchId}:${rangeDays}`;
+  if (rangeDays <= span || DEEP.has(key)) return;
+  try {
+    const data = await api(`/api/history?watch=${encodeURIComponent(watchId)}&days=${rangeDays}`);
+    DEEP.set(key, data.rows || []);
+  } catch {
+    DEEP.set(key, []);           // on n'insiste pas : la fenêtre courte reste affichée
+  }
+}
+
+const seriesFor = (watchId, days = rangeDays) => historyFor(watchId)
+  .filter((h) => h.watch_id === watchId && Date.parse(h.checked_at) >= Date.now() - days * 86400000)
   .map((h) => ({ t: Date.parse(h.checked_at), price: h.price, row: h }))
   .filter((p) => Number.isFinite(p.t))
   .sort((a, b) => a.t - b.t);
@@ -532,7 +603,7 @@ function sparkline(watchId, currency) {
   svg.setAttribute('class', 'spark');
   svg.setAttribute('viewBox', '0 0 108 34');
   svg.setAttribute('preserveAspectRatio', 'none');
-  const pts = bestPerRun(seriesFor(watchId));
+  const pts = bestPerRun(seriesFor(watchId, 30));
   if (pts.length >= 2) {
     const xs = pts.map((p) => p.t), ys = pts.map((p) => p.price);
     const x0 = Math.min(...xs), x1 = Math.max(...xs), y0 = Math.min(...ys), y1 = Math.max(...ys);
@@ -558,17 +629,39 @@ function renderDetail() {
   if (!w) return;
 
   $('#d-title').textContent = w.label || w.id;
+
+  const box = $('#d-price');
+  box.replaceChildren();
+  const value = el('div', 'v', eur(w.best_price, w.currency));
+  if (w.best_price != null && w.threshold != null) {
+    value.classList.add(w.best_price <= w.threshold ? 'under' : 'over');
+  }
+  const ecart = (w.best_price != null && w.threshold != null)
+    ? `${w.best_price <= w.threshold ? '−' : '+'}${eur(Math.abs(w.best_price - w.threshold), w.currency)} par rapport au seuil de ${eur(w.threshold, w.currency)}`
+    : (w.threshold != null ? `seuil ${eur(w.threshold, w.currency)}` : 'aucun seuil fixé');
+  box.append(value, statusBadge(w), el('div', 'd', ecart));
+  if (w.booking_url) {
+    const a = offerLink(w, 'offer', 'Ouvrir l’offre ↗');
+    a.style.marginLeft = 'auto';
+    box.append(a);
+  }
   $('#d-sub').textContent =
     `${w.origins.join('/')} → ${w.destinations.join('/')} · ${w.depart}${w.ret ? ' ⇄ ' + w.ret : ''}`
     + ` · ± ${w.flex_days} j · ${w.max_stops == null ? 'escales libres' : w.max_stops + ' escale(s) max'}`
     + ` · dernier contrôle ${dateTime(w.last_checked_at)}`;
   $('#d-toggle').textContent = w.enabled ? 'Mettre en pause' : 'Réactiver';
 
+  [...$('#d-range').children].forEach((b) =>
+    b.setAttribute('aria-pressed', String(Number(b.dataset.days) === rangeDays)));
+  renderStats(w);
   drawChart(w);
 
   const tbody = $('#d-table tbody');
   tbody.replaceChildren();
-  const rows = STATE.history.filter((h) => h.watch_id === w.id).sort((a, b) => b.checked_at.localeCompare(a.checked_at)).slice(0, 40);
+  const since = Date.now() - rangeDays * 86400000;
+  const rows = historyFor(w.id)
+    .filter((h) => h.watch_id === w.id && Date.parse(h.checked_at) >= since)
+    .sort((a, b) => b.checked_at.localeCompare(a.checked_at)).slice(0, 40);
   for (const h of rows) {
     const tr = el('tr');
     let airlines = '—';
@@ -577,11 +670,50 @@ function renderDetail() {
               el('td', null, `${h.origin}→${h.destination}`),
               el('td', null, `${h.depart}${h.ret ? ' ⇄ ' + h.ret : ''}`),
               el('td', null, airlines));
-    const price = el('td', 'num', eur(h.price, h.currency));
+    const price = el('td', 'num');
+    if (h.booking_url) {
+      const a = el('a', 'table-link', eur(h.price, h.currency));
+      a.href = h.booking_url;
+      a.target = '_blank';
+      a.rel = 'noopener noreferrer';
+      price.append(a);
+    } else {
+      price.textContent = eur(h.price, h.currency);
+    }
     tr.append(price);
     tbody.append(tr);
   }
 }
+
+/** Repères de prix sur la fenêtre affichée — les mêmes que ceux des alertes Telegram. */
+function renderStats(w) {
+  const box = $('#d-stats');
+  box.replaceChildren();
+  const prices = bestPerRun(seriesFor(w.id)).map((p) => p.price).sort((a, b) => a - b);
+
+  if (!prices.length) {
+    box.textContent = 'Aucun relevé sur cette période.';
+    return;
+  }
+
+  const mid = Math.floor(prices.length / 2);
+  const median = prices.length % 2 ? prices[mid] : (prices[mid - 1] + prices[mid]) / 2;
+  const frag = [
+    `${prices.length} relevé${prices.length > 1 ? 's' : ''} · `,
+    'le moins cher ', bold(eur(prices[0], w.currency)),
+    ' · médiane ', bold(eur(median, w.currency)),
+    ' · le plus cher ', bold(eur(prices[prices.length - 1], w.currency)),
+  ];
+  // L'écart à la médiane est le repère qui dit si le prix du jour est bon,
+  // indépendamment du seuil : c'est lui qui déclenche l'alerte « chute ».
+  if (w.best_price != null && median > 0) {
+    const pct = ((w.best_price - median) / median) * 100;
+    frag.push(` · actuellement ${pct >= 0 ? '+' : ''}${pct.toFixed(0)} % par rapport à la médiane`);
+  }
+  frag.forEach((piece) => box.append(piece));
+}
+
+const bold = (text) => el('b', null, text);
 
 function drawChart(w) {
   const svg = $('#chart');
@@ -876,6 +1008,15 @@ $('#watch-form').addEventListener('submit', async (e) => {
 /* ------------------------------------------------------------ actions détail */
 
 const current = () => STATE.watches.find((w) => w.id === selected);
+
+$('#d-range').addEventListener('click', async (e) => {
+  const days = Number(e.target.dataset.days);
+  if (!days || days === rangeDays) return;
+  rangeDays = days;
+  renderDetail();
+  await ensureHistory(selected);
+  renderDetail();
+});
 
 $('#d-edit').addEventListener('click', () => { const w = current(); if (w) openForm(w); });
 
