@@ -20,13 +20,12 @@ concurrency:
   group: flight-watcher
   cancel-in-progress: false
 
-permissions:
-  contents: write
-
 jobs:
   watch:
     runs-on: ubuntu-latest
     timeout-minutes: 25
+    permissions:
+      contents: write
 
     steps:
       - uses: actions/checkout@v4
@@ -80,3 +79,29 @@ jobs:
       - name: Résumé
         if: always()
         run: python scripts/summary.py
+
+  # Les commits poussés avec GITHUB_TOKEN ne déclenchent aucun autre workflow
+  # (garde-fou anti-boucle de GitHub) : on déploie donc le dashboard ici même,
+  # sinon il resterait figé sur les données du premier run.
+  deploy:
+    needs: watch
+    if: always()
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: read
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main          # récupère le commit que le job précédent vient de pousser
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: docs
+      - id: deployment
+        uses: actions/deploy-pages@v4
