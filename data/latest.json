@@ -1,13 +1,82 @@
 {
-  "ran_at": "2026-08-31T14:25:59Z",
+  "ran_at": "2026-08-31T14:32:43Z",
   "source": "api",
   "watches": [
+    {
+      "id": "bangkok-fevrier",
+      "label": "Bangkok en février",
+      "threshold": 600.0,
+      "currency": "EUR",
+      "elapsed_s": 5.8,
+      "quotes_found": 82,
+      "errors": [],
+      "status": "ok",
+      "best_price": 572.0,
+      "best_route": "BRU→BKK",
+      "best_depart": "2027-02-03",
+      "best_return": "2027-02-17",
+      "provider": "google_flights",
+      "airlines": [
+        "Brussels Airlines",
+        "Austrian"
+      ],
+      "booking_url": "https://www.google.com/travel/flights/search?tfs=GhwSCjIwMjctMDItMDMoAWoFEgNCUlVyBRIDQktLGhwSCjIwMjctMDItMTcoAWoFEgNCS0tyBRIDQlJVQgEBSAGYAQE=&hl=fr&curr=EUR",
+      "reason": "seuil déjà notifié (cooldown)",
+      "alerted": false,
+      "stats": {
+        "count": 9,
+        "min": 572.0,
+        "max": 598.0,
+        "median": 598.0,
+        "avg": 589.33,
+        "last": 572.0
+      }
+    },
+    {
+      "id": "rarotonga-mai-2027",
+      "label": "Îles Cook — Rarotonga mai 2027",
+      "threshold": 1500.0,
+      "currency": "EUR",
+      "elapsed_s": 3.7,
+      "quotes_found": 0,
+      "errors": [],
+      "status": "aucun prix"
+    },
+    {
+      "id": "fevrier-2026",
+      "label": "FEVRIER 2026",
+      "threshold": 700.0,
+      "currency": "EUR",
+      "elapsed_s": 6.6,
+      "quotes_found": 94,
+      "errors": [],
+      "status": "ok",
+      "best_price": 672.0,
+      "best_route": "BRU→BKK",
+      "best_depart": "2027-02-18",
+      "best_return": "2027-03-04",
+      "provider": "google_flights",
+      "airlines": [
+        "Lufthansa"
+      ],
+      "booking_url": "https://www.google.com/travel/flights/search?tfs=GhwSCjIwMjctMDItMTgoAWoFEgNCUlVyBRIDQktLGhwSCjIwMjctMDMtMDQoAWoFEgNCS0tyBRIDQlJVQgEBSAGYAQE=&hl=fr&curr=EUR",
+      "reason": "seuil déjà notifié (cooldown)",
+      "alerted": false,
+      "stats": {
+        "count": 2,
+        "min": 672.0,
+        "max": 672.0,
+        "median": 672.0,
+        "avg": 672.0,
+        "last": 672.0
+      }
+    },
     {
       "id": "asmet",
       "label": "ASMET",
       "threshold": 600.0,
       "currency": "EUR",
-      "elapsed_s": 1.2,
+      "elapsed_s": 0.8,
       "quotes_found": 7,
       "errors": [],
       "status": "ok",
@@ -20,10 +89,10 @@
         "Corsair"
       ],
       "booking_url": "https://www.google.com/travel/flights/search?tfs=GhoSCjIwMjYtMDktMjVqBRIDT1JZcgUSA1BUUBoaEgoyMDI2LTEwLTA1agUSA1BUUHIFEgNPUllCAQFIAZgBAQ==&hl=fr&curr=EUR",
-      "reason": "seuil",
-      "alerted": true,
+      "reason": "seuil déjà notifié (cooldown)",
+      "alerted": false,
       "stats": {
-        "count": 1,
+        "count": 2,
         "min": 588.0,
         "max": 588.0,
         "median": 588.0,
@@ -32,6 +101,6 @@
       }
     }
   ],
-  "alerts_sent": 1,
+  "alerts_sent": 0,
   "errors": []
 }
