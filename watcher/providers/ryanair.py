@@ -8,6 +8,7 @@ du jour ainsi que les dates voisines les moins chères.
 from __future__ import annotations
 
 import logging
+from datetime import datetime
 
 import requests
 
@@ -16,13 +17,27 @@ from .base import Provider, ProviderError
 
 log = logging.getLogger(__name__)
 
+# Depuis le 31/08/2026, l'endpoint de réservation renvoie 409 quelle que soit
+# la route et le segment de langue — vérifié depuis WSL et depuis un runner
+# GitHub, ce n'est donc pas un filtrage d'IP. On passe par le « fare finder »,
+# qui lui répond sans cookie ni session. L'ancien reste en secours au cas où.
 AVAILABILITY = "https://www.ryanair.com/api/booking/v4/availability"
-CHEAPEST = "https://services-api.ryanair.com/farfnd/v4/oneWayFares"
+ONE_WAY = "https://services-api.ryanair.com/farfnd/v4/oneWayFares"
+ROUND_TRIP = "https://services-api.ryanair.com/farfnd/v4/roundTripFares"
 HEADERS = {
     "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 "
                   "(KHTML, like Gecko) Chrome/131.0 Safari/537.36",
     "Accept": "application/json",
 }
+
+
+def _minutes_between(start: str | None, end: str | None) -> int | None:
+    if not start or not end:
+        return None
+    try:
+        return int((datetime.fromisoformat(end) - datetime.fromisoformat(start)).total_seconds() // 60)
+    except ValueError:
+        return None
 
 
 class RyanairProvider(Provider):
@@ -85,27 +100,83 @@ class RyanairProvider(Provider):
                 legs.append(cheapest)
         return legs
 
+    def _fares(self, origin: str, destination: str, depart: str,
+               ret: str | None) -> list[dict]:
+        """Tarif le moins cher du jour via le « fare finder » public."""
+        params = {
+            "departureAirportIataCode": origin,
+            "arrivalAirportIataCode": destination,
+            "outboundDepartureDateFrom": depart,
+            "outboundDepartureDateTo": depart,
+            "currency": "EUR",
+        }
+        if ret:
+            params.update({"inboundDepartureDateFrom": ret, "inboundDepartureDateTo": ret})
+
+        resp = requests.get(ROUND_TRIP if ret else ONE_WAY, params=params,
+                            headers=HEADERS, timeout=self.timeout)
+        if resp.status_code == 404:
+            return []            # route non desservie
+        resp.raise_for_status()
+
+        fares = (resp.json() or {}).get("fares") or []
+        if not fares:
+            return []            # pas de vol ce jour-là
+        fare = fares[0]
+
+        def _leg(node: dict | None) -> dict | None:
+            if not node:
+                return None
+            price = node.get("price") or {}
+            if price.get("value") is None:
+                return None
+            return {
+                "price": float(price["value"]),
+                "currency": price.get("currencyCode", "EUR"),
+                "depart_time": (node.get("departureDate") or "").replace("T", " ")[:16] or None,
+                "arrival_time": (node.get("arrivalDate") or "").replace("T", " ")[:16] or None,
+                "number": node.get("flightNumber"),
+                "duration": _minutes_between(node.get("departureDate"), node.get("arrivalDate")),
+            }
+
+        legs = [leg for leg in (_leg(fare.get("outbound")), _leg(fare.get("inbound"))) if leg]
+        # Sur un aller-retour, le total du résumé fait foi : il peut différer de
+        # la somme des deux tarifs affichés.
+        total = ((fare.get("summary") or {}).get("price") or {}).get("value")
+        if legs and total is not None:
+            legs[0] = {**legs[0], "total_override": float(total)}
+        return legs
+
     def search(self, watch: Watch, origin: str, destination: str,
                depart: str, ret: str | None) -> list[Quote]:
         try:
-            legs = self._availability(origin, destination, depart, ret, watch)
+            legs = self._fares(origin, destination, depart, ret)
         except requests.RequestException as exc:
-            raise ProviderError(f"Ryanair injoignable {origin}→{destination} {depart}: {exc}") from exc
+            try:
+                legs = self._availability(origin, destination, depart, ret, watch)
+            except requests.RequestException:
+                raise ProviderError(
+                    f"Ryanair injoignable {origin}→{destination} {depart}: {exc}") from exc
 
         if not legs:
             return []
-        if ret and len(legs) < 2:
+        if ret and len(legs) < 2 and "total_override" not in legs[0]:
             return []            # A/R incomplet : pas exploitable
 
         pax = max(1, watch.passengers.adults) + watch.passengers.children
-        total = sum(leg["price"] for leg in legs) * pax
+        # Prix par adulte : le fare finder ne tarife pas les enfants, on
+        # multiplie faute de mieux — c'est un indicateur de tendance, pas un devis.
+        base = legs[0].get("total_override") or sum(leg["price"] for leg in legs)
+        total = base * pax
 
-        def _dur(mins: str | None) -> int | None:
-            if not mins:
+        def _dur(value) -> int | None:
+            if value is None:
                 return None
+            if isinstance(value, int):
+                return value                      # déjà en minutes (fare finder)
             try:
-                hh, mm = mins.split(":")[:2]
-                return int(hh) * 60 + int(mm)
+                hh, mm = str(value).split(":")[:2]
+                return int(hh) * 60 + int(mm)     # format « hh:mm » de l'ancien endpoint
             except Exception:
                 return None
 
