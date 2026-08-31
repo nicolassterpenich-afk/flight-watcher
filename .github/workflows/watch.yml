@@ -1,0 +1,82 @@
+name: Relevé des prix
+
+on:
+  schedule:
+    # Toutes les 30 minutes (heure UTC). GitHub décale parfois de quelques
+    # minutes quand ses runners sont chargés : c'est normal.
+    - cron: "*/30 * * * *"
+  workflow_dispatch:
+    inputs:
+      force_notify:
+        description: "Envoyer une alerte même si le seuil n'est pas atteint"
+        type: boolean
+        default: false
+      watch:
+        description: "Ne traiter qu'une surveillance (son id)"
+        type: string
+        default: ""
+
+concurrency:
+  group: flight-watcher
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+
+jobs:
+  watch:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - name: Installer les dépendances
+        run: pip install -r requirements.txt
+
+      - name: Relever les prix
+        env:
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+          FORCE_NOTIFY: ${{ inputs.force_notify }}
+          ONLY_WATCH: ${{ inputs.watch }}
+        run: |
+          ARGS=""
+          [ "$FORCE_NOTIFY" = "true" ] && ARGS="$ARGS --force-notify"
+          [ -n "$ONLY_WATCH" ] && ARGS="$ARGS --watch $ONLY_WATCH"
+          python -m watcher.cli run $ARGS
+
+      - name: Publier les données pour le dashboard
+        run: |
+          mkdir -p docs/data
+          cp -f data/latest.json docs/data/ 2>/dev/null || true
+          cp -f data/history.jsonl docs/data/ 2>/dev/null || true
+
+      - name: Enregistrer l'historique
+        run: |
+          git config user.name  "flight-watcher"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add data docs/data watches.yaml
+          if git diff --staged --quiet; then
+            echo "Rien de neuf à committer."
+            exit 0
+          fi
+          git commit -m "Relevé des prix — $(date -u '+%Y-%m-%d %H:%M UTC')"
+          for i in 1 2 3; do
+            if git pull --rebase --autostash origin "$GITHUB_REF_NAME" \
+               && git push origin "HEAD:$GITHUB_REF_NAME"; then
+              exit 0
+            fi
+            echo "Push refusé, nouvelle tentative ($i)…"
+            sleep 5
+          done
+          echo "::warning::Impossible de pousser l'historique après 3 tentatives."
+
+      - name: Résumé
+        if: always()
+        run: python scripts/summary.py

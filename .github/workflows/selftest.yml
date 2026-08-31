@@ -1,0 +1,23 @@
+name: Test de configuration
+
+# À lancer une fois après avoir mis les secrets en place : vérifie que
+# Google Flights répond, que Ryanair répond et que Telegram est branché.
+on:
+  workflow_dispatch:
+
+jobs:
+  selftest:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+      - run: pip install -r requirements.txt
+      - name: Vérifier fournisseurs + Telegram
+        env:
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+        run: python -m watcher.cli selftest

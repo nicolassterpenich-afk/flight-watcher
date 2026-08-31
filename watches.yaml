@@ -1,0 +1,38 @@
+# Surveillances de prix de vols — modifie ce fichier puis commit,
+# ou pilote-le depuis Telegram avec /add, /seuil, /suppr.
+
+settings:
+  cooldown_hours: 12        # ne pas répéter la même alerte avant X heures
+  renotify_drop_pct: 5      # ...sauf si le prix rebaisse encore de 5 %
+  drop_pct: 15              # alerte "chute" si 15 % sous la médiane 30 jours
+  drop_min_samples: 8
+  flex_mode: shift          # shift = décale aller+retour ensemble | matrix = toutes combinaisons
+  max_queries_per_run: 120
+  workers: 3
+  # quiet_hours: [23, 7]    # décommente pour couper les alertes la nuit
+
+defaults:
+  currency: EUR
+  seat: economy
+  providers: [google_flights]
+
+watches:
+  - id: bangkok-fevrier
+    label: Bangkok en février
+    origin: [BRU, CRL, AMS]
+    destination: [BKK]
+    depart: 2027-02-06
+    return: 2027-02-20
+    threshold: 600
+    flex_days: 3
+    max_stops: 1
+
+  - id: rarotonga-mai-2027
+    label: Îles Cook — Rarotonga mai 2027
+    origin: [BRU, CDG, AMS]
+    destination: [RAR]
+    depart: 2027-05-08
+    return: 2027-05-22
+    threshold: 2200
+    flex_days: 2
+    enabled: false          # active-la quand les vols s'ouvrent à la vente

@@ -1,0 +1,703 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Surveillance des prix de vols</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%E2%9C%88%EF%B8%8F%3C/text%3E%3C/svg%3E">
+<style>
+  :root {
+    color-scheme: light;
+    --page:           #f9f9f7;
+    --surface:        #fcfcfb;
+    --ink:            #0b0b0b;
+    --ink-2:          #52514e;
+    --ink-muted:      #898781;
+    --grid:           #e1e0d9;
+    --axis:           #c3c2b7;
+    --border:         rgba(11,11,11,0.10);
+    --series-1:       #2a78d6;
+    --series-2:       #eb6834;
+    --series-3:       #1baf7a;
+    --good:           #0ca30c;
+    --warning:        #fab219;
+    --critical:       #d03b3b;
+    --good-text:      #006300;
+    --shadow:         0 1px 2px rgba(11,11,11,.05), 0 8px 24px rgba(11,11,11,.05);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      color-scheme: dark;
+      --page:      #0d0d0d;
+      --surface:   #1a1a19;
+      --ink:       #ffffff;
+      --ink-2:     #c3c2b7;
+      --ink-muted: #898781;
+      --grid:      #2c2c2a;
+      --axis:      #383835;
+      --border:    rgba(255,255,255,0.10);
+      --series-1:  #3987e5;
+      --series-2:  #d95926;
+      --series-3:  #199e70;
+      --good-text: #0ca30c;
+      --shadow:    0 1px 2px rgba(0,0,0,.4), 0 8px 24px rgba(0,0,0,.35);
+    }
+  }
+  :root[data-theme="dark"] {
+    color-scheme: dark;
+    --page:      #0d0d0d;
+    --surface:   #1a1a19;
+    --ink:       #ffffff;
+    --ink-2:     #c3c2b7;
+    --ink-muted: #898781;
+    --grid:      #2c2c2a;
+    --axis:      #383835;
+    --border:    rgba(255,255,255,0.10);
+    --series-1:  #3987e5;
+    --series-2:  #d95926;
+    --series-3:  #199e70;
+    --good-text: #0ca30c;
+    --shadow:    0 1px 2px rgba(0,0,0,.4), 0 8px 24px rgba(0,0,0,.35);
+  }
+
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; background: var(--page); color: var(--ink);
+    font: 14px/1.5 system-ui, -apple-system, "Segoe UI", sans-serif;
+    -webkit-font-smoothing: antialiased;
+  }
+  .wrap { max-width: 1120px; margin: 0 auto; padding: 32px 20px 72px; }
+
+  header.top { display: flex; flex-wrap: wrap; gap: 16px; align-items: baseline;
+               justify-content: space-between; margin-bottom: 28px; }
+  h1 { font-size: 22px; font-weight: 640; letter-spacing: -.01em; margin: 0; }
+  .sub { color: var(--ink-muted); font-size: 13px; margin-top: 4px; }
+
+  .kpis { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+          gap: 12px; margin-bottom: 28px; }
+  .tile { background: var(--surface); border: 1px solid var(--border); border-radius: 12px;
+          padding: 16px 18px; box-shadow: var(--shadow); }
+  .tile .k { font-size: 11px; letter-spacing: .06em; text-transform: uppercase;
+             color: var(--ink-muted); font-weight: 600; }
+  .tile .v { font-size: 30px; font-weight: 620; letter-spacing: -.02em; margin-top: 6px; }
+  .tile .d { font-size: 12px; color: var(--ink-2); margin-top: 2px; }
+
+  h2 { font-size: 13px; font-weight: 640; letter-spacing: .04em; text-transform: uppercase;
+       color: var(--ink-muted); margin: 32px 0 12px; }
+
+  .cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 12px; }
+  .card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px;
+          padding: 16px 18px; box-shadow: var(--shadow); cursor: pointer;
+          transition: border-color .12s, transform .12s; text-align: left; width: 100%;
+          font: inherit; color: inherit; display: block; }
+  .card:hover { border-color: var(--ink-muted); }
+  .card[aria-pressed="true"] { border-color: var(--series-1); box-shadow: var(--shadow), 0 0 0 1px var(--series-1); }
+  .card .name { font-weight: 620; font-size: 15px; letter-spacing: -.005em; }
+  .card .route { color: var(--ink-2); font-size: 12.5px; margin-top: 3px;
+                 font-variant-numeric: tabular-nums; }
+  .card .row { display: flex; align-items: flex-end; justify-content: space-between;
+               gap: 12px; margin-top: 14px; overflow: hidden; }
+  .card .row > div:first-child { min-width: 0; }
+  .price { font-size: 27px; font-weight: 620; letter-spacing: -.02em; line-height: 1;
+           white-space: nowrap; font-variant-numeric: tabular-nums; }
+  .thr { font-size: 12px; color: var(--ink-muted); margin-top: 5px; white-space: nowrap;
+         font-variant-numeric: tabular-nums; }
+  .spark { flex: 0 0 108px; width: 108px; }
+
+  .badge { display: inline-flex; align-items: center; gap: 5px; font-size: 11.5px;
+           font-weight: 600; padding: 3px 8px; border-radius: 999px;
+           border: 1px solid var(--border); color: var(--ink-2); }
+  .badge .dot { width: 7px; height: 7px; border-radius: 50%; flex: 0 0 auto; }
+  .badge.good  .dot { background: var(--good); }
+  .badge.over  .dot { background: var(--warning); }
+  .badge.none  .dot { background: var(--ink-muted); }
+  .badge.paused .dot { background: var(--axis); }
+
+  .panel { background: var(--surface); border: 1px solid var(--border); border-radius: 12px;
+           padding: 20px 22px; box-shadow: var(--shadow); margin-top: 12px; }
+  .panel-head { display: flex; flex-wrap: wrap; gap: 12px; align-items: baseline;
+                justify-content: space-between; margin-bottom: 4px; }
+  .panel-head h3 { margin: 0; font-size: 16px; font-weight: 620; letter-spacing: -.01em; }
+  .legend { display: flex; gap: 14px; flex-wrap: wrap; font-size: 12px; color: var(--ink-2);
+            margin: 10px 0 6px; }
+  .legend span { display: inline-flex; align-items: center; gap: 6px; }
+  .key { width: 14px; height: 2px; border-radius: 2px; background: var(--series-1); }
+  .key.thr { background: none; border-top: 2px dashed var(--ink-muted); height: 0; }
+
+  .chart-box { position: relative; }
+  svg { display: block; width: 100%; height: auto; overflow: visible; }
+  .tip { position: absolute; pointer-events: none; opacity: 0; transition: opacity .1s;
+         background: var(--surface); border: 1px solid var(--border); border-radius: 8px;
+         padding: 9px 11px; font-size: 12.5px; box-shadow: var(--shadow); min-width: 150px;
+         z-index: 5; }
+  .tip .t-date { color: var(--ink-muted); font-size: 11px; margin-bottom: 3px; }
+  .tip .t-price { font-weight: 640; font-size: 15px; font-variant-numeric: tabular-nums; }
+  .tip .t-meta { color: var(--ink-2); font-size: 11.5px; margin-top: 3px; }
+
+  .controls { display: flex; gap: 6px; flex-wrap: wrap; }
+  button.chip, a.chip { background: transparent; border: 1px solid var(--border); color: var(--ink-2);
+          border-radius: 999px; padding: 5px 12px; font: inherit; font-size: 12.5px;
+          cursor: pointer; text-decoration: none; }
+  button.chip:hover, a.chip:hover { border-color: var(--ink-muted); color: var(--ink); }
+  button.chip[aria-pressed="true"] { background: var(--ink); color: var(--page); border-color: var(--ink); }
+
+  table { width: 100%; border-collapse: collapse; font-size: 13px;
+          font-variant-numeric: tabular-nums; margin-top: 10px; }
+  th, td { text-align: left; padding: 7px 14px 7px 0; border-bottom: 1px solid var(--grid);
+           white-space: nowrap; }
+  th { color: var(--ink-muted); font-weight: 600; font-size: 11.5px;
+       text-transform: uppercase; letter-spacing: .04em; }
+  td.num, th.num { text-align: right; padding-right: 0; }
+  .scroll-x { overflow-x: auto; }
+
+  .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+               gap: 12px; margin: 14px 0; }
+  label { display: block; font-size: 11.5px; font-weight: 600; color: var(--ink-muted);
+          text-transform: uppercase; letter-spacing: .04em; margin-bottom: 5px; }
+  input { width: 100%; padding: 8px 10px; font: inherit; border-radius: 8px;
+          border: 1px solid var(--border); background: var(--page); color: var(--ink); }
+  input:focus { outline: 2px solid var(--series-1); outline-offset: 1px; }
+  pre.out { background: var(--page); border: 1px solid var(--border); border-radius: 8px;
+            padding: 12px 14px; overflow-x: auto; font-size: 12.5px; margin: 0;
+            font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace; }
+  .out-row { margin-top: 14px; }
+  .out-row .lbl { display: flex; justify-content: space-between; align-items: center;
+                  margin-bottom: 6px; }
+  .hint { color: var(--ink-muted); font-size: 12.5px; margin: 6px 0 0; }
+  .err { color: var(--critical); font-size: 13px; }
+  .empty { color: var(--ink-muted); padding: 28px 0; text-align: center; }
+  .hidden { display: none !important; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="top">
+    <div>
+      <h1>Surveillance des prix de vols</h1>
+      <p class="sub" id="lastrun">Chargement…</p>
+    </div>
+    <div class="controls">
+      <button class="chip" id="theme-toggle" type="button">Thème</button>
+      <a class="chip" id="repo-link" href="#" target="_blank" rel="noopener">Modifier les surveillances</a>
+    </div>
+  </header>
+
+  <div class="kpis" id="kpis"></div>
+
+  <h2>Surveillances</h2>
+  <div class="cards" id="cards"></div>
+
+  <div id="detail"></div>
+
+  <h2>Ajouter une surveillance</h2>
+  <div class="panel">
+    <p class="hint">Remplis le trajet : la commande Telegram et le bloc YAML se génèrent en dessous.
+      Le plus rapide est d'envoyer la commande à ton bot — elle sera prise en compte au prochain relevé.</p>
+    <div class="form-grid">
+      <div><label for="f-org">Origine(s)</label><input id="f-org" value="BRU,CRL" placeholder="BRU,CRL"></div>
+      <div><label for="f-dst">Destination(s)</label><input id="f-dst" value="BKK" placeholder="BKK"></div>
+      <div><label for="f-out">Aller</label><input id="f-out" type="date"></div>
+      <div><label for="f-ret">Retour (optionnel)</label><input id="f-ret" type="date"></div>
+      <div><label for="f-thr">Seuil (€)</label><input id="f-thr" type="number" min="0" step="10" value="600"></div>
+      <div><label for="f-flex">Flexibilité (± jours)</label><input id="f-flex" type="number" min="0" max="7" value="3"></div>
+      <div><label for="f-stops">Escales max</label><input id="f-stops" type="number" min="0" max="3" value="1"></div>
+      <div><label for="f-label">Libellé</label><input id="f-label" placeholder="Bangkok en février"></div>
+    </div>
+    <div class="out-row">
+      <div class="lbl"><label style="margin:0">Commande Telegram</label>
+        <button class="chip" type="button" data-copy="out-tg">Copier</button></div>
+      <pre class="out" id="out-tg"></pre>
+    </div>
+    <div class="out-row">
+      <div class="lbl"><label style="margin:0">Bloc à coller dans watches.yaml</label>
+        <button class="chip" type="button" data-copy="out-yaml">Copier</button></div>
+      <pre class="out" id="out-yaml"></pre>
+    </div>
+  </div>
+
+  <div id="errors"></div>
+</div>
+
+<script>
+(() => {
+  "use strict";
+
+  const CURRENCY = { EUR: "€", USD: "$", GBP: "£", THB: "฿" };
+  const fmt = (v, c = "EUR") =>
+    v == null || Number.isNaN(v) ? "—"
+      : Math.round(v).toLocaleString("fr-BE").replace(/[\s\u202f\u00a0]/g, "\u00a0") + "\u00a0" + (CURRENCY[c] || c);
+  const fmtDate = (iso) => {
+    const d = new Date(iso);
+    return Number.isNaN(d) ? iso
+      : d.toLocaleDateString("fr-BE", { day: "2-digit", month: "short" });
+  };
+  const fmtDateTime = (iso) => {
+    const d = new Date(iso);
+    return Number.isNaN(d) ? iso
+      : d.toLocaleString("fr-BE", { day: "2-digit", month: "short", hour: "2-digit", minute: "2-digit" });
+  };
+  const el = (tag, cls, text) => {
+    const n = document.createElement(tag);
+    if (cls) n.className = cls;
+    if (text != null) n.textContent = text;
+    return n;
+  };
+
+  let LATEST = null, HISTORY = [], selected = null, rangeDays = 30, showTable = false;
+
+  // ---------------------------------------------------------------- données
+  async function load() {
+    const [latest, history] = await Promise.all([
+      fetch("data/latest.json", { cache: "no-store" }).then(r => r.ok ? r.json() : null).catch(() => null),
+      fetch("data/history.jsonl", { cache: "no-store" }).then(r => r.ok ? r.text() : "").catch(() => ""),
+    ]);
+    LATEST = latest;
+    HISTORY = history.split("\n").filter(Boolean).map(l => {
+      try { return JSON.parse(l); } catch { return null; }
+    }).filter(Boolean);
+    render();
+  }
+
+  const seriesFor = (id, days) => {
+    const cutoff = days ? Date.now() - days * 86400000 : 0;
+    return HISTORY
+      .filter(r => r.watch_id === id && +new Date(r.checked_at) >= cutoff && r.price > 0)
+      .sort((a, b) => new Date(a.checked_at) - new Date(b.checked_at));
+  };
+
+  // ---------------------------------------------------------------- rendu
+  function render() {
+    const runAt = LATEST?.ran_at;
+    document.getElementById("lastrun").textContent = runAt
+      ? `Dernier relevé : ${fmtDateTime(runAt)} · ${LATEST.watches.length} surveillance(s)`
+      : "Aucun relevé pour l'instant — le premier passera au prochain déclenchement.";
+
+    renderKpis();
+    renderCards();
+    if (selected == null && LATEST?.watches?.length) selected = LATEST.watches[0].id;
+    renderDetail();
+    renderErrors();
+  }
+
+  function renderKpis() {
+    const box = document.getElementById("kpis");
+    box.textContent = "";
+    const ws = LATEST?.watches || [];
+    const under = ws.filter(w => w.threshold != null && w.best_price != null && w.best_price <= w.threshold);
+
+    let deal = null;
+    for (const w of ws) {
+      if (w.threshold == null || w.best_price == null) continue;
+      const gap = w.threshold - w.best_price;
+      if (gap > 0 && (!deal || gap > deal.gap)) deal = { gap, w };
+    }
+
+    const tiles = [
+      ["Surveillances actives", String(ws.length), `${HISTORY.length} relevés enregistrés`],
+      ["Sous le seuil", String(under.length), under.length ? under.map(w => w.label).join(" · ") : "aucune pour l'instant"],
+      ["Meilleure affaire", deal ? fmt(deal.w.best_price, deal.w.currency) : "—",
+        deal ? `${deal.w.label} — ${Math.round(deal.gap)} € sous ton seuil` : "aucun prix sous un seuil"],
+      ["Alertes ce run", String(LATEST?.alerts_sent ?? 0), LATEST?.alerts_sent ? "envoyées sur Telegram" : "rien à signaler"],
+    ];
+    for (const [k, v, d] of tiles) {
+      const t = el("div", "tile");
+      t.append(el("div", "k", k), el("div", "v", v), el("div", "d", d));
+      box.append(t);
+    }
+  }
+
+  function statusOf(w) {
+    if (w.best_price == null) return ["none", "pas de prix"];
+    if (w.threshold == null) return ["none", "sans seuil"];
+    return w.best_price <= w.threshold
+      ? ["good", "sous le seuil"]
+      : ["over", `${Math.round(w.best_price - w.threshold)} € au-dessus`];
+  }
+
+  function renderCards() {
+    const box = document.getElementById("cards");
+    box.textContent = "";
+    const ws = LATEST?.watches || [];
+    if (!ws.length) {
+      box.append(el("p", "empty", "Aucune surveillance encore relevée."));
+      return;
+    }
+    for (const w of ws) {
+      const card = el("button", "card");
+      card.type = "button";
+      card.setAttribute("aria-pressed", String(w.id === selected));
+      card.append(el("div", "name", w.label || w.id));
+
+      const routeBits = [w.best_route || "", w.best_depart || ""];
+      if (w.best_return) routeBits.push("⇄ " + w.best_return);
+      card.append(el("div", "route", routeBits.filter(Boolean).join("  ·  ")));
+
+      const row = el("div", "row");
+      const left = el("div");
+      left.append(el("div", "price", fmt(w.best_price, w.currency)));
+      left.append(el("div", "thr", w.threshold != null ? `seuil ${fmt(w.threshold, w.currency)}` : "aucun seuil"));
+      row.append(left);
+
+      const pts = seriesFor(w.id, 30);
+      if (pts.length >= 2) row.append(sparkline(pts.map(p => p.price)));
+      card.append(row);
+
+      const [cls, txt] = statusOf(w);
+      const badge = el("span", "badge " + cls);
+      badge.append(el("span", "dot"), document.createTextNode(txt));
+      const foot = el("div");
+      foot.style.marginTop = "12px";
+      foot.append(badge);
+      card.append(foot);
+
+      card.addEventListener("click", () => { selected = w.id; render(); });
+      box.append(card);
+    }
+  }
+
+  function sparkline(values) {
+    const W = 108, H = 34, P = 3;
+    const min = Math.min(...values), max = Math.max(...values), span = max - min || 1;
+    const x = i => P + (i / (values.length - 1)) * (W - 2 * P);
+    const y = v => H - P - ((v - min) / span) * (H - 2 * P);
+    const d = values.map((v, i) => `${i ? "L" : "M"}${x(i).toFixed(1)},${y(v).toFixed(1)}`).join(" ");
+    const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+    svg.setAttribute("viewBox", `0 0 ${W} ${H}`);
+    svg.setAttribute("width", W); svg.setAttribute("height", H);
+    svg.setAttribute("class", "spark"); svg.setAttribute("aria-hidden", "true");
+    svg.innerHTML =
+      `<path d="${d}" fill="none" stroke="var(--series-1)" stroke-width="2"
+             stroke-linejoin="round" stroke-linecap="round"/>
+       <circle cx="${x(values.length - 1).toFixed(1)}" cy="${y(values.at(-1)).toFixed(1)}" r="4"
+             fill="var(--series-1)" stroke="var(--surface)" stroke-width="2"/>`;
+    return svg;
+  }
+
+  // ---------------------------------------------------------------- détail
+  function renderDetail() {
+    const host = document.getElementById("detail");
+    host.textContent = "";
+    const w = (LATEST?.watches || []).find(x => x.id === selected);
+    if (!w) return;
+
+    const panel = el("div", "panel");
+    const head = el("div", "panel-head");
+    const h = el("div");
+    h.append(el("h3", null, w.label || w.id));
+    const PROVIDERS = { google_flights: "Google Flights", ryanair: "Ryanair" };
+    const meta = [];
+    if (w.provider) meta.push(PROVIDERS[w.provider] || w.provider);
+    const airlines = (w.airlines || []).filter(a => !meta.includes(a)).slice(0, 2);
+    if (airlines.length) meta.push(airlines.join(", "));
+    if (w.stats?.count) meta.push(`${w.stats.count} relevés`);
+    h.append(el("p", "sub", meta.join("  ·  ")));
+    head.append(h);
+
+    const ctrl = el("div", "controls");
+    for (const [days, txt] of [[7, "7 j"], [30, "30 j"], [90, "90 j"], [0, "tout"]]) {
+      const b = el("button", "chip", txt);
+      b.type = "button";
+      b.setAttribute("aria-pressed", String(rangeDays === days));
+      b.addEventListener("click", () => { rangeDays = days; renderDetail(); });
+      ctrl.append(b);
+    }
+    const tb = el("button", "chip", showTable ? "Graphique" : "Tableau");
+    tb.type = "button";
+    tb.addEventListener("click", () => { showTable = !showTable; renderDetail(); });
+    ctrl.append(tb);
+    if (w.booking_url) {
+      const a = el("a", "chip", "Ouvrir la recherche ↗");
+      a.href = w.booking_url; a.target = "_blank"; a.rel = "noopener";
+      ctrl.append(a);
+    }
+    head.append(ctrl);
+    panel.append(head);
+
+    const pts = seriesFor(w.id, rangeDays || null);
+    if (!pts.length) {
+      panel.append(el("p", "empty", "Pas encore d'historique sur cette période."));
+    } else if (showTable) {
+      panel.append(buildTable(pts, w));
+    } else {
+      const legend = el("div", "legend");
+      const s1 = el("span"); s1.append(el("span", "key"), document.createTextNode("Meilleur prix relevé"));
+      legend.append(s1);
+      if (w.threshold != null) {
+        const s2 = el("span"); s2.append(el("span", "key thr"), document.createTextNode("Ton seuil"));
+        legend.append(s2);
+      }
+      panel.append(legend, buildChart(pts, w));
+    }
+    host.append(panel);
+  }
+
+  function buildTable(pts, w) {
+    const box = el("div", "scroll-x");
+    const t = el("table");
+    t.innerHTML = `<thead><tr><th>Relevé</th><th>Trajet</th><th>Départ</th>
+      <th>Compagnie</th><th class="num">Prix</th></tr></thead>`;
+    const body = el("tbody");
+    for (const p of [...pts].reverse().slice(0, 30)) {
+      const tr = el("tr");
+      tr.append(
+        el("td", null, fmtDateTime(p.checked_at)),
+        el("td", null, `${p.origin}→${p.destination}`),
+        el("td", null, p.depart + (p.ret ? ` ⇄ ${p.ret}` : "")),
+        el("td", null, (p.airlines || []).slice(0, 2).join(", ") || "—"),
+        el("td", "num", fmt(p.price, p.currency || w.currency)),
+      );
+      body.append(tr);
+    }
+    t.append(body);
+    box.append(t);
+    return box;
+  }
+
+  function buildChart(pts, w) {
+    const NS = "http://www.w3.org/2000/svg";
+    const W = 900, H = 300, M = { t: 16, r: 18, b: 30, l: 54 };
+    const iw = W - M.l - M.r, ih = H - M.t - M.b;
+
+    const prices = pts.map(p => p.price);
+    const thr = w.threshold;
+    let lo = Math.min(...prices, thr ?? Infinity);
+    let hi = Math.max(...prices, thr ?? -Infinity);
+    const pad = (hi - lo) * 0.12 || Math.max(10, hi * 0.05);
+    lo = Math.max(0, lo - pad); hi = hi + pad;
+
+    const times = pts.map(p => +new Date(p.checked_at));
+    const t0 = times[0], t1 = times.at(-1);
+    const X = t => M.l + (t1 === t0 ? iw / 2 : ((t - t0) / (t1 - t0)) * iw);
+    const Y = v => M.t + ih - ((v - lo) / (hi - lo || 1)) * ih;
+
+    const box = el("div", "chart-box");
+    const svg = document.createElementNS(NS, "svg");
+    svg.setAttribute("viewBox", `0 0 ${W} ${H}`);
+    svg.setAttribute("role", "img");
+    svg.setAttribute("aria-label",
+      `Évolution du prix pour ${w.label || w.id}. ${pts.length} relevés, de ${Math.round(Math.min(...prices))} à ${Math.round(Math.max(...prices))} euros.`);
+
+    const g = (s) => { const n = document.createElementNS(NS, "g"); n.innerHTML = s; return n; };
+
+    // grille + axe Y
+    const ticks = niceTicks(lo, hi, 5);
+    let grid = "";
+    for (const v of ticks) {
+      const y = Y(v).toFixed(1);
+      grid += `<line x1="${M.l}" y1="${y}" x2="${W - M.r}" y2="${y}"
+                stroke="var(--grid)" stroke-width="1"/>
+               <text x="${M.l - 10}" y="${y}" text-anchor="end" dominant-baseline="middle"
+                fill="var(--ink-muted)" font-size="11"
+                style="font-variant-numeric:tabular-nums">${Math.round(v).toLocaleString("fr-BE")}</text>`;
+    }
+    svg.append(g(grid));
+
+    // axe X
+    let xa = `<line x1="${M.l}" y1="${M.t + ih}" x2="${W - M.r}" y2="${M.t + ih}"
+                stroke="var(--axis)" stroke-width="1"/>`;
+    const nLab = Math.min(6, pts.length);
+    for (let i = 0; i < nLab; i++) {
+      const idx = Math.round(i * (pts.length - 1) / Math.max(1, nLab - 1));
+      const x = X(times[idx]).toFixed(1);
+      xa += `<text x="${x}" y="${M.t + ih + 18}" text-anchor="middle"
+              fill="var(--ink-muted)" font-size="11">${fmtDate(pts[idx].checked_at)}</text>`;
+    }
+    svg.append(g(xa));
+
+    // ligne de seuil
+    if (thr != null && thr >= lo && thr <= hi) {
+      svg.append(g(
+        `<line x1="${M.l}" y1="${Y(thr).toFixed(1)}" x2="${W - M.r}" y2="${Y(thr).toFixed(1)}"
+           stroke="var(--ink-muted)" stroke-width="2" stroke-dasharray="6 5"/>
+         <text x="${W - M.r}" y="${(Y(thr) - 8).toFixed(1)}" text-anchor="end"
+           fill="var(--ink-2)" font-size="11.5" font-weight="600">seuil ${Math.round(thr)} €</text>`));
+    }
+
+    // aire + ligne
+    const line = pts.map((p, i) => `${i ? "L" : "M"}${X(times[i]).toFixed(1)},${Y(p.price).toFixed(1)}`).join(" ");
+    const area = `${line} L${X(t1).toFixed(1)},${(M.t + ih).toFixed(1)} L${X(t0).toFixed(1)},${(M.t + ih).toFixed(1)} Z`;
+    svg.append(g(
+      `<path d="${area}" fill="var(--series-1)" opacity="0.10"/>
+       <path d="${line}" fill="none" stroke="var(--series-1)" stroke-width="2"
+         stroke-linejoin="round" stroke-linecap="round"/>`));
+
+    // extrêmes + point final, étiquetés (jamais tous les points)
+    const iMin = prices.indexOf(Math.min(...prices));
+    const iLast = pts.length - 1;
+    let marks = "";
+    for (const i of new Set([iMin, iLast])) {
+      marks += `<circle cx="${X(times[i]).toFixed(1)}" cy="${Y(prices[i]).toFixed(1)}" r="4.5"
+                 fill="var(--series-1)" stroke="var(--surface)" stroke-width="2"/>`;
+    }
+    const lx = X(times[iLast]), ly = Y(prices[iLast]);
+    marks += `<text x="${(lx - 10).toFixed(1)}" y="${(ly - 12).toFixed(1)}" text-anchor="end"
+                fill="var(--ink)" font-size="12.5" font-weight="640"
+                style="font-variant-numeric:tabular-nums">${Math.round(prices[iLast]).toLocaleString("fr-BE")} €</text>`;
+    if (iMin !== iLast) {
+      const mx = X(times[iMin]), my = Y(prices[iMin]);
+      marks += `<text x="${mx.toFixed(1)}" y="${(my + 20).toFixed(1)}" text-anchor="middle"
+                  fill="var(--ink-2)" font-size="11.5"
+                  style="font-variant-numeric:tabular-nums">min ${Math.round(prices[iMin]).toLocaleString("fr-BE")} €</text>`;
+    }
+    svg.append(g(marks));
+
+    // couche de survol : viseur + infobulle
+    const hover = document.createElementNS(NS, "g");
+    hover.innerHTML =
+      `<line class="cross" x1="0" y1="${M.t}" x2="0" y2="${M.t + ih}"
+         stroke="var(--axis)" stroke-width="1" opacity="0"/>
+       <circle class="cursor" r="5.5" fill="var(--series-1)" stroke="var(--surface)"
+         stroke-width="2" opacity="0"/>`;
+    svg.append(hover);
+    const overlay = document.createElementNS(NS, "rect");
+    overlay.setAttribute("x", M.l); overlay.setAttribute("y", M.t);
+    overlay.setAttribute("width", iw); overlay.setAttribute("height", ih);
+    overlay.setAttribute("fill", "transparent");
+    svg.append(overlay);
+
+    const tip = el("div", "tip");
+    box.append(svg, tip);
+
+    const cross = hover.querySelector(".cross"), cursor = hover.querySelector(".cursor");
+    const move = (ev) => {
+      const r = svg.getBoundingClientRect();
+      const px = ((ev.clientX - r.left) / r.width) * W;
+      let best = 0, bd = Infinity;
+      times.forEach((t, i) => { const d = Math.abs(X(t) - px); if (d < bd) { bd = d; best = i; } });
+      const p = pts[best], cx = X(times[best]), cy = Y(p.price);
+      cross.setAttribute("x1", cx); cross.setAttribute("x2", cx); cross.setAttribute("opacity", "1");
+      cursor.setAttribute("cx", cx); cursor.setAttribute("cy", cy); cursor.setAttribute("opacity", "1");
+
+      tip.textContent = "";
+      tip.append(el("div", "t-date", fmtDateTime(p.checked_at)));
+      tip.append(el("div", "t-price", fmt(p.price, p.currency || w.currency)));
+      const bits = [`${p.origin}→${p.destination}`, p.depart];
+      if (p.ret) bits.push("⇄ " + p.ret);
+      if (p.stops != null) bits.push(p.stops === 0 ? "direct" : `${p.stops} escale${p.stops > 1 ? "s" : ""}`);
+      tip.append(el("div", "t-meta", bits.join(" · ")));
+      if (p.airlines?.length) tip.append(el("div", "t-meta", p.airlines.slice(0, 2).join(", ")));
+
+      const left = (cx / W) * r.width;
+      tip.style.opacity = "1";
+      tip.style.left = Math.min(Math.max(left + 14, 0), r.width - tip.offsetWidth - 4) + "px";
+      tip.style.top = Math.max((cy / H) * r.height - tip.offsetHeight - 10, 0) + "px";
+    };
+    svg.addEventListener("pointermove", move);
+    svg.addEventListener("pointerleave", () => {
+      tip.style.opacity = "0";
+      cross.setAttribute("opacity", "0");
+      cursor.setAttribute("opacity", "0");
+    });
+    return box;
+  }
+
+  function niceTicks(lo, hi, count) {
+    const span = hi - lo;
+    if (span <= 0) return [lo];
+    const raw = span / count;
+    const mag = Math.pow(10, Math.floor(Math.log10(raw)));
+    const step = [1, 2, 2.5, 5, 10].map(m => m * mag).find(s => s >= raw) || mag * 10;
+    const out = [];
+    for (let v = Math.ceil(lo / step) * step; v <= hi + 1e-9; v += step) out.push(v);
+    return out;
+  }
+
+  function renderErrors() {
+    const host = document.getElementById("errors");
+    host.textContent = "";
+    const errs = (LATEST?.errors || []).filter(Boolean);
+    if (!errs.length) return;
+    host.append(el("h2", null, "Incidents du dernier relevé"));
+    const p = el("div", "panel");
+    for (const e of errs.slice(0, 8)) p.append(el("p", "err", e));
+    host.append(p);
+  }
+
+  // ---------------------------------------------------------------- formulaire
+  function buildSnippets() {
+    const v = id => document.getElementById(id).value.trim();
+    const org = v("f-org").toUpperCase() || "BRU";
+    const dst = v("f-dst").toUpperCase() || "BKK";
+    const out = v("f-out"), ret = v("f-ret"), thr = v("f-thr");
+    const flex = v("f-flex"), stops = v("f-stops"), label = v("f-label");
+
+    const tg = ["/add", org, dst, out || "AAAA-MM-JJ"];
+    if (ret) tg.push(ret);
+    if (thr) tg.push(thr);
+    if (flex && flex !== "0") tg.push("flex=" + flex);
+    if (stops !== "") tg.push("escales=" + stops);
+    if (label) tg.push("#" + label);
+    document.getElementById("out-tg").textContent = tg.join(" ");
+
+    const id = `${org.split(",")[0]}-${dst.split(",")[0]}-${(out || "").slice(5)}`.toLowerCase();
+    const lines = [
+      `  - id: ${id}`,
+      label ? `    label: ${label}` : null,
+      `    origin: [${org.split(",").map(s => s.trim()).join(", ")}]`,
+      `    destination: [${dst.split(",").map(s => s.trim()).join(", ")}]`,
+      `    depart: ${out || "AAAA-MM-JJ"}`,
+      ret ? `    return: ${ret}` : null,
+      thr ? `    threshold: ${thr}` : null,
+      flex && flex !== "0" ? `    flex_days: ${flex}` : null,
+      stops !== "" ? `    max_stops: ${stops}` : null,
+    ].filter(Boolean);
+    document.getElementById("out-yaml").textContent = lines.join("\n");
+  }
+
+  // ---------------------------------------------------------------- divers
+  function initRepoLink() {
+    const a = document.getElementById("repo-link");
+    const m = location.hostname.match(/^([^.]+)\.github\.io$/);
+    const repo = location.pathname.split("/").filter(Boolean)[0];
+    a.href = m && repo
+      ? `https://github.com/${m[1]}/${repo}/edit/main/watches.yaml`
+      : "https://github.com";
+  }
+
+  function initTheme() {
+    const btn = document.getElementById("theme-toggle");
+    let stored = null;
+    try { stored = localStorage.getItem("fw-theme"); } catch {}
+    if (stored) document.documentElement.dataset.theme = stored;
+    btn.addEventListener("click", () => {
+      const now = document.documentElement.dataset.theme;
+      const dark = now ? now === "dark"
+        : matchMedia("(prefers-color-scheme: dark)").matches;
+      const next = dark ? "light" : "dark";
+      document.documentElement.dataset.theme = next;
+      try { localStorage.setItem("fw-theme", next); } catch {}
+    });
+  }
+
+  document.addEventListener("click", async (ev) => {
+    const btn = ev.target.closest("[data-copy]");
+    if (!btn) return;
+    const text = document.getElementById(btn.dataset.copy).textContent;
+    try {
+      await navigator.clipboard.writeText(text);
+      const old = btn.textContent;
+      btn.textContent = "Copié ✓";
+      setTimeout(() => { btn.textContent = old; }, 1400);
+    } catch {
+      const range = document.createRange();
+      range.selectNodeContents(document.getElementById(btn.dataset.copy));
+      getSelection().removeAllRanges();
+      getSelection().addRange(range);
+    }
+  });
+
+  document.querySelectorAll(".form-grid input").forEach(i =>
+    i.addEventListener("input", buildSnippets));
+
+  const soon = new Date(Date.now() + 120 * 86400000).toISOString().slice(0, 10);
+  document.getElementById("f-out").value = soon;
+
+  initTheme();
+  initRepoLink();
+  buildSnippets();
+  load();
+})();
+</script>
+</body>
+</html>
