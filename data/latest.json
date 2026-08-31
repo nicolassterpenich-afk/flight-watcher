@@ -1,12 +1,12 @@
 {
-  "ran_at": "2026-08-31T09:28:44Z",
+  "ran_at": "2026-08-31T09:31:49Z",
   "watches": [
     {
       "id": "bangkok-fevrier",
       "label": "Bangkok en février",
       "threshold": 600.0,
       "currency": "EUR",
-      "elapsed_s": 5.7,
+      "elapsed_s": 5.5,
       "quotes_found": 88,
       "errors": [],
       "status": "ok",
@@ -22,7 +22,7 @@
       "reason": "seuil déjà notifié (cooldown)",
       "alerted": false,
       "stats": {
-        "count": 1,
+        "count": 2,
         "min": 598.0,
         "max": 598.0,
         "median": 598.0,
