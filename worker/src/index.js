@@ -260,6 +260,22 @@ async function handleApi(request, env, url, path) {
     return fail(404, 'Route inconnue');
   }
 
+  /* --- Entrée pour un service de ping externe : un GET, un jeton dans
+         l'URL, aucun en-tête à configurer. Le garde-fou d'ancienneté rend
+         l'appel idempotent : même martelée, l'adresse ne peut pas déclencher
+         plus d'un relevé toutes les 25 minutes. --- */
+  const cronMatch = path.match(/^\/api\/cron\/([A-Za-z0-9_-]{16,128})$/);
+  if (cronMatch && method === 'GET') {
+    if (!env.CRON_TOKEN || !timingSafeEqual(cronMatch[1], env.CRON_TOKEN)) {
+      return new Response('Jeton invalide\n', { status: 401, headers: { 'content-type': 'text/plain; charset=utf-8' } });
+    }
+    const outcome = await runScheduled(env);
+    return new Response(`${outcome}\n`, {
+      status: 200,
+      headers: { 'content-type': 'text/plain; charset=utf-8', 'cache-control': 'no-store' },
+    });
+  }
+
   /* --- API du navigateur : session obligatoire sauf /api/login --- */
   if (path === '/api/login' && method === 'POST') {
     if (!env.APP_PASSWORD_HASH || !env.SESSION_SECRET) return fail(500, 'Worker non configuré');
@@ -563,17 +579,20 @@ const STALE_MINUTES = 25;
 async function runScheduled(env) {
   const age = await minutesSinceLastRun(env);
   if (age !== null && age < STALE_MINUTES) {
-    console.log(`Relevé vieux de ${age.toFixed(0)} min — GitHub assure, rien à faire.`);
     await noteCron(env, 'skip', age);
-    return;
+    const message = `Relevé vieux de ${age.toFixed(0)} min — rien à faire.`;
+    console.log(message);
+    return message;
   }
 
   const res = await triggerRun(env, {});
   const ok = res.status === 200;
-  console.log(ok
+  const message = ok
     ? `Relevé déclenché (dernier il y a ${age === null ? 'jamais' : age.toFixed(0) + ' min'}).`
-    : `Déclenchement refusé : ${await res.clone().text()}`);
+    : `Déclenchement refusé : ${(await res.clone().text()).slice(0, 200)}`;
+  console.log(message);
   await noteCron(env, ok ? 'dispatch' : 'error', age);
+  return message;
 }
 
 async function noteCron(env, action, age) {
