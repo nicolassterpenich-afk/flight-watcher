@@ -347,8 +347,10 @@
         <input type="date" id="f-ret"></div>
       <div><label for="f-threshold">Seuil d'alerte (€)</label>
         <input type="number" id="f-threshold" min="0" step="10" placeholder="600"></div>
-      <div><label for="f-flex">Souplesse (± jours)</label>
+      <div><label for="f-flex">Souplesse aller <span class="opt">(± jours)</span></label>
         <input type="number" id="f-flex" min="0" max="7" value="0"></div>
+      <div><label for="f-flex-ret">Souplesse retour <span class="opt">(vide = comme l'aller)</span></label>
+        <input type="number" id="f-flex-ret" min="0" max="7" placeholder="comme l'aller"></div>
       <div><label for="f-stops">Escales max</label>
         <input type="number" id="f-stops" min="0" max="3" placeholder="illimité"></div>
       <div><label for="f-adults">Passagers</label>
@@ -367,7 +369,7 @@
           <option value="ryanair">Ryanair seul</option>
         </select></div>
     </div>
-    <p class="hint">Une souplesse de ± 3 jours multiplie les requêtes : gardez-la basse si vous surveillez beaucoup de trajets.</p>
+    <p class="hint" id="f-cost"></p>
     <p class="err hidden" id="m-err"></p>
     <div class="controls" style="margin-top:16px; justify-content:flex-end">
       <button type="button" class="chip" id="m-cancel">Annuler</button>
@@ -860,7 +862,7 @@ function airportField(box, placeholder) {
       const remove = el('button', null, '×');
       remove.type = 'button';
       remove.setAttribute('aria-label', `Retirer ${code}`);
-      remove.addEventListener('click', (e) => { e.stopPropagation(); codes.splice(i, 1); render(); });
+      remove.addEventListener('click', (e) => { e.stopPropagation(); codes.splice(i, 1); render(); updateCost(); });
       tag.append(remove);
       box.insertBefore(tag, input);
     });
@@ -873,6 +875,7 @@ function airportField(box, placeholder) {
     input.value = '';
     closeMenu();
     render();
+    updateCost();
   };
 
   const showMenu = () => {
@@ -933,6 +936,43 @@ const fDestinations = airportField($('#f-destinations'), 'Bangkok, BKK…');
 
 let editing = null;
 
+/**
+ * Nombre de requêtes qu'un relevé enverra. Une souplesse propre au retour
+ * croise les dates au lieu de les décaler ensemble : ± 1 / ± 3 fait 21
+ * combinaisons là où ± 3 seul en fait 7. Autant le montrer avant d'enregistrer.
+ */
+function updateCost() {
+  const box = $('#f-cost');
+  const nOrigins = Math.max(fOrigins.get().length, 1);
+  const nDest = Math.max(fDestinations.get().length, 1);
+  const nProviders = $('#f-providers').value.split(',').length;
+  const out = Math.min(Math.max(Number($('#f-flex').value) || 0, 0), 7);
+  const raw = $('#f-flex-ret').value;
+  const back = raw === '' ? out : Math.min(Math.max(Number(raw) || 0, 0), 7);
+  const hasReturn = Boolean($('#f-ret').value);
+
+  let pairs, mode;
+  if (!hasReturn) {
+    pairs = 2 * out + 1;
+    mode = `${pairs} date${pairs > 1 ? 's' : ''} de départ`;
+  } else if (back === out) {
+    pairs = 2 * out + 1;
+    mode = `${pairs} date${pairs > 1 ? 's' : ''}, aller et retour décalés ensemble (durée du séjour conservée)`;
+  } else {
+    pairs = (2 * out + 1) * (2 * back + 1);
+    mode = `${2 * out + 1} × ${2 * back + 1} combinaisons de dates (la durée du séjour varie)`;
+  }
+
+  const total = nOrigins * nDest * pairs * nProviders;
+  const cap = (STATE.settings && STATE.settings.max_queries_per_run) || 120;
+  box.replaceChildren();
+  box.append(`≈ ${total} requête${total > 1 ? 's' : ''} par relevé — ${mode}.`);
+  if (total > cap) {
+    const warn = el('span', 'err', ` Au-delà du plafond de ${cap} : les requêtes en trop seront ignorées.`);
+    box.append(warn);
+  }
+}
+
 function openForm(w) {
   editing = w || null;
   $('#m-title').textContent = w ? 'Modifier la surveillance' : 'Nouvelle surveillance';
@@ -944,14 +984,19 @@ function openForm(w) {
   $('#f-ret').value = w && w.ret ? w.ret : '';
   $('#f-threshold').value = w && w.threshold != null ? w.threshold : '';
   $('#f-flex').value = w ? w.flex_days : 0;
+  $('#f-flex-ret').value = w && w.flex_days_ret != null ? w.flex_days_ret : '';
   $('#f-stops').value = w && w.max_stops != null ? w.max_stops : '';
   $('#f-adults').value = w ? w.passengers.adults : 1;
   $('#f-seat').value = w ? w.seat : 'economy';
   $('#f-providers').value = w ? w.providers.join(',') : 'google_flights';
   $('#modal').classList.remove('hidden');
+  updateCost();
   $('#f-label').focus();
 }
 const closeForm = () => $('#modal').classList.add('hidden');
+
+['#f-flex', '#f-flex-ret', '#f-ret', '#f-providers'].forEach((sel) =>
+  $(sel).addEventListener('input', updateCost));
 
 $('#btn-new').addEventListener('click', () => openForm(null));
 $('#m-close').addEventListener('click', closeForm);
@@ -977,6 +1022,7 @@ $('#watch-form').addEventListener('submit', async (e) => {
     ret: $('#f-ret').value || null,
     threshold: numOrNull($('#f-threshold').value),
     flex_days: Number($('#f-flex').value || 0),
+    flex_days_ret: $('#f-flex-ret').value === '' ? null : Number($('#f-flex-ret').value),
     max_stops: numOrNull($('#f-stops').value),
     passengers: { adults: Number($('#f-adults').value || 1), children: 0, infants_in_seat: 0, infants_on_lap: 0 },
     seat: $('#f-seat').value,

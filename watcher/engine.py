@@ -42,6 +42,11 @@ def build_jobs(watch: Watch, settings: dict[str, Any]) -> list[tuple[str, str, s
     departs = expand_dates(watch.depart, watch.flex_days)
     jobs: list[tuple[str, str, str, str | None]] = []
 
+    # Une souplesse propre au retour décrit forcément des combinaisons : décaler
+    # l'aller et le retour du même nombre de jours n'aurait plus de sens.
+    flex_ret = watch.flex_days_ret if watch.flex_days_ret is not None else watch.flex_days
+    matrix = settings.get("flex_mode", "shift") == "matrix" or flex_ret != watch.flex_days
+
     for origin in watch.origins:
         for destination in watch.destinations:
             if origin == destination:
@@ -50,9 +55,9 @@ def build_jobs(watch: Watch, settings: dict[str, Any]) -> list[tuple[str, str, s
                 jobs.extend((origin, destination, d, None) for d in departs)
                 continue
 
-            if settings.get("flex_mode", "shift") == "matrix":
+            if matrix:
                 for d in departs:
-                    for r in expand_dates(watch.ret, watch.flex_days):
+                    for r in expand_dates(watch.ret, flex_ret):
                         if r > d:
                             jobs.append((origin, destination, d, r))
             else:

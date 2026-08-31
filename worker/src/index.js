@@ -187,6 +187,8 @@ function watchFromBody(body, existing = null) {
       ? existing.max_stops : num(body.max_stops, 'max_stops', { min: 0, max: 3, integer: true }),
     flex_days: body.flex_days === undefined && existing
       ? existing.flex_days : (num(body.flex_days, 'flex_days', { min: 0, max: 7, integer: true }) ?? 0),
+    flex_days_ret: body.flex_days_ret === undefined && existing
+      ? existing.flex_days_ret : num(body.flex_days_ret, 'flex_days_ret', { min: 0, max: 7, integer: true }),
     passengers: JSON.stringify(pax),
     providers: JSON.stringify(providers),
     enabled: Number(Boolean(get('enabled', true) === true || get('enabled', true) === 1)),
@@ -208,6 +210,7 @@ const rowToWatch = (r) => ({
   seat: r.seat,
   max_stops: r.max_stops,
   flex_days: r.flex_days,
+  flex_days_ret: r.flex_days_ret,
   passengers: JSON.parse(r.passengers),
   providers: JSON.parse(r.providers),
   enabled: Boolean(r.enabled),
@@ -294,11 +297,12 @@ async function handleApi(request, env, url, path) {
     const ts = nowIso();
     await env.DB.prepare(
       `INSERT INTO watches (id, label, origins, destinations, depart, ret, threshold, currency, seat,
-                            max_stops, flex_days, passengers, providers, enabled, alert_on_drop, notes,
-                            created_at, updated_at)
-       VALUES (?1,?2,?3,?4,?5,?6,?7,?8,?9,?10,?11,?12,?13,?14,?15,?16,?17,?17)`
+                            max_stops, flex_days, flex_days_ret, passengers, providers, enabled,
+                            alert_on_drop, notes, created_at, updated_at)
+       VALUES (?1,?2,?3,?4,?5,?6,?7,?8,?9,?10,?11,?12,?13,?14,?15,?16,?17,?18,?18)`
     ).bind(w.id, w.label, w.origins, w.destinations, w.depart, w.ret, w.threshold, w.currency, w.seat,
-           w.max_stops, w.flex_days, w.passengers, w.providers, w.enabled, w.alert_on_drop, w.notes, ts).run();
+           w.max_stops, w.flex_days, w.flex_days_ret, w.passengers, w.providers, w.enabled,
+           w.alert_on_drop, w.notes, ts).run();
     return json({ ok: true, watch: rowToWatch({ ...w, created_at: ts, updated_at: ts }) }, 201);
   }
 
@@ -313,11 +317,13 @@ async function handleApi(request, env, url, path) {
       const ts = nowIso();
       await env.DB.prepare(
         `UPDATE watches SET label=?2, origins=?3, destinations=?4, depart=?5, ret=?6, threshold=?7,
-                            currency=?8, seat=?9, max_stops=?10, flex_days=?11, passengers=?12,
-                            providers=?13, enabled=?14, alert_on_drop=?15, notes=?16, updated_at=?17
+                            currency=?8, seat=?9, max_stops=?10, flex_days=?11, flex_days_ret=?12,
+                            passengers=?13, providers=?14, enabled=?15, alert_on_drop=?16,
+                            notes=?17, updated_at=?18
          WHERE id = ?1`
       ).bind(id, w.label, w.origins, w.destinations, w.depart, w.ret, w.threshold, w.currency, w.seat,
-             w.max_stops, w.flex_days, w.passengers, w.providers, w.enabled, w.alert_on_drop, w.notes, ts).run();
+             w.max_stops, w.flex_days, w.flex_days_ret, w.passengers, w.providers, w.enabled,
+             w.alert_on_drop, w.notes, ts).run();
       return json({ ok: true, watch: rowToWatch({ ...w, created_at: existing.created_at, updated_at: ts }) });
     }
 

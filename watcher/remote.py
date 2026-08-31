@@ -96,6 +96,8 @@ def _to_watch(raw: dict[str, Any]) -> Watch:
         seat=str(raw.get("seat") or "economy"),
         max_stops=int(raw["max_stops"]) if raw.get("max_stops") is not None else None,
         flex_days=int(raw.get("flex_days") or 0),
+        flex_days_ret=(int(raw["flex_days_ret"])
+                       if raw.get("flex_days_ret") is not None else None),
         passengers=Passengers(
             adults=int(pax.get("adults", 1)),
             children=int(pax.get("children", 0)),

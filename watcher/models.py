@@ -34,7 +34,8 @@ class Watch:
     currency: str = "EUR"
     seat: str = "economy"
     max_stops: Optional[int] = None
-    flex_days: int = 0               # ± N jours autour des dates
+    flex_days: int = 0               # ± N jours autour de l'aller
+    flex_days_ret: Optional[int] = None   # ± N jours autour du retour ; None = comme l'aller
     passengers: Passengers = field(default_factory=Passengers)
     providers: list[str] = field(default_factory=lambda: ["google_flights"])
     enabled: bool = True
