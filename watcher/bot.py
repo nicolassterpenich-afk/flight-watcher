@@ -1,7 +1,9 @@
 """Commandes Telegram : gérer les surveillances depuis le téléphone.
 
 Les commandes en attente sont lues au début de chaque run GitHub Actions,
-appliquées à watches.yaml, puis committées.
+appliquées à la même source que le moteur : la base du Worker quand elle
+répond, `watches.yaml` sinon. Écrire dans le fichier alors que le moteur
+lit la base ferait disparaître les commandes sans le dire.
 """
 
 from __future__ import annotations
@@ -11,9 +13,10 @@ import re
 from datetime import datetime
 from typing import Any
 
-from . import store
+from . import remote, store
 from .alerts import Telegram, esc
-from .config import load_watches, save_watches
+from .config import save_watches
+from .engine import load_config
 from .models import Watch
 
 log = logging.getLogger(__name__)
@@ -222,7 +225,7 @@ def process_commands() -> dict[str, Any]:
     if not updates:
         return {"processed": 0, "force_check": False}
 
-    watches, settings = load_watches()
+    watches, settings, source = load_config("auto")
     dirty = False
     force_check = False
     processed = 0
@@ -275,6 +278,30 @@ def process_commands() -> dict[str, Any]:
                 log.error("Réponse Telegram impossible : %s", exc)
 
     if dirty:
-        save_watches(watches, settings)
+        _persist(watches, settings, source, telegram)
     store.save_state(state)
-    return {"processed": processed, "force_check": force_check, "config_changed": dirty}
+    return {"processed": processed, "force_check": force_check,
+            "config_changed": dirty, "source": source}
+
+
+def _persist(watches: list[Watch], settings: dict[str, Any], source: str,
+             telegram: Telegram) -> None:
+    """Écrit là où le moteur lira, et prévient l'utilisateur si ça échoue."""
+    if source != "api":
+        save_watches(watches, settings)
+        return
+
+    try:
+        outcome = remote.replace_watches(watches)
+        log.info("Worker mis à jour : %s surveillance(s), %s supprimée(s)",
+                 outcome.get("upserted"), len(outcome.get("removed") or []))
+    except remote.RemoteError as exc:
+        # Sans ça, la commande paraîtrait avoir abouti — la réponse Telegram
+        # est déjà partie — alors que rien n'aurait été enregistré.
+        log.error("Écriture des surveillances impossible : %s", exc)
+        try:
+            telegram.send("⚠️ Ta commande n'a pas pu être enregistrée : "
+                          f"{esc(str(exc)[:200])}\nRéessaie dans un moment.")
+        except Exception:                           # noqa: BLE001
+            pass
+

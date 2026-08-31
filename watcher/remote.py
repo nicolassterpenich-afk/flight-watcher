@@ -128,6 +128,43 @@ def load_watches() -> tuple[list[Watch], dict[str, Any]]:
 # Renvoi des résultats
 # --------------------------------------------------------------------------
 
+def _to_payload(w: Watch) -> dict[str, Any]:
+    return {
+        "id": w.id,
+        "label": w.label,
+        "origins": w.origins,
+        "destinations": w.destinations,
+        "depart": w.depart,
+        "ret": w.ret,
+        "threshold": w.threshold,
+        "currency": w.currency,
+        "seat": w.seat,
+        "max_stops": w.max_stops,
+        "flex_days": w.flex_days,
+        "flex_days_ret": w.flex_days_ret,
+        "passengers": {
+            "adults": w.passengers.adults,
+            "children": w.passengers.children,
+            "infants_in_seat": w.passengers.infants_in_seat,
+            "infants_on_lap": w.passengers.infants_on_lap,
+        },
+        "providers": w.providers,
+        "enabled": w.enabled,
+        "alert_on_drop": w.alert_on_drop,
+        "notes": w.notes,
+    }
+
+
+def replace_watches(watches: list[Watch]) -> dict[str, Any]:
+    """Écrit la liste complète des surveillances — pendant de `config.save_watches`.
+
+    Le Worker refuse une liste vide face à une base peuplée : c'est presque
+    toujours le signe d'un appelant qui a perdu sa configuration en route.
+    """
+    return _request("PUT", "/api/agent/watches",
+                    {"watches": [_to_payload(w) for w in watches]})
+
+
 def push_results(ran_at: str, entries: list[dict[str, Any]],
                  quotes: list[Quote], state: dict[str, Any]) -> dict[str, Any]:
     """Renvoie au Worker le meilleur prix de chaque surveillance et son état.

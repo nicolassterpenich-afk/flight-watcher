@@ -247,12 +247,16 @@ async function handleApi(request, env, url, path) {
     if (!env.AGENT_TOKEN || !timingSafeEqual(token, env.AGENT_TOKEN)) return fail(401, 'Jeton invalide');
 
     if (path === '/api/agent/watches' && method === 'GET') {
+      // Toutes les surveillances, y compris en pause : le moteur filtre déjà
+      // sur `enabled`, et les commandes Telegram relisent puis réécrivent la
+      // liste entière — en masquer une reviendrait à la supprimer.
       const { results } = await env.DB.prepare(
-        'SELECT * FROM watches WHERE enabled = 1 ORDER BY created_at').all();
+        'SELECT * FROM watches ORDER BY created_at').all();
       return json({ settings: await loadSettings(env), watches: (results || []).map(rowToWatch) });
     }
 
     if (path === '/api/agent/results' && method === 'POST') return agentResults(env, body);
+    if (path === '/api/agent/watches' && method === 'PUT') return agentReplaceWatches(env, body);
     return fail(404, 'Route inconnue');
   }
 
@@ -482,6 +486,58 @@ async function triggerRun(env, body) {
 
   if (res.status === 204) return json({ ok: true, queued: true });
   return fail(502, `GitHub a refusé le déclenchement (${res.status}) : ${(await res.text()).slice(0, 300)}`);
+}
+
+/**
+ * Remplace la liste des surveillances — utilisé par les commandes Telegram,
+ * qui manipulent la liste entière comme elles le faisaient avec watches.yaml.
+ */
+async function agentReplaceWatches(env, body) {
+  const incoming = Array.isArray(body.watches) ? body.watches : null;
+  if (!incoming) throw new HttpError(400, 'watches : liste attendue');
+
+  const { results } = await env.DB.prepare('SELECT * FROM watches').all();
+  const known = new Map((results || []).map((r) => [r.id, r]));
+
+  // Une liste vide face à une base peuplée signale bien plus souvent un bug
+  // d'appelant qu'une intention. On refuse, sauf demande explicite.
+  if (!incoming.length && known.size && !body.allow_empty) {
+    throw new HttpError(409, `Liste vide alors que la base contient ${known.size} surveillance(s) — refusé`);
+  }
+
+  const ts = nowIso();
+  const stmts = [];
+  const seen = new Set();
+
+  for (const raw of incoming) {
+    const id = slugify(String(raw.id || ''));
+    if (!id) throw new HttpError(400, 'chaque surveillance doit porter un id');
+    const w = watchFromBody({ ...raw, id });
+    seen.add(id);
+    const createdAt = known.has(id) ? known.get(id).created_at : ts;
+    stmts.push(env.DB.prepare(
+      `INSERT INTO watches (id, label, origins, destinations, depart, ret, threshold, currency, seat,
+                            max_stops, flex_days, flex_days_ret, passengers, providers, enabled,
+                            alert_on_drop, notes, created_at, updated_at)
+       VALUES (?1,?2,?3,?4,?5,?6,?7,?8,?9,?10,?11,?12,?13,?14,?15,?16,?17,?18,?19)
+       ON CONFLICT(id) DO UPDATE SET
+         label=?2, origins=?3, destinations=?4, depart=?5, ret=?6, threshold=?7, currency=?8,
+         seat=?9, max_stops=?10, flex_days=?11, flex_days_ret=?12, passengers=?13, providers=?14,
+         enabled=?15, alert_on_drop=?16, notes=?17, updated_at=?19`
+    ).bind(id, w.label, w.origins, w.destinations, w.depart, w.ret, w.threshold, w.currency, w.seat,
+           w.max_stops, w.flex_days, w.flex_days_ret, w.passengers, w.providers, w.enabled,
+           w.alert_on_drop, w.notes, createdAt, ts));
+  }
+
+  const removed = [...known.keys()].filter((id) => !seen.has(id));
+  for (const id of removed) {
+    stmts.push(env.DB.prepare('DELETE FROM history WHERE watch_id = ?1').bind(id));
+    stmts.push(env.DB.prepare('DELETE FROM alert_state WHERE watch_id = ?1').bind(id));
+    stmts.push(env.DB.prepare('DELETE FROM watches WHERE id = ?1').bind(id));
+  }
+
+  await env.DB.batch(stmts);
+  return json({ ok: true, upserted: seen.size, removed });
 }
 
 /* ---------------------------------------------------- relance planifiée */
