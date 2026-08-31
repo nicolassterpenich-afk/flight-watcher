@@ -1,77 +1,43 @@
 {
-  "ran_at": "2026-08-31T13:15:25Z",
+  "ran_at": "2026-08-31T13:40:47Z",
   "source": "api",
   "watches": [
     {
-      "id": "bangkok-fevrier",
-      "label": "Bangkok en février",
-      "threshold": 600.0,
+      "id": "essai-sources",
+      "label": "Essai comparaison sources",
+      "threshold": null,
       "currency": "EUR",
-      "elapsed_s": 5.9,
-      "quotes_found": 79,
-      "errors": [],
-      "status": "ok",
-      "best_price": 572.0,
-      "best_route": "BRU→BKK",
-      "best_depart": "2027-02-03",
-      "best_return": "2027-02-17",
-      "provider": "google_flights",
-      "airlines": [
-        "Brussels Airlines",
-        "Austrian"
+      "elapsed_s": 1.0,
+      "quotes_found": 9,
+      "errors": [
+        "Ryanair injoignable CRL→LIS 2026-10-15: 409 Client Error: Conflict for url: https://www.ryanair.com/api/booking/v4/availability?ADT=1&CHD=0&TEEN=0&INF=0&Origin=CRL&Destination=LIS&DateOut=2026-10-15&FlexDaysBeforeOut=0&FlexDaysOut=0&RoundTrip=false&IncludeConnectingFlights=false&ToUs=AGREED&promoCode=",
+        "Ryanair injoignable BRU→LIS 2026-10-15: 409 Client Error: Conflict for url: https://www.ryanair.com/api/booking/v4/availability?ADT=1&CHD=0&TEEN=0&INF=0&Origin=BRU&Destination=LIS&DateOut=2026-10-15&FlexDaysBeforeOut=0&FlexDaysOut=0&RoundTrip=false&IncludeConnectingFlights=false&ToUs=AGREED&promoCode="
       ],
-      "booking_url": "https://www.google.com/travel/flights/search?tfs=GhwSCjIwMjctMDItMDMoAWoFEgNCUlVyBRIDQktLGhwSCjIwMjctMDItMTcoAWoFEgNCS0tyBRIDQlJVQgEBSAGYAQE=&hl=fr&curr=EUR",
-      "reason": "seuil déjà notifié (cooldown)",
-      "alerted": false,
-      "stats": {
-        "count": 8,
-        "min": 572.0,
-        "max": 598.0,
-        "median": 598.0,
-        "avg": 591.5,
-        "last": 572.0
-      }
-    },
-    {
-      "id": "rarotonga-mai-2027",
-      "label": "Îles Cook — Rarotonga mai 2027",
-      "threshold": 2200.0,
-      "currency": "EUR",
-      "elapsed_s": 3.6,
-      "quotes_found": 0,
-      "errors": [],
-      "status": "aucun prix"
-    },
-    {
-      "id": "test",
-      "label": "Test",
-      "threshold": 300.0,
-      "currency": "EUR",
-      "elapsed_s": 1.4,
-      "quotes_found": 32,
-      "errors": [],
       "status": "ok",
-      "best_price": 96.0,
+      "best_price": 131.0,
       "best_route": "BRU→LIS",
-      "best_depart": "2026-09-17",
+      "best_depart": "2026-10-15",
       "best_return": null,
       "provider": "google_flights",
       "airlines": [
-        "Vueling"
+        "Iberia"
       ],
-      "booking_url": "https://www.google.com/travel/flights/search?tfs=GhoSCjIwMjYtMDktMTdqBRIDQlJVcgUSA0xJU0IBAUgBmAEC&hl=fr&curr=EUR",
-      "reason": "seuil",
-      "alerted": true,
+      "booking_url": "https://www.google.com/travel/flights/search?tfs=GhoSCjIwMjYtMTAtMTVqBRIDQlJVcgUSA0xJU0IBAUgBmAEC&hl=fr&curr=EUR",
+      "reason": "au-dessus du seuil",
+      "alerted": false,
       "stats": {
         "count": 1,
-        "min": 96.0,
-        "max": 96.0,
-        "median": 96.0,
-        "avg": 96.0,
-        "last": 96.0
+        "min": 131.0,
+        "max": 131.0,
+        "median": 131.0,
+        "avg": 131.0,
+        "last": 131.0
       }
     }
   ],
-  "alerts_sent": 1,
-  "errors": []
+  "alerts_sent": 0,
+  "errors": [
+    "Ryanair injoignable CRL→LIS 2026-10-15: 409 Client Error: Conflict for url: https://www.ryanair.com/api/booking/v4/availability?ADT=1&CHD=0&TEEN=0&INF=0&Origin=CRL&Destination=LIS&DateOut=2026-10-15&FlexDaysBeforeOut=0&FlexDaysOut=0&RoundTrip=false&IncludeConnectingFlights=false&ToUs=AGREED&promoCode=",
+    "Ryanair injoignable BRU→LIS 2026-10-15: 409 Client Error: Conflict for url: https://www.ryanair.com/api/booking/v4/availability?ADT=1&CHD=0&TEEN=0&INF=0&Origin=BRU&Destination=LIS&DateOut=2026-10-15&FlexDaysBeforeOut=0&FlexDaysOut=0&RoundTrip=false&IncludeConnectingFlights=false&ToUs=AGREED&promoCode="
+  ]
 }

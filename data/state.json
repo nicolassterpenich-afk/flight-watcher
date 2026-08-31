@@ -10,6 +10,11 @@
     "last_checked_at": "2026-08-31T13:15:27Z",
     "last_price": 572.0
   },
+  "essai-sources": {
+    "best_ever": 131.0,
+    "last_checked_at": "2026-08-31T13:40:48Z",
+    "last_price": 131.0
+  },
   "test": {
     "best_ever": 96.0,
     "last_alert_at": "2026-08-31T13:15:37Z",
