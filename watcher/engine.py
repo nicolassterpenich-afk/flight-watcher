@@ -133,22 +133,26 @@ def run_watch(watch: Watch, settings: dict[str, Any]) -> WatchResult:
 
 
 def best_per_combination(quotes: list[Quote]) -> list[Quote]:
-    """Le meilleur prix de chaque (origine, destination, aller, retour).
+    """Le meilleur prix de chaque (fournisseur, origine, destination, aller, retour).
 
     Un relevé interroge jusqu'à 21 combinaisons et n'en gardait qu'une : tout
     le reste était perdu, alors que c'est précisément ce qui dit quel jour
     partir. Ces lignes ne vont qu'en base — le fichier JSONL du dépôt, lui,
     garde une ligne par relevé, sinon l'historique committé enflerait d'un
     facteur vingt à chaque passage.
+
+    Le fournisseur fait partie de la clé : sans lui, le moins cher écrase les
+    autres sur un même trajet et l'on ne peut plus comparer les sources — ni
+    constater qu'une compagnie vend moins cher en direct que via l'agrégateur.
     """
     best: dict[tuple, Quote] = {}
     for q in quotes:
         if not q.price or q.price <= 0:
             continue
-        key = (q.origin, q.destination, q.depart, q.ret)
+        key = (q.provider, q.origin, q.destination, q.depart, q.ret)
         if key not in best or q.price < best[key].price:
             best[key] = q
-    return sorted(best.values(), key=lambda q: (q.depart, q.origin))
+    return sorted(best.values(), key=lambda q: (q.depart, q.origin, q.provider))
 
 PROVIDER_ALERT_AFTER = 3        # relevés consécutifs entièrement en échec
 
