@@ -367,6 +367,32 @@
   .pick b { display: block; font-weight: 650; }
   .pick em { display: block; font-style: normal; font-size: 12px; color: var(--ink-muted);
              margin-top: 2px; }
+
+  /* Fil de veille : le contenu principal décide, le fil informe. Il passe
+     dessous en dessous de 1080 px plutôt que de comprimer les cartes. */
+  .colonnes { display: grid; grid-template-columns: minmax(0, 1fr); gap: 30px; }
+  @media (min-width: 1080px) {
+    .colonnes { grid-template-columns: minmax(0, 1fr) 330px; align-items: start; }
+    .fil { position: sticky; top: 20px; }
+  }
+  .fil-tete { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; }
+  .fil-tete h2 { margin: 36px 0 14px; }
+  .fil-compte { font-size: 12px; font-weight: 700; color: var(--accent); }
+  .fil-liste { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 10px; }
+  .fil-liste li { background: var(--surface); border: 1px solid var(--border);
+                  border-left: 3px solid transparent; border-radius: 12px;
+                  padding: 13px 15px; box-shadow: var(--shadow); }
+  .fil-liste li.touche { border-left-color: var(--sun); background: var(--sunk); }
+  .fil-liste a { color: var(--ink); text-decoration: none; font-weight: 600; font-size: 14px;
+                 line-height: 1.35; display: block; }
+  .fil-liste a:hover { color: var(--accent); }
+  .fil-meta { font-size: 12px; color: var(--ink-muted); margin-top: 7px;
+              display: flex; flex-wrap: wrap; gap: 6px 10px; align-items: center; }
+  .fil-match { display: inline-flex; align-items: center; gap: 5px; font-size: 11px;
+               font-weight: 700; color: #2b1608; background: var(--sun);
+               border-radius: 999px; padding: 3px 9px; }
+  .fil-lieux { font-size: 11.5px; color: var(--ink-2); margin-top: 6px;
+               font-variant-numeric: tabular-nums; }
 </style>
 </head>
 <body>
@@ -400,6 +426,9 @@
   </header>
 
   <div class="alarm hidden" id="alarm"></div>
+
+  <div class="colonnes">
+   <div class="principal">
 
   <div class="kpis" id="kpis"></div>
 
@@ -450,6 +479,18 @@
         <tbody></tbody>
       </table>
     </div>
+  </div>
+
+   </div>
+
+   <aside class="fil">
+     <div class="fil-tete">
+       <h2>Bons plans repérés</h2>
+       <span class="fil-compte" id="fil-compte"></span>
+     </div>
+     <p class="hint" id="fil-vide">Aucune veille pour l’instant.</p>
+     <ul class="fil-liste" id="fil-liste"></ul>
+   </aside>
   </div>
 </div>
 
@@ -607,6 +648,7 @@ async function refresh() {
   renderCards();
   if (selected && !STATE.watches.some((w) => w.id === selected)) selected = null;
   renderDetail();
+  renderFil();
 }
 
 function renderHeader() {
@@ -1339,6 +1381,74 @@ function airportField(box, placeholder) {
 const fOrigins = airportField($('#f-origins'), 'Bruxelles, BRU…');
 const fDestinations = airportField($('#f-destinations'), 'Bangkok, BKK…');
 
+/* ------------------------------------------------------ fil de veille */
+
+/** « il y a 3 h », « il y a 2 j » — la fraîcheur compte plus que la date. */
+function depuis(iso) {
+  if (!iso) return '';
+  const minutes = (Date.now() - Date.parse(iso)) / 60000;
+  if (!Number.isFinite(minutes)) return '';
+  if (minutes < 60) return 'à l’instant';
+  if (minutes < 1440) return `il y a ${Math.round(minutes / 60)} h`;
+  return `il y a ${Math.round(minutes / 1440)} j`;
+}
+
+async function renderFil() {
+  const liste = $('#fil-liste');
+  const vide = $('#fil-vide');
+  let data;
+  try {
+    data = await api('/api/feed?limit=30');
+  } catch {
+    return;                       // la veille est du bonus : elle ne s'impose pas
+  }
+
+  const items = data.items || [];
+  liste.replaceChildren();
+  vide.classList.toggle('hidden', items.length > 0);
+  $('#fil-compte').textContent = data.correspondances
+    ? `${data.correspondances} pour vous` : '';
+
+  if (!items.length) {
+    vide.textContent = 'Aucune veille pour l’instant. Le module lit les flux de bons plans '
+      + 'et signale ceux qui recoupent vos destinations.';
+    return;
+  }
+
+  const parId = Object.fromEntries(STATE.watches.map((w) => [w.id, w]));
+
+  for (const it of items) {
+    const li = el('li', it.matched_watch_id ? 'touche' : '');
+
+    const lien = el('a', null, it.title);
+    if (it.url) { lien.href = it.url; lien.target = '_blank'; lien.rel = 'noopener noreferrer'; }
+    li.append(lien);
+
+    const meta = el('div', 'fil-meta');
+    if (it.matched_watch_id) {
+      const w = parId[it.matched_watch_id];
+      meta.append(el('span', 'fil-match', w ? (w.label || w.id) : it.matched_watch_id));
+    }
+    meta.append(el('span', null, it.source));
+    const age = depuis(it.published_at);
+    if (age) meta.append(el('span', null, `· ${age}`));
+    li.append(meta);
+
+    // Les lieux extraits : c'est ce qui explique pourquoi une entrée a été
+    // retenue ou écartée, et ce qui rend le filtrage vérifiable à l'œil.
+    let lieux = null;
+    try { lieux = JSON.parse(it.places || '{}'); } catch {}
+    if (lieux && (lieux.origines || {}).length !== undefined) {
+      const de = (lieux.origines || []).slice(0, 3).join(' ');
+      const vers = (lieux.destinations || []).slice(0, 3).join(' ');
+      if (de || vers) {
+        li.append(el('div', 'fil-lieux', `${de || '—'} → ${vers || '—'}`));
+      }
+    }
+    liste.append(li);
+  }
+}
+
 /* ------------------------------------------------------------- formulaire */
 
 let editing = null;
@@ -1566,7 +1676,7 @@ $('#d-run').addEventListener('click', () => { const w = current(); if (w) runNow
   try {
     STATE = await api('/api/state');
     showApp();
-    renderHeader(); renderKpis(); renderCards(); renderDetail();
+    renderHeader(); renderKpis(); renderCards(); renderDetail(); renderFil();
     loadAirports().then(() => { renderCards(); renderDetail(); });
   } catch {
     showGate();

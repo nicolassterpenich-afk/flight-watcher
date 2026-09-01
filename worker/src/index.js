@@ -276,6 +276,36 @@ async function handleApi(request, env, url, path) {
     if (path === '/api/agent/results' && method === 'POST') return agentResults(env, body);
     if (path === '/api/agent/watches' && method === 'PUT') return agentReplaceWatches(env, body);
 
+    // Veille éditoriale. Les entrées arrivent en bloc à chaque passage ; la
+    // clé primaire absorbe les republications, très fréquentes d'un flux à
+    // l'autre. Seule la correspondance peut évoluer — une entrée déjà vue
+    // peut matcher après l'ajout d'une surveillance.
+    if (path === '/api/agent/feed' && method === 'POST') {
+      const items = Array.isArray(body.items) ? body.items : [];
+      if (!items.length) return json({ ok: true, recus: 0 });
+      const ts = nowIso();
+      const stmts = items.slice(0, 200).map((it) => env.DB.prepare(
+        `INSERT INTO feed_items (id, source, title, url, published_at, seen_at, places,
+                                 matched_watch_id, reason, notified)
+         VALUES (?1,?2,?3,?4,?5,?6,?7,?8,?9,?10)
+         ON CONFLICT(id) DO UPDATE SET
+           matched_watch_id = COALESCE(excluded.matched_watch_id, matched_watch_id),
+           reason = COALESCE(excluded.reason, reason),
+           notified = MAX(notified, excluded.notified)`
+      ).bind(String(it.id || '').slice(0, 64), String(it.source || '').slice(0, 80),
+             String(it.title || '').slice(0, 400), String(it.url || '').slice(0, 600),
+             it.published_at ?? null, ts, JSON.stringify(it.places || {}),
+             it.matched_watch_id ?? null, it.reason ?? null, Number(Boolean(it.notified))));
+
+      // Purge : ces entrées n'ont aucune valeur historique.
+      stmts.push(env.DB.prepare(
+        "DELETE FROM feed_items WHERE seen_at < ?1"
+      ).bind(new Date(Date.now() - 90 * 86400000).toISOString()));
+
+      await env.DB.batch(stmts);
+      return json({ ok: true, recus: items.length });
+    }
+
     // Sauvegarde : la configuration et l'état d'alerte sont irremplaçables et
     // tiennent en quelques kilo-octets ; l'historique est volumineux, donc
     // versé par tranches. Le dépôt Git en garde toutes les versions, si bien
@@ -349,6 +379,20 @@ async function handleApi(request, env, url, path) {
   // Référentiel figé : le navigateur peut le garder une journée.
   if (path === '/api/airports' && method === 'GET') {
     return json({ airports: AIRPORTS }, 200, { 'cache-control': 'private, max-age=86400' });
+  }
+
+  if (path === '/api/feed' && method === 'GET') {
+    const limite = Math.min(Math.max(Number(url.searchParams.get('limit')) || 40, 1), 200);
+    const { results } = await env.DB.prepare(
+      'SELECT id, source, title, url, published_at, places, matched_watch_id, reason'
+      // Les correspondances d'abord : dans un fil chronologique, la seule
+      // entrée qui vous concerne se retrouvait au 47e rang sur 50.
+      + ' FROM feed_items ORDER BY (matched_watch_id IS NULL),'
+      + ' COALESCE(published_at, seen_at) DESC LIMIT ?1'
+    ).bind(limite).all();
+    const suivis = await env.DB.prepare(
+      'SELECT COUNT(*) AS n FROM feed_items WHERE matched_watch_id IS NOT NULL').first();
+    return json({ items: results || [], correspondances: suivis ? suivis.n : 0 });
   }
 
   if (path === '/api/history' && method === 'GET') {

@@ -339,6 +339,22 @@ def enregistrer_etat(etat: dict[str, Any], chemin: Path | None = None) -> None:
 # Message
 # --------------------------------------------------------------------------
 
+def pour_stockage(entree: Entree, correspondances: list[Correspondance],
+                  voc: dict[str, frozenset[str]] | None = None) -> dict[str, Any]:
+    """Forme attendue par la table feed_items."""
+    lieux = correspondances[0].lieux if correspondances else extraire_lieux(entree, voc)
+    return {
+        "id": entree.id,
+        "source": entree.source,
+        "title": entree.titre,
+        "url": entree.url,
+        "published_at": entree.publie_le.isoformat() if entree.publie_le else None,
+        "places": {"origines": sorted(lieux.origines), "destinations": sorted(lieux.destinations)},
+        "matched_watch_id": correspondances[0].watch.id if correspondances else None,
+        "reason": correspondances[0].raison if correspondances else None,
+    }
+
+
 def grouper(correspondances: list[Correspondance]) -> list[list[Correspondance]]:
     """Une annonce, un message — même si elle touche plusieurs surveillances.
 
@@ -407,7 +423,7 @@ def relever(watches: Iterable[Watch], config: dict[str, Any] | None = None,
     # matché : sans elles, chaque passage réexaminerait tout le flux et
     # réalerterait sur les mêmes offres.
     bilan: dict[str, Any] = {"flux": [], "entrees": 0, "nouvelles": 0,
-                             "correspondances": [], "erreurs": [], "ids": []}
+                             "correspondances": [], "erreurs": [], "ids": [], "vues": []}
 
     for flux in config.get("feeds", []):
         nom = flux.get("nom") or flux.get("url", "flux")
@@ -431,8 +447,12 @@ def relever(watches: Iterable[Watch], config: dict[str, Any] | None = None,
             retenues += 1
             bilan["nouvelles"] += 1
             bilan["ids"].append(e.id)
-            for c in recouper(e, watches, voc):
-                bilan["correspondances"].append(c)
+            trouvees = recouper(e, watches, voc)
+            bilan["correspondances"].extend(trouvees)
+            # Toutes les entrées lues sont conservées, pas seulement celles qui
+            # matchent : l'interface montre le fil, la correspondance le
+            # surligne.
+            bilan["vues"].append(pour_stockage(e, trouvees, voc))
         bilan["flux"].append({"nom": nom, "entrees": len(entrees), "nouvelles": retenues})
 
     return bilan
@@ -452,6 +472,8 @@ def main(argv: list[str] | None = None) -> int:
         description="Veille des flux de bons plans, recoupée avec les surveillances.")
     parser.add_argument("--notify", action="store_true",
                         help="Envoyer les correspondances sur Telegram (sinon, affichage seul)")
+    parser.add_argument("--push", action="store_true",
+                        help="Envoyer le fil au Worker pour affichage dans l'interface")
     parser.add_argument("--source", choices=("auto", "api", "file"), default="auto")
     parser.add_argument("-v", "--verbose", action="store_true")
     args = parser.parse_args(argv)
@@ -475,6 +497,14 @@ def main(argv: list[str] | None = None) -> int:
     etat_prix = store.load_state()
     prix = {wid: node.get("last_price") for wid, node in etat_prix.items()
             if isinstance(node, dict) and node.get("last_price")}
+
+    if args.push and bilan["vues"]:
+        from . import remote
+        try:
+            envoi = remote.push_feed(bilan["vues"])
+            print(f"  fil envoyé au Worker : {envoi.get('recus')} entrée(s)")
+        except remote.RemoteError as exc:
+            log.error("Envoi du fil impossible : %s", exc)
 
     groupes = grouper(correspondances)
     if args.notify and groupes:

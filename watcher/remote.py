@@ -169,6 +169,14 @@ def replace_watches(watches: list[Watch]) -> dict[str, Any]:
                     {"watches": [_to_payload(w) for w in watches]})
 
 
+def push_feed(items: list[dict[str, Any]]) -> dict[str, Any]:
+    """Envoie les entrées de veille au Worker, pour affichage dans l'interface.
+
+    Indépendant du relevé de prix : un échec ici ne concerne que la veille.
+    """
+    return _request("POST", "/api/agent/feed", {"items": items})
+
+
 def push_results(ran_at: str, entries: list[dict[str, Any]],
                  quotes: list[Quote], state: dict[str, Any]) -> dict[str, Any]:
     """Renvoie au Worker les prix relevés et l'état de chaque surveillance.

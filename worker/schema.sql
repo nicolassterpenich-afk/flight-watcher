@@ -70,3 +70,20 @@ CREATE TABLE IF NOT EXISTS settings (
   key   TEXT PRIMARY KEY,
   value TEXT NOT NULL
 );
+
+-- Veille éditoriale (PLANPROMOS.md, brique 1). Ces entrées n'ont aucune
+-- valeur historique : purgées au-delà de 90 jours.
+CREATE TABLE IF NOT EXISTS feed_items (
+  id               TEXT PRIMARY KEY,   -- empreinte de l'URL de l'entrée
+  source           TEXT NOT NULL,
+  title            TEXT NOT NULL,
+  url              TEXT,
+  published_at     TEXT,
+  seen_at          TEXT NOT NULL,
+  places           TEXT NOT NULL DEFAULT '{}',   -- lieux extraits, JSON
+  matched_watch_id TEXT,                          -- NULL si aucune correspondance
+  reason           TEXT,
+  notified         INTEGER NOT NULL DEFAULT 0
+);
+CREATE INDEX IF NOT EXISTS idx_feed_published ON feed_items(published_at);
+CREATE INDEX IF NOT EXISTS idx_feed_matched ON feed_items(matched_watch_id, published_at);
