@@ -1,65 +1,35 @@
 {
-  "ran_at": "2026-09-01T13:46:20Z",
+  "ran_at": "2026-09-01T14:03:49Z",
   "source": "api",
   "watches": [
-    {
-      "id": "bangkok-fevrier",
-      "label": "Bangkok en février",
-      "threshold": 600.0,
-      "currency": "EUR",
-      "elapsed_s": 6.2,
-      "quotes_found": 90,
-      "errors": [],
-      "combinations": 14,
-      "status": "ok",
-      "best_price": 598.0,
-      "best_route": "BRU→BKK",
-      "best_depart": "2027-02-08",
-      "best_return": "2027-02-22",
-      "provider": "google_flights",
-      "airlines": [
-        "British Airways"
-      ],
-      "booking_url": "https://www.google.com/travel/flights/search?tfs=GhwSCjIwMjctMDItMDgoAWoFEgNCUlVyBRIDQktLGhwSCjIwMjctMDItMjIoAWoFEgNCS0tyBRIDQlJVQgEBSAGYAQE=&hl=fr&curr=EUR",
-      "reason": "seuil déjà notifié (cooldown)",
-      "alerted": false,
-      "stats": {
-        "count": 45,
-        "min": 572.0,
-        "max": 598.0,
-        "median": 598.0,
-        "avg": 596.27,
-        "last": 598.0
-      }
-    },
     {
       "id": "fevrier-2026",
       "label": "THIERRY --> FEVRIER 2026",
       "threshold": 650.0,
       "currency": "EUR",
-      "elapsed_s": 6.4,
-      "quotes_found": 101,
+      "elapsed_s": 6.3,
+      "quotes_found": 100,
       "errors": [],
       "combinations": 21,
       "status": "ok",
-      "best_price": 689.0,
-      "best_route": "CDG→BKK",
+      "best_price": 706.0,
+      "best_route": "BRU→BKK",
       "best_depart": "2027-02-18",
       "best_return": "2027-03-04",
       "provider": "google_flights",
       "airlines": [
-        "Austrian"
+        "Hainan"
       ],
-      "booking_url": "https://www.google.com/travel/flights/search?tfs=GhwSCjIwMjctMDItMTgoAWoFEgNDREdyBRIDQktLGhwSCjIwMjctMDMtMDQoAWoFEgNCS0tyBRIDQ0RHQgEBSAGYAQE=&hl=fr&curr=EUR",
+      "booking_url": "https://www.google.com/travel/flights/search?tfs=GhwSCjIwMjctMDItMTgoAWoFEgNCUlVyBRIDQktLGhwSCjIwMjctMDMtMDQoAWoFEgNCS0tyBRIDQlJVQgEBSAGYAQE=&hl=fr&curr=EUR",
       "reason": "au-dessus du seuil",
       "alerted": false,
       "stats": {
-        "count": 38,
+        "count": 39,
         "min": 598.0,
         "max": 706.0,
-        "median": 643.0,
-        "avg": 662.5,
-        "last": 689.0
+        "median": 649.0,
+        "avg": 663.62,
+        "last": 706.0
       }
     },
     {
@@ -67,7 +37,7 @@
       "label": "ASMET",
       "threshold": 600.0,
       "currency": "EUR",
-      "elapsed_s": 1.0,
+      "elapsed_s": 1.1,
       "quotes_found": 6,
       "errors": [],
       "combinations": 2,
@@ -84,11 +54,11 @@
       "reason": "seuil déjà notifié (cooldown)",
       "alerted": false,
       "stats": {
-        "count": 38,
+        "count": 39,
         "min": 548.0,
         "max": 588.0,
         "median": 588.0,
-        "avg": 586.95,
+        "avg": 586.97,
         "last": 588.0
       }
     },
@@ -97,7 +67,7 @@
       "label": "Norvège 2026",
       "threshold": 300.0,
       "currency": "EUR",
-      "elapsed_s": 9.3,
+      "elapsed_s": 9.2,
       "quotes_found": 31,
       "errors": [],
       "combinations": 6,
@@ -115,7 +85,7 @@
       "reason": "seuil déjà notifié (cooldown)",
       "alerted": false,
       "stats": {
-        "count": 2,
+        "count": 3,
         "min": 167.0,
         "max": 167.0,
         "median": 167.0,
@@ -128,16 +98,16 @@
   "errors": [],
   "providers": {
     "google_flights": {
-      "attempts": 59,
-      "failures": 0,
-      "sample": ""
-    },
-    "wizzair": {
-      "attempts": 12,
+      "attempts": 38,
       "failures": 0,
       "sample": ""
     },
     "ryanair": {
+      "attempts": 12,
+      "failures": 0,
+      "sample": ""
+    },
+    "wizzair": {
       "attempts": 12,
       "failures": 0,
       "sample": ""
