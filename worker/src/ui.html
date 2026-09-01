@@ -345,6 +345,16 @@
     .price { font-size: 32px; }
     .detail-price .v { font-size: 36px; }
   }
+
+  /* trajet et dates : trois informations, trois traitements */
+  .card .route, #d-sub .route { display: flex; flex-direction: column; gap: 3px; margin-top: 7px; }
+  .route-line { display: flex; flex-wrap: wrap; align-items: baseline; gap: 7px; font-size: 14.5px; }
+  .route-line .from { color: var(--ink-2); }
+  .route-line .arrow { color: var(--ink-muted); }
+  .route-line .to { color: var(--ink); font-weight: 700; }
+  .route .dates { font-size: 14px; color: var(--ink); font-variant-numeric: tabular-nums; }
+  .route .flex { font-size: 12.5px; color: var(--ink-muted); }
+  #d-sub { margin: 0; }
 </style>
 </head>
 <body>
@@ -547,7 +557,7 @@ $('#login-form').addEventListener('submit', async (e) => {
     $('#pw').value = '';
     showApp();
     await refresh();
-    loadAirports();
+    loadAirports().then(() => { renderCards(); renderDetail(); });
   } catch (ex) {
     err.textContent = ex.message; err.classList.remove('hidden');
   } finally {
@@ -633,14 +643,81 @@ function renderKpis() {
   tile(`Relevés (${STATE.history_days || 7} j)`, String(STATE.history.length), 'lignes d’historique');
 }
 
-/** Dates d'une surveillance, en tenant compte d'un éventuel séjour souple. */
+/* ------------------------------------------- trajets et dates en français */
+
+const MOIS = new Intl.DateTimeFormat('fr-BE', { month: 'long', timeZone: 'UTC' });
+const JOUR_MOIS = new Intl.DateTimeFormat('fr-BE', { day: 'numeric', month: 'long', timeZone: 'UTC' });
+const JOUR_MOIS_AN = new Intl.DateTimeFormat('fr-BE', { day: 'numeric', month: 'long', year: 'numeric', timeZone: 'UTC' });
+
+const jour = (iso) => new Date(iso + 'T00:00:00Z');
+
+// Villes dont le tiret fait partie du nom : les couper donnerait « Saint »,
+// « Fort » ou « Tel ». Toutes les autres sont des libellés « Ville-Aéroport »
+// dont on ne garde que la ville.
+const TIRET_INSECABLE = new Set([
+  'Pointe-à-Pitre', 'Fort-de-France', 'Saint-Denis de La Réunion', 'Clermont-Ferrand',
+  'Saint-Jacques-de-Compostelle', 'Tel-Aviv', 'Charm el-Cheikh', 'Addis-Abeba',
+  'Cluj-Napoca', 'Saint-Domingue', 'Saint-Martin', 'Port-Vila', 'Hô Chi Minh-Ville',
+  'Ténérife-Sud', 'Ténérife-Nord',
+]);
+
+/** Nom court d'un aéroport : la ville, sans l'aéroport ni la parenthèse. */
+function ville(code) {
+  const a = AIRPORTS.find((x) => x.code === code);
+  if (!a) return code;
+  const nom = a.city.replace(/\s*\(.*\)\s*$/, '');
+  return TIRET_INSECABLE.has(nom) ? nom : nom.split('-')[0];
+}
+
+/** « Bruxelles, Charleroi et 1 autre → Bangkok-Suvarnabhumi » */
+function routeOf(w) {
+  const box = el('span', 'route-line');
+  // Deux aéroports d'une même ville donnent le même nom court : « Bangkok ou
+  // Bangkok » pour BKK et DMK. On dédoublonne avant de compter.
+  const noms = [...new Set(w.origins.map(ville))];
+  const buts = [...new Set(w.destinations.map(ville))];
+  const depuis = noms.length <= 2 ? noms.join(' ou ')
+    : `${noms.slice(0, 2).join(', ')} +${noms.length - 2}`;
+  box.append(el('span', 'from', depuis), el('span', 'arrow', '→'),
+             el('span', 'to', buts.join(' ou ')));
+  box.title = `${w.origins.join(', ')} → ${w.destinations.join(', ')}`;
+  return box;
+}
+
+/** « 6 → 20 février 2027 · 14 nuits », plutôt que deux dates ISO. */
 function datesOf(w) {
+  const d = jour(w.depart);
+
   if (w.nights_min != null) {
     const nuits = w.nights_max != null && w.nights_max !== w.nights_min
-      ? `${w.nights_min}–${w.nights_max} nuits` : `${w.nights_min} nuits`;
-    return `${w.depart} + ${nuits}`;
+      ? `${w.nights_min} à ${w.nights_max} nuits` : `${w.nights_min} nuits`;
+    return `${JOUR_MOIS_AN.format(d)} · ${nuits}`;
   }
-  return w.depart + (w.ret ? ' ⇄ ' + w.ret : '');
+
+  if (!w.ret) return JOUR_MOIS_AN.format(d);
+
+  const r = jour(w.ret);
+  const nuits = Math.round((r - d) / 86400000);
+  let plage;
+  if (d.getUTCFullYear() !== r.getUTCFullYear()) {
+    plage = `${JOUR_MOIS_AN.format(d)} → ${JOUR_MOIS_AN.format(r)}`;
+  } else if (d.getUTCMonth() !== r.getUTCMonth()) {
+    plage = `${JOUR_MOIS.format(d)} → ${JOUR_MOIS_AN.format(r)}`;
+  } else {
+    // Même mois : on ne le répète pas.
+    plage = `${d.getUTCDate()} → ${r.getUTCDate()} ${MOIS.format(r)} ${r.getUTCFullYear()}`;
+  }
+  return `${plage} · ${nuits} nuit${nuits > 1 ? 's' : ''}`;
+}
+
+/** Ce qui élargit la recherche autour des dates, dit à part. */
+function souplesseOf(w) {
+  const bouts = [];
+  if (w.flex_days) bouts.push(`± ${w.flex_days} j au départ`);
+  if (w.flex_days_ret != null && w.flex_days_ret !== w.flex_days) bouts.push(`± ${w.flex_days_ret} j au retour`);
+  if (w.max_stops === 0) bouts.push('vol direct');
+  else if (w.max_stops != null) bouts.push(`${w.max_stops} escale${w.max_stops > 1 ? 's' : ''} max`);
+  return bouts.join(' · ');
 }
 
 function statusBadge(w) {
@@ -718,8 +795,11 @@ function renderCards() {
 
     const head = el('div', 'card-head');
     const left = el('div');
-    left.append(el('div', 'name', w.label || w.id),
-                el('div', 'route', `${w.origins.join('/')} → ${w.destinations.join('/')} · ${datesOf(w)}`));
+    const infos = el('div', 'route');
+    infos.append(routeOf(w), el('span', 'dates', datesOf(w)));
+    const souple = souplesseOf(w);
+    if (souple) infos.append(el('span', 'flex', souple));
+    left.append(el('div', 'name', w.label || w.id), infos);
     head.append(left, statusBadge(w));
 
     const row = el('div', 'row');
@@ -826,10 +906,14 @@ function renderDetail() {
     a.style.marginLeft = 'auto';
     box.append(a);
   }
-  $('#d-sub').textContent =
-    `${w.origins.join('/')} → ${w.destinations.join('/')} · ${datesOf(w)}`
-    + ` · ± ${w.flex_days} j · ${w.max_stops == null ? 'escales libres' : w.max_stops + ' escale(s) max'}`
-    + ` · dernier contrôle ${dateTime(w.last_checked_at)}`;
+  const sub = $('#d-sub');
+  sub.replaceChildren();
+  const infos = el('div', 'route');
+  infos.append(routeOf(w), el('span', 'dates', datesOf(w)));
+  const souple = souplesseOf(w);
+  if (souple) infos.append(el('span', 'flex', souple));
+  infos.append(el('span', 'flex', `dernier contrôle ${dateTime(w.last_checked_at)}`));
+  sub.append(infos);
   $('#d-toggle').textContent = w.enabled ? 'Mettre en pause' : 'Réactiver';
 
   [...$('#d-range').children].forEach((b) =>
@@ -1458,7 +1542,7 @@ $('#d-run').addEventListener('click', () => { const w = current(); if (w) runNow
     STATE = await api('/api/state');
     showApp();
     renderHeader(); renderKpis(); renderCards(); renderDetail();
-    loadAirports();
+    loadAirports().then(() => { renderCards(); renderDetail(); });
   } catch {
     showGate();
   }
