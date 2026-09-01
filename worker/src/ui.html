@@ -355,6 +355,18 @@
   .route .dates { font-size: 14px; color: var(--ink); font-variant-numeric: tabular-nums; }
   .route .flex { font-size: 12.5px; color: var(--ink-muted); }
   #d-sub { margin: 0; }
+
+  .picks { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 10px; }
+  .pick { display: flex; align-items: flex-start; gap: 10px; margin: 0; padding: 12px 14px;
+          border: 1px solid var(--border); border-radius: 10px; background: var(--page);
+          cursor: pointer; text-transform: none; letter-spacing: 0; font-weight: 400;
+          font-size: 14px; color: var(--ink); }
+  .pick:has(input:checked) { border-color: var(--accent); background: var(--sunk); }
+  .pick input { width: 18px; height: 18px; min-height: 18px; margin: 2px 0 0; flex: 0 0 auto;
+                accent-color: var(--accent); }
+  .pick b { display: block; font-weight: 650; }
+  .pick em { display: block; font-style: normal; font-size: 12px; color: var(--ink-muted);
+             margin-top: 2px; }
 </style>
 </head>
 <body>
@@ -481,12 +493,15 @@
           <option value="business">Affaires</option>
           <option value="first">Première</option>
         </select></div>
-      <div><label for="f-providers">Fournisseurs</label>
-        <select id="f-providers">
-          <option value="google_flights">Google Flights</option>
-          <option value="google_flights,ryanair">Google Flights + Ryanair</option>
-          <option value="ryanair">Ryanair seul</option>
-        </select></div>
+      <div style="grid-column: 1 / -1"><label>Où chercher</label>
+        <div class="picks" id="f-providers">
+          <label class="pick"><input type="checkbox" value="google_flights" checked>
+            <span><b>Google Flights</b><em>presque toutes les compagnies</em></span></label>
+          <label class="pick"><input type="checkbox" value="ryanair">
+            <span><b>Ryanair</b><em>absent de Google Flights</em></span></label>
+          <label class="pick"><input type="checkbox" value="wizzair">
+            <span><b>Wizz Air</b><em>tarifs propres, base à Charleroi</em></span></label>
+        </div></div>
     </div>
     <p class="hint" id="f-cost"></p>
     <p class="err hidden" id="m-err"></p>
@@ -1333,11 +1348,14 @@ let editing = null;
  * croise les dates au lieu de les décaler ensemble : ± 1 / ± 3 fait 21
  * combinaisons là où ± 3 seul en fait 7. Autant le montrer avant d'enregistrer.
  */
+const cases = () => [...$('#f-providers').querySelectorAll('input[type=checkbox]')];
+const choisis = () => cases().filter((c) => c.checked).map((c) => c.value);
+
 function updateCost() {
   const box = $('#f-cost');
   const nOrigins = Math.max(fOrigins.get().length, 1);
   const nDest = Math.max(fDestinations.get().length, 1);
-  const nProviders = $('#f-providers').value.split(',').length;
+  const nProviders = Math.max(choisis().length, 1);
   const out = Math.min(Math.max(Number($('#f-flex').value) || 0, 0), 7);
   const raw = $('#f-flex-ret').value;
   const back = raw === '' ? out : Math.min(Math.max(Number(raw) || 0, 0), 7);
@@ -1389,7 +1407,8 @@ function openForm(w) {
   $('#f-stops').value = w && w.max_stops != null ? w.max_stops : '';
   $('#f-adults').value = w ? w.passengers.adults : 1;
   $('#f-seat').value = w ? w.seat : 'economy';
-  $('#f-providers').value = w ? w.providers.join(',') : 'google_flights';
+  const voulus = new Set(w ? w.providers : ['google_flights']);
+  cases().forEach((c) => { c.checked = voulus.has(c.value); });
   $('#modal').classList.remove('hidden');
   updateCost();
   $('#f-label').focus();
@@ -1398,6 +1417,12 @@ const closeForm = () => $('#modal').classList.add('hidden');
 
 ['#f-flex', '#f-flex-ret', '#f-ret', '#f-providers', '#f-nights-min', '#f-nights-max'].forEach((sel) =>
   $(sel).addEventListener('input', updateCost));
+
+// Sans fournisseur coché, la surveillance ne relèverait rien.
+$('#f-providers').addEventListener('change', () => {
+  if (!choisis().length) cases()[0].checked = true;
+  updateCost();
+});
 
 $('#btn-new').addEventListener('click', () => openForm(null));
 $('#m-close').addEventListener('click', closeForm);
@@ -1429,7 +1454,7 @@ $('#watch-form').addEventListener('submit', async (e) => {
     max_stops: numOrNull($('#f-stops').value),
     passengers: { adults: Number($('#f-adults').value || 1), children: 0, infants_in_seat: 0, infants_on_lap: 0 },
     seat: $('#f-seat').value,
-    providers: $('#f-providers').value.split(','),
+    providers: choisis(),
   };
   $('#m-save').disabled = true;
   try {

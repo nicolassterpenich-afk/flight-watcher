@@ -172,7 +172,7 @@ function watchFromBody(body, existing = null) {
   const providers = body.providers === undefined && existing
     ? JSON.parse(existing.providers)
     : (Array.isArray(body.providers) && body.providers.length ? body.providers : ['google_flights'])
-        .map(String).filter((p) => ['google_flights', 'ryanair'].includes(p));
+        .map(String).filter((p) => ['google_flights', 'ryanair', 'wizzair'].includes(p));
   if (!providers.length) throw new HttpError(400, 'providers : aucun fournisseur connu');
 
   const seat = String(get('seat', 'economy'));

@@ -3,10 +3,12 @@ from __future__ import annotations
 from .base import Provider, ProviderError
 from .google_flights import GoogleFlightsProvider
 from .ryanair import RyanairProvider
+from .wizzair import WizzairProvider
 
 REGISTRY: dict[str, type[Provider]] = {
     GoogleFlightsProvider.name: GoogleFlightsProvider,
     RyanairProvider.name: RyanairProvider,
+    WizzairProvider.name: WizzairProvider,
 }
 
 _cache: dict[str, Provider] = {}
