@@ -1,5 +1,5 @@
 {
-  "ran_at": "2026-09-01T07:45:32Z",
+  "ran_at": "2026-09-01T07:46:24Z",
   "source": "api",
   "watches": [
     {
@@ -7,7 +7,7 @@
       "label": "Bangkok en février",
       "threshold": 600.0,
       "currency": "EUR",
-      "elapsed_s": 5.5,
+      "elapsed_s": 5.9,
       "quotes_found": 90,
       "errors": [],
       "status": "ok",
@@ -36,7 +36,7 @@
       "label": "FEVRIER 2026",
       "threshold": 700.0,
       "currency": "EUR",
-      "elapsed_s": 6.7,
+      "elapsed_s": 5.6,
       "quotes_found": 99,
       "errors": [],
       "status": "ok",
@@ -65,7 +65,7 @@
       "label": "ASMET",
       "threshold": 600.0,
       "currency": "EUR",
-      "elapsed_s": 1.0,
+      "elapsed_s": 0.7,
       "quotes_found": 6,
       "errors": [],
       "status": "ok",
