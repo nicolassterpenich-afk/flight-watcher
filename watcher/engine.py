@@ -442,14 +442,14 @@ def run(force_notify: bool = False, only: str | None = None,
             if dry_run:
                 print("\n--- ALERTE (dry-run) ---\n" + message + "\n")
             else:
-                echecs = remettre(message, watch.destinataires, telegram, courriel)
+                remis, echecs = remettre(message, watch.destinataires, telegram, courriel)
                 if echecs:
-                    summary["errors"].append(
-                        f"Telegram : alerte non remise à {', '.join(echecs)}")
+                    summary["errors"].append(f"Alerte non remise à {', '.join(echecs)}")
                 # Une remise partielle reste une alerte envoyée : on ne
                 # rejouera pas la même demain sous prétexte qu'un des
-                # destinataires n'a pas démarré le bot.
-                if len(echecs) < len(watch.destinataires or [telegram.chat_id]):
+                # destinataires n'a pas démarré le bot ou a mal tapé son
+                # adresse.
+                if remis:
                     if genuine:
                         node["last_alert_price"] = best.price
                         node["last_alert_at"] = iso()

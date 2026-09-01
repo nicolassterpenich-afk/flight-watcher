@@ -86,9 +86,16 @@ class TestRepartition(unittest.TestCase):
         self.ml = CourrielEspion()
 
     def test_chaque_canal_selon_la_forme(self):
-        echecs = remettre("<b>coucou</b>", ["2000", "thierry@exemple.be"], self.tg, self.ml)
+        remis, echecs = remettre("<b>coucou</b>", ["2000", "thierry@exemple.be"], self.tg, self.ml)
         self.assertEqual(echecs, [])
-        self.assertEqual([c for c, _ in self.tg.envois], ["2000"])
+        self.assertEqual([c for c, _ in self.ml.envois], ["thierry@exemple.be"])
+        self.assertIn("2000", [c for c, _ in self.tg.envois])
+
+    def test_le_proprietaire_recoit_toujours(self):
+        # « Prévenir aussi » ajoute des destinataires, il n'en retire pas :
+        # partager une destination ne doit pas vous priver de ses alertes.
+        remettre("coucou", ["thierry@exemple.be"], self.tg, self.ml)
+        self.assertEqual([c for c, _ in self.tg.envois], ["1000"])
         self.assertEqual([c for c, _ in self.ml.envois], ["thierry@exemple.be"])
 
     def test_liste_vide_retombe_sur_le_proprietaire(self):
@@ -96,12 +103,16 @@ class TestRepartition(unittest.TestCase):
         self.assertEqual([c for c, _ in self.tg.envois], ["1000"])
         self.assertEqual(self.ml.envois, [])
 
+    def test_pas_de_doublon_si_le_proprietaire_est_listé(self):
+        remettre("coucou", ["1000", "thierry@exemple.be"], self.tg, self.ml)
+        self.assertEqual([c for c, _ in self.tg.envois], ["1000"])
+
     def test_une_adresse_fautive_nempeche_pas_les_autres(self):
         ml = CourrielEspion(echecs={"faux@exemple.be"})
-        echecs = remettre("coucou", ["faux@exemple.be", "bon@exemple.be", "2000"], self.tg, ml)
+        remis, echecs = remettre("coucou", ["faux@exemple.be", "bon@exemple.be", "2000"], self.tg, ml)
         self.assertEqual(echecs, ["faux@exemple.be"])
         self.assertEqual([c for c, _ in ml.envois], ["bon@exemple.be"])
-        self.assertEqual([c for c, _ in self.tg.envois], ["2000"])
+        self.assertEqual(set(remis), {"1000", "bon@exemple.be", "2000"})
 
 
 class TestMiseEnFormeCourriel(unittest.TestCase):
