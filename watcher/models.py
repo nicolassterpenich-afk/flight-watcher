@@ -87,6 +87,8 @@ class WatchResult:
     watch: Watch
     quotes: list[Quote]
     errors: list[str] = field(default_factory=list)
+    # {fournisseur: {"attempts": n, "failures": n, "sample": "…"}}
+    provider_stats: dict[str, dict[str, Any]] = field(default_factory=dict)
 
     @property
     def best(self) -> Optional[Quote]:

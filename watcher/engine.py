@@ -86,6 +86,14 @@ def run_watch(watch: Watch, settings: dict[str, Any]) -> WatchResult:
 
     quotes: list[Quote] = []
     errors: list[str] = []
+    stats: dict[str, dict[str, Any]] = {}
+
+    def _tally(provider: str, ok: bool, message: str = "") -> None:
+        entry = stats.setdefault(provider, {"attempts": 0, "failures": 0, "sample": ""})
+        entry["attempts"] += 1
+        if not ok:
+            entry["failures"] += 1
+            entry["sample"] = entry["sample"] or message
 
     def _one(task):
         provider_name, origin, destination, depart, ret = task
@@ -102,10 +110,15 @@ def run_watch(watch: Watch, settings: dict[str, Any]) -> WatchResult:
                 quotes.extend(fut.result())
             except ProviderError as exc:
                 errors.append(str(exc))
+                _tally(task[0], False, str(exc))
             except Exception as exc:               # noqa: BLE001
-                errors.append(f"{task[0]} {task[1]}→{task[2]} {task[3]} : {exc}")
+                message = f"{task[0]} {task[1]}→{task[2]} {task[3]} : {exc}"
+                errors.append(message)
+                _tally(task[0], False, message)
+            else:
+                _tally(task[0], True)
 
-    return WatchResult(watch=watch, quotes=quotes, errors=errors)
+    return WatchResult(watch=watch, quotes=quotes, errors=errors, provider_stats=stats)
 
 
 def best_per_combination(quotes: list[Quote]) -> list[Quote]:
@@ -125,6 +138,54 @@ def best_per_combination(quotes: list[Quote]) -> list[Quote]:
         if key not in best or q.price < best[key].price:
             best[key] = q
     return sorted(best.values(), key=lambda q: (q.depart, q.origin))
+
+PROVIDER_ALERT_AFTER = 3        # relevés consécutifs entièrement en échec
+
+
+def check_providers(tally: dict[str, dict[str, int]], state: dict[str, Any],
+                    telegram: Telegram, dry_run: bool) -> list[str]:
+    """Prévient quand un fournisseur cesse de répondre, et quand il revient.
+
+    L'échec d'un fournisseur ne fait pas échouer un relevé — c'est voulu, un
+    fournisseur en panne ne doit pas priver des autres. Mais Ryanair a renvoyé
+    409 sur toutes ses routes pendant des semaines sans que ça se voie. On
+    compte donc les relevés entièrement ratés, et on alerte au troisième.
+    """
+    node = state.setdefault("_providers", {})
+    messages: list[str] = []
+
+    for name, stats in tally.items():
+        if not stats.get("attempts"):
+            continue
+        entry = node.setdefault(name, {"consecutive_failures": 0, "alerted": False})
+        casse = stats["failures"] >= stats["attempts"]
+
+        if not casse:
+            if entry.get("alerted"):
+                messages.append(f"✅ <b>{esc(name)}</b> répond de nouveau.")
+                entry["alerted"] = False
+            entry["consecutive_failures"] = 0
+            continue
+
+        entry["consecutive_failures"] = entry.get("consecutive_failures", 0) + 1
+        if entry["consecutive_failures"] >= PROVIDER_ALERT_AFTER and not entry.get("alerted"):
+            exemple = esc((stats.get("sample") or "")[:200])
+            messages.append(
+                f"⚠️ <b>{esc(name)} ne répond plus</b>\n\n"
+                f"{entry['consecutive_failures']} relevés d'affilée sans une seule réponse.\n"
+                + (f"\n<code>{exemple}</code>" if exemple else "")
+                + "\n\nLes autres fournisseurs continuent ; ce trajet est peut-être surveillé à l'aveugle."
+            )
+            entry["alerted"] = True
+
+    for message in messages:
+        log.warning("Fournisseur : %s", message.split("\n")[0])
+        if not dry_run:
+            try:
+                telegram.send(message)
+            except Exception as exc:            # noqa: BLE001
+                log.error("Alerte fournisseur non envoyée : %s", exc)
+    return messages
 
 # --------------------------------------------------------------------------
 # Décision d'alerte
@@ -285,12 +346,18 @@ def run(force_notify: bool = False, only: str | None = None,
         "alerts_sent": 0,
         "errors": [],
     }
+    providers_tally: dict[str, dict[str, Any]] = {}
     to_store: list[Quote] = []      # un par surveillance — fichier JSONL et dashboard
     to_push: list[Quote] = []       # un par combinaison de dates — base D1
 
     for watch in active:
         started = time.time()
         result = run_watch(watch, settings)
+        for name, stats in result.provider_stats.items():
+            cumul = providers_tally.setdefault(name, {"attempts": 0, "failures": 0, "sample": ""})
+            cumul["attempts"] += stats["attempts"]
+            cumul["failures"] += stats["failures"]
+            cumul["sample"] = cumul["sample"] or stats.get("sample", "")
         best = result.best
         elapsed = round(time.time() - started, 1)
 
@@ -366,6 +433,9 @@ def run(force_notify: bool = False, only: str | None = None,
         summary["watches"].append(entry)
         log.info("[%s] meilleur %s %s (%s) — %s", watch.id, best.price, best.currency,
                  f"{best.origin}→{best.destination} {best.depart}", reason)
+
+    summary["providers"] = providers_tally
+    summary["provider_alerts"] = check_providers(providers_tally, state, telegram, dry_run)
 
     if not dry_run:
         store.append_history(to_store)

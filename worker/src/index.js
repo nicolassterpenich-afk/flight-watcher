@@ -257,6 +257,30 @@ async function handleApi(request, env, url, path) {
 
     if (path === '/api/agent/results' && method === 'POST') return agentResults(env, body);
     if (path === '/api/agent/watches' && method === 'PUT') return agentReplaceWatches(env, body);
+
+    // Sauvegarde : la configuration et l'état d'alerte sont irremplaçables et
+    // tiennent en quelques kilo-octets ; l'historique est volumineux, donc
+    // versé par tranches. Le dépôt Git en garde toutes les versions, si bien
+    // que leur union couvre la totalité sans qu'aucun fichier n'enfle.
+    if (path === '/api/agent/export' && method === 'GET') {
+      const days = Math.min(Math.max(Number(url.searchParams.get('days')) || 1, 1), 400);
+      const since = new Date(Date.now() - days * 86400000).toISOString();
+      const [watches, alertState, settings, history] = await Promise.all([
+        env.DB.prepare('SELECT * FROM watches ORDER BY created_at').all(),
+        env.DB.prepare('SELECT * FROM alert_state').all(),
+        env.DB.prepare('SELECT key, value FROM settings').all(),
+        env.DB.prepare('SELECT * FROM history WHERE checked_at >= ?1 ORDER BY checked_at').bind(since).all(),
+      ]);
+      return json({
+        exported_at: nowIso(),
+        history_since: since,
+        watches: watches.results || [],
+        alert_state: alertState.results || [],
+        settings: settings.results || [],
+        history: history.results || [],
+      });
+    }
+
     return fail(404, 'Route inconnue');
   }
 
