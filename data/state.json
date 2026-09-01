@@ -71,6 +71,11 @@
     "last_checked_at": "2026-09-01T16:12:34Z",
     "last_price": 181.0
   },
+  "surpsie": {
+    "best_ever": 1353.0,
+    "last_checked_at": "2026-09-01T16:35:58Z",
+    "last_price": 1353.0
+  },
   "test": {
     "best_ever": 96.0,
     "last_alert_at": "2026-08-31T13:15:37Z",
