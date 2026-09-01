@@ -1,13 +1,43 @@
 {
-  "ran_at": "2026-09-01T15:12:44Z",
+  "ran_at": "2026-09-01T15:45:40Z",
   "source": "api",
   "watches": [
+    {
+      "id": "fevrier-2026",
+      "label": "THIERRY --> FEVRIER 2026",
+      "threshold": 650.0,
+      "currency": "EUR",
+      "elapsed_s": 8.4,
+      "quotes_found": 102,
+      "errors": [],
+      "combinations": 21,
+      "status": "ok",
+      "best_price": 706.0,
+      "best_route": "BRU→BKK",
+      "best_depart": "2027-02-18",
+      "best_return": "2027-03-04",
+      "provider": "google_flights",
+      "airlines": [
+        "Hainan"
+      ],
+      "booking_url": "https://www.google.com/travel/flights/search?tfs=GhwSCjIwMjctMDItMTgoAWoFEgNCUlVyBRIDQktLGhwSCjIwMjctMDMtMDQoAWoFEgNCS0tyBRIDQlJVQgEBSAGYAQE=&hl=fr&curr=EUR",
+      "reason": "au-dessus du seuil",
+      "alerted": false,
+      "stats": {
+        "count": 41,
+        "min": 598.0,
+        "max": 706.0,
+        "median": 649.0,
+        "avg": 665.68,
+        "last": 706.0
+      }
+    },
     {
       "id": "asmet",
       "label": "ASMET",
       "threshold": 600.0,
       "currency": "EUR",
-      "elapsed_s": 0.7,
+      "elapsed_s": 0.8,
       "quotes_found": 6,
       "errors": [],
       "combinations": 2,
@@ -21,23 +51,84 @@
         "Corsair"
       ],
       "booking_url": "https://www.google.com/travel/flights/search?tfs=GhoSCjIwMjYtMDktMjVqBRIDT1JZcgUSA1BUUBoaEgoyMDI2LTEwLTA1agUSA1BUUHIFEgNPUllCAQFIAZgBAQ==&hl=fr&curr=EUR",
-      "reason": "ponctuel",
-      "alerted": true,
+      "reason": "seuil déjà notifié (cooldown)",
+      "alerted": false,
       "stats": {
-        "count": 41,
+        "count": 42,
         "min": 548.0,
         "max": 588.0,
         "median": 588.0,
-        "avg": 586.1,
+        "avg": 585.69,
         "last": 569.0
       }
+    },
+    {
+      "id": "norvege-2026",
+      "label": "Norvège 2026",
+      "threshold": 300.0,
+      "currency": "EUR",
+      "elapsed_s": 8.5,
+      "quotes_found": 30,
+      "errors": [],
+      "combinations": 6,
+      "status": "ok",
+      "best_price": 181.0,
+      "best_route": "CDG→OSL",
+      "best_depart": "2026-10-22",
+      "best_return": "2026-11-13",
+      "provider": "google_flights",
+      "airlines": [
+        "Lufthansa City Airlines",
+        "Lufthansa"
+      ],
+      "booking_url": "https://www.google.com/travel/flights/search?tfs=GhwSCjIwMjYtMTAtMjIoAWoFEgNDREdyBRIDT1NMGhwSCjIwMjYtMTEtMTMoAWoFEgNPU0xyBRIDQ0RHQgEBSAGYAQE=&hl=fr&curr=EUR",
+      "reason": "seuil déjà notifié (cooldown)",
+      "alerted": false,
+      "stats": {
+        "count": 5,
+        "min": 167.0,
+        "max": 181.0,
+        "median": 167.0,
+        "avg": 169.8,
+        "last": 181.0
+      }
+    },
+    {
+      "id": "toronto-2027",
+      "label": "toronto 2027",
+      "threshold": 600.0,
+      "currency": "EUR",
+      "elapsed_s": 82.1,
+      "quotes_found": 0,
+      "errors": [
+        "Google Flights injoignable pour BRU→YYZ 2027-10-01: Extra data: line 1 column 235 (char 234)",
+        "Google Flights injoignable pour BRU→YYZ 2027-10-03: Extra data: line 1 column 235 (char 234)",
+        "Google Flights injoignable pour BRU→YYZ 2027-10-02: Extra data: line 1 column 235 (char 234)",
+        "Google Flights injoignable pour BRU→YYZ 2027-10-04: Extra data: line 1 column 235 (char 234)",
+        "Google Flights injoignable pour BRU→YYZ 2027-10-05: Extra data: line 1 column 235 (char 234)"
+      ],
+      "status": "aucun prix"
     }
   ],
-  "alerts_sent": 1,
-  "errors": [],
+  "alerts_sent": 0,
+  "errors": [
+    "Google Flights injoignable pour BRU→YYZ 2027-10-01: Extra data: line 1 column 235 (char 234)",
+    "Google Flights injoignable pour BRU→YYZ 2027-10-03: Extra data: line 1 column 235 (char 234)",
+    "Google Flights injoignable pour BRU→YYZ 2027-10-02: Extra data: line 1 column 235 (char 234)"
+  ],
   "providers": {
     "google_flights": {
-      "attempts": 2,
+      "attempts": 65,
+      "failures": 27,
+      "sample": "Google Flights injoignable pour BRU→YYZ 2027-10-01: Extra data: line 1 column 235 (char 234)"
+    },
+    "ryanair": {
+      "attempts": 12,
+      "failures": 0,
+      "sample": ""
+    },
+    "wizzair": {
+      "attempts": 12,
       "failures": 0,
       "sample": ""
     }
