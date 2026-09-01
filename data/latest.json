@@ -1,43 +1,53 @@
 {
-  "ran_at": "2026-09-01T08:29:26Z",
+  "ran_at": "2026-09-01T09:09:07Z",
   "source": "api",
   "watches": [
     {
-      "id": "essai-nuits",
-      "label": "Essai séjour souple",
-      "threshold": null,
+      "id": "essai-wizz",
+      "label": "Essai Wizz",
+      "threshold": 150.0,
       "currency": "EUR",
-      "elapsed_s": 7.9,
-      "quotes_found": 215,
+      "elapsed_s": 1.3,
+      "quotes_found": 4,
       "errors": [],
-      "combinations": 28,
+      "combinations": 1,
       "status": "ok",
-      "best_price": 576.0,
-      "best_route": "BRU→BKK",
-      "best_depart": "2027-03-07",
-      "best_return": "2027-03-17",
+      "best_price": 96.0,
+      "best_route": "CRL→BUD",
+      "best_depart": "2026-10-16",
+      "best_return": "2026-10-23",
       "provider": "google_flights",
       "airlines": [
-        "Hainan"
+        "Wizz Air"
       ],
-      "booking_url": "https://www.google.com/travel/flights/search?tfs=GhoSCjIwMjctMDMtMDdqBRIDQlJVcgUSA0JLSxoaEgoyMDI3LTAzLTE3agUSA0JLS3IFEgNCUlVCAQFIAZgBAQ==&hl=fr&curr=EUR",
-      "reason": "au-dessus du seuil",
-      "alerted": false,
+      "booking_url": "https://www.google.com/travel/flights/search?tfs=GhoSCjIwMjYtMTAtMTZqBRIDQ1JMcgUSA0JVRBoaEgoyMDI2LTEwLTIzagUSA0JVRHIFEgNDUkxCAQFIAZgBAQ==&hl=fr&curr=EUR",
+      "reason": "seuil",
+      "alerted": true,
       "stats": {
         "count": 1,
-        "min": 576.0,
-        "max": 576.0,
-        "median": 576.0,
-        "avg": 576.0,
-        "last": 576.0
+        "min": 96.0,
+        "max": 96.0,
+        "median": 96.0,
+        "avg": 96.0,
+        "last": 96.0
       }
     }
   ],
-  "alerts_sent": 0,
+  "alerts_sent": 1,
   "errors": [],
   "providers": {
+    "wizzair": {
+      "attempts": 1,
+      "failures": 0,
+      "sample": ""
+    },
+    "ryanair": {
+      "attempts": 1,
+      "failures": 0,
+      "sample": ""
+    },
     "google_flights": {
-      "attempts": 28,
+      "attempts": 1,
       "failures": 0,
       "sample": ""
     }

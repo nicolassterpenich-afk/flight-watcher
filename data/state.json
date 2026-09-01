@@ -3,6 +3,14 @@
     "google_flights": {
       "alerted": false,
       "consecutive_failures": 0
+    },
+    "ryanair": {
+      "alerted": false,
+      "consecutive_failures": 0
+    },
+    "wizzair": {
+      "alerted": false,
+      "consecutive_failures": 0
     }
   },
   "_telegram": {
@@ -33,6 +41,14 @@
     "best_ever": 131.0,
     "last_checked_at": "2026-08-31T13:40:48Z",
     "last_price": 131.0
+  },
+  "essai-wizz": {
+    "best_ever": 96.0,
+    "last_alert_at": "2026-09-01T09:09:09Z",
+    "last_alert_price": 96.0,
+    "last_alert_reason": "seuil",
+    "last_checked_at": "2026-09-01T09:09:08Z",
+    "last_price": 96.0
   },
   "fevrier-2026": {
     "best_ever": 598.0,
