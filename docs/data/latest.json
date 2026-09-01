@@ -1,5 +1,5 @@
 {
-  "ran_at": "2026-09-01T11:15:54Z",
+  "ran_at": "2026-09-01T11:45:49Z",
   "source": "api",
   "watches": [
     {
@@ -7,7 +7,7 @@
       "label": "Bangkok en février",
       "threshold": 600.0,
       "currency": "EUR",
-      "elapsed_s": 6.2,
+      "elapsed_s": 5.9,
       "quotes_found": 91,
       "errors": [],
       "combinations": 14,
@@ -24,11 +24,11 @@
       "reason": "seuil déjà notifié (cooldown)",
       "alerted": false,
       "stats": {
-        "count": 41,
+        "count": 42,
         "min": 572.0,
         "max": 598.0,
         "median": 598.0,
-        "avg": 596.1,
+        "avg": 596.14,
         "last": 598.0
       }
     },
@@ -37,7 +37,7 @@
       "label": "THIERRY --> FEVRIER 2026",
       "threshold": 650.0,
       "currency": "EUR",
-      "elapsed_s": 6.4,
+      "elapsed_s": 6.3,
       "quotes_found": 101,
       "errors": [],
       "combinations": 21,
@@ -54,11 +54,11 @@
       "reason": "au-dessus du seuil",
       "alerted": false,
       "stats": {
-        "count": 34,
+        "count": 35,
         "min": 598.0,
         "max": 706.0,
         "median": 637.0,
-        "avg": 659.38,
+        "avg": 660.23,
         "last": 689.0
       }
     },
@@ -67,7 +67,7 @@
       "label": "ASMET",
       "threshold": 600.0,
       "currency": "EUR",
-      "elapsed_s": 0.6,
+      "elapsed_s": 1.0,
       "quotes_found": 6,
       "errors": [],
       "combinations": 2,
@@ -84,7 +84,7 @@
       "reason": "seuil déjà notifié (cooldown)",
       "alerted": false,
       "stats": {
-        "count": 34,
+        "count": 35,
         "min": 588.0,
         "max": 588.0,
         "median": 588.0,

@@ -21,7 +21,7 @@
     "last_alert_at": "2026-09-01T02:46:13Z",
     "last_alert_price": 588.0,
     "last_alert_reason": "seuil_rappel",
-    "last_checked_at": "2026-09-01T11:16:07Z",
+    "last_checked_at": "2026-09-01T11:46:01Z",
     "last_price": 588.0
   },
   "bangkok-fevrier": {
@@ -29,7 +29,7 @@
     "last_alert_at": "2026-09-01T10:16:02Z",
     "last_alert_price": 598.0,
     "last_alert_reason": "seuil_rappel",
-    "last_checked_at": "2026-09-01T11:15:56Z",
+    "last_checked_at": "2026-09-01T11:45:51Z",
     "last_price": 598.0
   },
   "essai-nuits": {
@@ -55,7 +55,7 @@
     "last_alert_at": "2026-09-01T05:17:14Z",
     "last_alert_price": 649.0,
     "last_alert_reason": "seuil_rappel",
-    "last_checked_at": "2026-09-01T11:16:02Z",
+    "last_checked_at": "2026-09-01T11:45:57Z",
     "last_price": 689.0
   },
   "jeff": {
