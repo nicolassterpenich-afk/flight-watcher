@@ -82,7 +82,8 @@ def load_watches(path: Path | None = None) -> tuple[list[Watch], dict]:
                 providers=[str(p) for p in (merged.get("providers") or ["google_flights"])],
                 enabled=bool(merged.get("enabled", True)),
                 alert_on_drop=bool(merged.get("alert_on_drop", True)),
-                chat_ids=[str(c).strip() for c in _as_list_brute(merged.get("chat_ids"))],
+                destinataires=[str(c).strip() for c in
+                               _as_list_brute(merged.get("destinataires") or merged.get("chat_ids"))],
                 notes=str(merged.get("notes") or ""),
             )
         )
@@ -147,8 +148,8 @@ def save_watches(watches: list[Watch], settings: dict, path: Path | None = None)
             entry["providers"] = w.providers
         if not w.enabled:
             entry["enabled"] = False
-        if w.chat_ids:
-            entry["chat_ids"] = w.chat_ids
+        if w.destinataires:
+            entry["destinataires"] = w.destinataires
         if w.notes:
             entry["notes"] = w.notes
         payload["watches"].append(entry)

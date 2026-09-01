@@ -558,11 +558,12 @@
           <option value="first">Première</option>
         </select></div>
       <div style="grid-column: 1 / -1"><label for="f-chat-ids">Prévenir aussi
-        <span class="opt">— identifiants Telegram, séparés par des virgules ; vide = vous seul</span></label>
-        <input id="f-chat-ids" placeholder="1788325058, 987654321" inputmode="numeric">
-        <p class="hint">La personne doit d'abord écrire <b>/monid</b> au bot
-          <b>@napo_veille_vols_bot</b> : Telegram interdit à un bot d'écrire à qui ne
-          lui a jamais parlé. Elle vous transmet le numéro qu'il lui répond.</p></div>
+        <span class="opt">— adresses e-mail ou identifiants Telegram, séparés par des virgules ; vide = vous seul</span></label>
+        <input id="f-chat-ids" placeholder="thierry@exemple.be, 1788325058">
+        <p class="hint">Une <b>adresse e-mail</b> ne demande rien à la personne. Pour
+          <b>Telegram</b>, elle doit d'abord écrire <b>/monid</b> au bot
+          <b>@napo_veille_vols_bot</b> et vous transmettre le numéro qu'il lui répond :
+          Telegram interdit à un bot d'écrire à qui ne lui a jamais parlé.</p></div>
 
       <div style="grid-column: 1 / -1"><label>Où chercher</label>
         <div class="picks" id="f-providers">
@@ -887,10 +888,10 @@ function renderCards() {
     infos.append(routeOf(w), el('span', 'dates', datesOf(w)));
     const souple = souplesseOf(w);
     if (souple) infos.append(el('span', 'flex', souple));
-    if (w.chat_ids && w.chat_ids.length) {
+    if (w.destinataires && w.destinataires.length) {
       const partage = el('span', 'flex partage',
-        `aussi envoyé à ${w.chat_ids.length} autre${w.chat_ids.length > 1 ? 's' : ''}`);
-      partage.title = w.chat_ids.join(', ');
+        `aussi envoyé à ${w.destinataires.length} autre${w.destinataires.length > 1 ? 's' : ''}`);
+      partage.title = w.destinataires.join(', ');
       infos.append(partage);
     }
     left.append(el('div', 'name', w.label || w.id), infos);
@@ -1738,7 +1739,7 @@ function openForm(w) {
   $('#f-ret').value = w && w.ret ? w.ret : '';
   $('#f-nights-min').value = w && w.nights_min != null ? w.nights_min : '';
   $('#f-nights-max').value = w && w.nights_max != null ? w.nights_max : '';
-  $('#f-chat-ids').value = w && w.chat_ids ? w.chat_ids.join(', ') : '';
+  $('#f-chat-ids').value = w && w.destinataires ? w.destinataires.join(', ') : '';
   $('#f-threshold').value = w && w.threshold != null ? w.threshold : '';
   $('#f-flex').value = w ? w.flex_days : 0;
   $('#f-flex-ret').value = w && w.flex_days_ret != null ? w.flex_days_ret : '';
@@ -1789,7 +1790,7 @@ $('#watch-form').addEventListener('submit', async (e) => {
     flex_days_ret: $('#f-flex-ret').value === '' ? null : Number($('#f-flex-ret').value),
     nights_min: $('#f-nights-min').value === '' ? null : Number($('#f-nights-min').value),
     nights_max: $('#f-nights-max').value === '' ? null : Number($('#f-nights-max').value),
-    chat_ids: $('#f-chat-ids').value.split(/[,;\s]+/).filter(Boolean),
+    destinataires: $('#f-chat-ids').value.split(/[,;\s]+/).filter(Boolean),
     max_stops: numOrNull($('#f-stops').value),
     passengers: { adults: Number($('#f-adults').value || 1), children: 0, infants_in_seat: 0, infants_on_lap: 0 },
     seat: $('#f-seat').value,

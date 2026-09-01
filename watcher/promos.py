@@ -656,13 +656,12 @@ def main(argv: list[str] | None = None) -> int:
 
     groupes = grouper(correspondances)
     if args.notify and groupes:
-        from .alerts import Telegram
-        telegram = Telegram()
+        from .alerts import remettre
         for groupe in groupes:
             # Mêmes destinataires que les alertes de prix : qui suit une
             # destination doit aussi en recevoir les bons plans.
-            destinataires = sorted({c for g in groupe for c in (g.watch.chat_ids or [])})
-            telegram.send_to(formater_alerte(groupe, prix), destinataires)
+            destinataires = sorted({c for g in groupe for c in (g.watch.destinataires or [])})
+            remettre(formater_alerte(groupe, prix), destinataires)
 
     for groupe in groupes:
         print(f"\n--- {', '.join(c.watch.id for c in groupe)} ---\n{formater_alerte(groupe, prix)}")

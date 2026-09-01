@@ -109,7 +109,7 @@ def _to_watch(raw: dict[str, Any]) -> Watch:
         providers=[str(p) for p in (raw.get("providers") or ["google_flights"])],
         enabled=bool(raw.get("enabled", True)),
         alert_on_drop=bool(raw.get("alert_on_drop", True)),
-        chat_ids=[str(c) for c in (raw.get("chat_ids") or [])],
+        destinataires=[str(c) for c in (raw.get("destinataires") or raw.get("chat_ids") or [])],
         notes=str(raw.get("notes") or ""),
     )
 
@@ -156,7 +156,7 @@ def _to_payload(w: Watch) -> dict[str, Any]:
         "providers": w.providers,
         "enabled": w.enabled,
         "alert_on_drop": w.alert_on_drop,
-        "chat_ids": w.chat_ids,
+        "destinataires": w.destinataires,
         "notes": w.notes,
     }
 

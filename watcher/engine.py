@@ -11,7 +11,7 @@ from typing import Any
 from zoneinfo import ZoneInfo
 
 from . import compagnies, remote, store
-from .alerts import Telegram, esc
+from .alerts import Courriel, Telegram, esc, remettre
 from .config import expand_dates, load_watches
 from .models import Quote, Watch, WatchResult
 from .providers import ProviderError, get_provider
@@ -358,6 +358,7 @@ def run(force_notify: bool = False, only: str | None = None,
     watches, raw_settings, config_source = load_config(source)
     settings = {**DEFAULT_SETTINGS, **(raw_settings or {})}
     telegram = Telegram()
+    courriel = Courriel()
     state = store.load_state()
 
     active = [w for w in watches if w.enabled and (only is None or w.id == only)]
@@ -441,14 +442,14 @@ def run(force_notify: bool = False, only: str | None = None,
             if dry_run:
                 print("\n--- ALERTE (dry-run) ---\n" + message + "\n")
             else:
-                echecs = telegram.send_to(message, watch.chat_ids)
+                echecs = remettre(message, watch.destinataires, telegram, courriel)
                 if echecs:
                     summary["errors"].append(
                         f"Telegram : alerte non remise à {', '.join(echecs)}")
                 # Une remise partielle reste une alerte envoyée : on ne
                 # rejouera pas la même demain sous prétexte qu'un des
                 # destinataires n'a pas démarré le bot.
-                if len(echecs) < len(watch.chat_ids or [telegram.chat_id]):
+                if len(echecs) < len(watch.destinataires or [telegram.chat_id]):
                     if genuine:
                         node["last_alert_price"] = best.price
                         node["last_alert_at"] = iso()

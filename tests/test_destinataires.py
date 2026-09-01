@@ -7,7 +7,7 @@ from __future__ import annotations
 
 import unittest
 
-from watcher.alerts import Telegram
+from watcher.alerts import Courriel, Telegram, est_une_adresse, remettre
 
 
 class TelegramEspion(Telegram):
@@ -56,6 +56,64 @@ class TestDestinataires(unittest.TestCase):
         t = TelegramEspion()
         t.send_to("coucou", ["", "  ", "2000"])
         self.assertEqual([c for c, _ in t.envois], ["2000"])
+
+
+class CourrielEspion(Courriel):
+    def __init__(self, echecs=()):
+        super().__init__(host="smtp.test", user="moi@test", password="x")
+        self.envois: list[tuple[str, str]] = []
+        self.echecs = set(echecs)
+
+    def send(self, html, destinataire, sujet=None):
+        if destinataire in self.echecs:
+            raise RuntimeError("SMTP : adresse refusée")
+        self.envois.append((destinataire, sujet or ""))
+
+
+class TestFormeDuDestinataire(unittest.TestCase):
+    def test_adresses_reconnues(self):
+        for a in ("thierry@exemple.be", "nicolas.sterpenich@gmail.com", "a+b@sous.domaine.fr"):
+            self.assertTrue(est_une_adresse(a), a)
+
+    def test_identifiants_telegram_ne_sont_pas_des_adresses(self):
+        for t in ("1788325058", "-100987654", "", "pas une adresse", "a@b"):
+            self.assertFalse(est_une_adresse(t), t)
+
+
+class TestRepartition(unittest.TestCase):
+    def setUp(self):
+        self.tg = TelegramEspion()
+        self.ml = CourrielEspion()
+
+    def test_chaque_canal_selon_la_forme(self):
+        echecs = remettre("<b>coucou</b>", ["2000", "thierry@exemple.be"], self.tg, self.ml)
+        self.assertEqual(echecs, [])
+        self.assertEqual([c for c, _ in self.tg.envois], ["2000"])
+        self.assertEqual([c for c, _ in self.ml.envois], ["thierry@exemple.be"])
+
+    def test_liste_vide_retombe_sur_le_proprietaire(self):
+        remettre("coucou", [], self.tg, self.ml)
+        self.assertEqual([c for c, _ in self.tg.envois], ["1000"])
+        self.assertEqual(self.ml.envois, [])
+
+    def test_une_adresse_fautive_nempeche_pas_les_autres(self):
+        ml = CourrielEspion(echecs={"faux@exemple.be"})
+        echecs = remettre("coucou", ["faux@exemple.be", "bon@exemple.be", "2000"], self.tg, ml)
+        self.assertEqual(echecs, ["faux@exemple.be"])
+        self.assertEqual([c for c, _ in ml.envois], ["bon@exemple.be"])
+        self.assertEqual([c for c, _ in self.tg.envois], ["2000"])
+
+
+class TestMiseEnFormeCourriel(unittest.TestCase):
+    def test_sujet_tire_de_la_premiere_ligne(self):
+        from watcher.alerts.courriel import _sujet_depuis
+        self.assertEqual(_sujet_depuis("🎯 <b>Seuil atteint</b>\n\nBRU → BKK"), "🎯 Seuil atteint")
+
+    def test_version_texte_garde_les_liens(self):
+        from watcher.alerts.courriel import _texte_nu
+        nu = _texte_nu('Voir <a href="https://x.test/a">ici</a>')
+        self.assertIn("https://x.test/a", nu)
+        self.assertNotIn("<a ", nu)
 
 
 class TestConfigurationFichier(unittest.TestCase):
