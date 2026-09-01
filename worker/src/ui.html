@@ -257,6 +257,14 @@
   #d-range { margin: 12px 0 8px; }
   #d-stats { margin: 0 0 4px; font-variant-numeric: tabular-nums; }
   #d-stats b { font-weight: 640; color: var(--ink); }
+
+  /* bandeau d'alerte : visible même si plus rien ne tourne derrière */
+  .alarm { display: flex; flex-wrap: wrap; align-items: baseline; gap: 6px 12px;
+           border: 1px solid var(--critical); border-left: 4px solid var(--critical);
+           border-radius: 10px; padding: 13px 16px; margin-bottom: 22px;
+           background: var(--surface); box-shadow: var(--shadow); }
+  .alarm .t { font-weight: 640; color: var(--critical); }
+  .alarm .d { color: var(--ink-2); font-size: 13.5px; }
 </style>
 </head>
 <body>
@@ -288,6 +296,8 @@
       <button class="chip" id="btn-logout">Quitter</button>
     </div>
   </header>
+
+  <div class="alarm hidden" id="alarm"></div>
 
   <div class="kpis" id="kpis"></div>
 
@@ -480,6 +490,31 @@ function renderHeader() {
   $('#lastrun').textContent = r
     ? `Dernier relevé ${dateTime(r.ran_at)} — ${r.quotes} prix sur ${r.watches} surveillance(s)`
     : 'Aucun relevé pour l’instant.';
+  renderAlarm();
+}
+
+/**
+ * Prévient quand les relevés se sont arrêtés. Le 31/08, la chaîne est restée
+ * muette plusieurs heures sans que rien ne le signale — cette bande est le
+ * seul avertissement qui ne dépende d'aucun composant en amont.
+ */
+function renderAlarm() {
+  const box = $('#alarm');
+  const limit = STATE.alert_after_minutes || 120;
+  const ranAt = STATE.last_run && STATE.last_run.ran_at ? Date.parse(STATE.last_run.ran_at) : null;
+  const age = ranAt ? (Date.now() - ranAt) / 60000 : null;
+
+  if (age !== null && age <= limit) { box.classList.add('hidden'); return; }
+
+  box.replaceChildren();
+  box.append(
+    el('span', 't', age === null ? 'Aucun relevé enregistré' : 'Les relevés se sont arrêtés'),
+    el('span', 'd', age === null
+      ? 'La surveillance n’a jamais tourné. Vérifiez le déclencheur externe.'
+      : `Dernier relevé il y a ${age < 1440 ? Math.round(age) + ' minutes' : Math.round(age / 1440) + ' jour(s)'}, `
+        + `le ${dateTime(STATE.last_run.ran_at)}. Les prix affichés ne sont plus à jour.`),
+  );
+  box.classList.remove('hidden');
 }
 
 function renderKpis() {

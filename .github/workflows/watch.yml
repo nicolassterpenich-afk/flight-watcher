@@ -69,14 +69,21 @@ jobs:
             exit 0
           fi
           git commit -m "Relevé des prix — $(date -u '+%Y-%m-%d %H:%M UTC')"
+          # -X theirs : sur conflit, garder les données de CE run. Deux relevés
+          # simultanés touchent les mêmes fichiers ; sans ça le rebase s'arrête
+          # et laisse des marqueurs de conflit dans data/latest.json.
+          # Le rebase avorté après chaque échec garantit un dépôt propre pour
+          # les étapes suivantes.
           for i in 1 2 3; do
-            if git pull --rebase --autostash origin "$GITHUB_REF_NAME" \
+            if git pull --rebase --autostash -X theirs origin "$GITHUB_REF_NAME" \
                && git push origin "HEAD:$GITHUB_REF_NAME"; then
               exit 0
             fi
+            git rebase --abort 2>/dev/null || true
             echo "Push refusé, nouvelle tentative ($i)…"
-            sleep 5
+            sleep $((i * 5))
           done
+          git rebase --abort 2>/dev/null || true
           echo "::warning::Impossible de pousser l'historique après 3 tentatives."
 
       - name: Résumé

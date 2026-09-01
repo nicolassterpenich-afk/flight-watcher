@@ -270,10 +270,19 @@ async function handleApi(request, env, url, path) {
       return new Response('Jeton invalide\n', { status: 401, headers: { 'content-type': 'text/plain; charset=utf-8' } });
     }
     const outcome = await runScheduled(env);
-    return new Response(`${outcome}\n`, {
-      status: 200,
-      headers: { 'content-type': 'text/plain; charset=utf-8', 'cache-control': 'no-store' },
-    });
+    // Un relevé qui ne tombe plus depuis deux heures se signale par un code
+    // d'erreur : le service de ping le voit comme une panne et prévient de
+    // lui-même. C'est le seul chien de garde qui survive à l'arrêt du moteur.
+    const age = await minutesSinceLastRun(env);
+    const broken = age === null || age > ALERT_MINUTES;
+    return new Response(
+      broken
+        ? `PANNE — aucun relevé depuis ${age === null ? 'toujours' : Math.round(age) + ' min'}. ${outcome}\n`
+        : `${outcome}\n`,
+      {
+        status: broken ? 503 : 200,
+        headers: { 'content-type': 'text/plain; charset=utf-8', 'cache-control': 'no-store' },
+      });
   }
 
   /* --- API du navigateur : session obligatoire sauf /api/login --- */
@@ -418,6 +427,7 @@ async function stateResponse(env) {
     }),
     history: history.results || [],
     history_days: STATE_HISTORY_DAYS,
+    alert_after_minutes: ALERT_MINUTES,
   });
 }
 
@@ -570,7 +580,8 @@ async function minutesSinceLastRun(env) {
   }
 }
 
-const STALE_MINUTES = 25;
+const STALE_MINUTES = 25;      // au-delà, le cron relance
+const ALERT_MINUTES = 120;     // au-delà, quelque chose est cassé
 
 /**
  * Ne déclenche un relevé que si GitHub ne l'a pas fait. Tant que son

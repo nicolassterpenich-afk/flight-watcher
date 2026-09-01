@@ -16,7 +16,14 @@ def main() -> int:
         print("Aucun résultat à résumer.")
         return 0
 
-    data = json.loads(path.read_text(encoding="utf-8"))
+    # Un rebase concurrent peut laisser des marqueurs de conflit dans le
+    # fichier. Le résumé est cosmétique : il ne doit jamais faire échouer un
+    # relevé qui, lui, a abouti et a déjà écrit dans la base.
+    try:
+        data = json.loads(path.read_text(encoding="utf-8"))
+    except (json.JSONDecodeError, OSError) as exc:
+        print(f"::warning::Résumé impossible, data/latest.json illisible : {exc}")
+        return 0
     out: list[str] = [
         f"### Relevé du {data.get('ran_at', '?')}",
         "",
