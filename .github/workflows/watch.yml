@@ -53,6 +53,19 @@ jobs:
           [ -n "$ONLY_WATCH" ] && ARGS="$ARGS --watch $ONLY_WATCH"
           python -m watcher.cli run $ARGS
 
+      # Veille éditoriale, volontairement à part du relevé de prix.
+      # continue-on-error : un flux mort, un site qui change d'adresse ou une
+      # page d'article illisible ne doivent jamais faire échouer un relevé qui,
+      # lui, a abouti et a déjà écrit ses prix en base.
+      - name: Veille des bons plans
+        continue-on-error: true
+        env:
+          WORKER_URL: ${{ secrets.WORKER_URL }}
+          AGENT_TOKEN: ${{ secrets.AGENT_TOKEN }}
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+        run: python -m watcher.promos --push --notify
+
       - name: Sauvegarder la base
         env:
           WORKER_URL: ${{ secrets.WORKER_URL }}
