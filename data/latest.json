@@ -1,5 +1,5 @@
 {
-  "ran_at": "2026-09-01T09:09:07Z",
+  "ran_at": "2026-09-01T09:11:15Z",
   "source": "api",
   "watches": [
     {
@@ -7,10 +7,10 @@
       "label": "Essai Wizz",
       "threshold": 150.0,
       "currency": "EUR",
-      "elapsed_s": 1.3,
+      "elapsed_s": 1.0,
       "quotes_found": 4,
       "errors": [],
-      "combinations": 1,
+      "combinations": 3,
       "status": "ok",
       "best_price": 96.0,
       "best_route": "CRL→BUD",
@@ -21,10 +21,10 @@
         "Wizz Air"
       ],
       "booking_url": "https://www.google.com/travel/flights/search?tfs=GhoSCjIwMjYtMTAtMTZqBRIDQ1JMcgUSA0JVRBoaEgoyMDI2LTEwLTIzagUSA0JVRHIFEgNDUkxCAQFIAZgBAQ==&hl=fr&curr=EUR",
-      "reason": "seuil",
-      "alerted": true,
+      "reason": "seuil déjà notifié (cooldown)",
+      "alerted": false,
       "stats": {
-        "count": 1,
+        "count": 2,
         "min": 96.0,
         "max": 96.0,
         "median": 96.0,
@@ -33,7 +33,7 @@
       }
     }
   ],
-  "alerts_sent": 1,
+  "alerts_sent": 0,
   "errors": [],
   "providers": {
     "wizzair": {
@@ -41,12 +41,12 @@
       "failures": 0,
       "sample": ""
     },
-    "ryanair": {
+    "google_flights": {
       "attempts": 1,
       "failures": 0,
       "sample": ""
     },
-    "google_flights": {
+    "ryanair": {
       "attempts": 1,
       "failures": 0,
       "sample": ""
