@@ -63,6 +63,14 @@
     "last_checked_at": "2026-09-01T07:16:19Z",
     "last_price": 148.0
   },
+  "norvege-2026": {
+    "best_ever": 167.0,
+    "last_alert_at": "2026-09-01T12:51:00Z",
+    "last_alert_price": 167.0,
+    "last_alert_reason": "seuil",
+    "last_checked_at": "2026-09-01T12:50:57Z",
+    "last_price": 167.0
+  },
   "test": {
     "best_ever": 96.0,
     "last_alert_at": "2026-08-31T13:15:37Z",
