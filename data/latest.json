@@ -1,5 +1,5 @@
 {
-  "ran_at": "2026-09-01T14:03:49Z",
+  "ran_at": "2026-09-01T14:33:00Z",
   "source": "api",
   "watches": [
     {
@@ -7,7 +7,7 @@
       "label": "THIERRY --> FEVRIER 2026",
       "threshold": 650.0,
       "currency": "EUR",
-      "elapsed_s": 6.3,
+      "elapsed_s": 7.2,
       "quotes_found": 100,
       "errors": [],
       "combinations": 21,
@@ -24,11 +24,11 @@
       "reason": "au-dessus du seuil",
       "alerted": false,
       "stats": {
-        "count": 39,
+        "count": 40,
         "min": 598.0,
         "max": 706.0,
         "median": 649.0,
-        "avg": 663.62,
+        "avg": 664.67,
         "last": 706.0
       }
     },
@@ -42,7 +42,7 @@
       "errors": [],
       "combinations": 2,
       "status": "ok",
-      "best_price": 588.0,
+      "best_price": 569.0,
       "best_route": "ORY→PTP",
       "best_depart": "2026-09-25",
       "best_return": "2026-10-05",
@@ -54,12 +54,12 @@
       "reason": "seuil déjà notifié (cooldown)",
       "alerted": false,
       "stats": {
-        "count": 39,
+        "count": 40,
         "min": 548.0,
         "max": 588.0,
         "median": 588.0,
-        "avg": 586.97,
-        "last": 588.0
+        "avg": 586.52,
+        "last": 569.0
       }
     },
     {
@@ -67,7 +67,7 @@
       "label": "Norvège 2026",
       "threshold": 300.0,
       "currency": "EUR",
-      "elapsed_s": 9.2,
+      "elapsed_s": 8.8,
       "quotes_found": 31,
       "errors": [],
       "combinations": 6,
@@ -85,7 +85,7 @@
       "reason": "seuil déjà notifié (cooldown)",
       "alerted": false,
       "stats": {
-        "count": 3,
+        "count": 4,
         "min": 167.0,
         "max": 167.0,
         "median": 167.0,
@@ -102,12 +102,12 @@
       "failures": 0,
       "sample": ""
     },
-    "ryanair": {
+    "wizzair": {
       "attempts": 12,
       "failures": 0,
       "sample": ""
     },
-    "wizzair": {
+    "ryanair": {
       "attempts": 12,
       "failures": 0,
       "sample": ""
