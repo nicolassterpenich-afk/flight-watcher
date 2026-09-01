@@ -271,9 +271,10 @@ async function handleApi(request, env, url, path) {
     }
     const outcome = await runScheduled(env);
     // Un relevé qui ne tombe plus depuis deux heures se signale par un code
-    // d'erreur : le service de ping le voit comme une panne et prévient de
-    // lui-même. C'est le seul chien de garde qui survive à l'arrêt du moteur.
+    // d'erreur — le service de ping le voit comme une panne — et par un
+    // message Telegram. Les deux survivent à l'arrêt du moteur.
     const age = await minutesSinceLastRun(env);
+    await watchdog(env, age);
     const broken = age === null || age > ALERT_MINUTES;
     return new Response(
       broken
@@ -606,6 +607,62 @@ async function runScheduled(env) {
   return message;
 }
 
+/* --------------------------------------------------------- alerte de panne */
+
+const ALARM_REPEAT_MINUTES = 360;   // ne pas répéter l'alarme avant 6 h
+
+async function telegram(env, text) {
+  if (!env.TELEGRAM_BOT_TOKEN || !env.TELEGRAM_CHAT_ID) return false;
+  const res = await fetch(`https://api.telegram.org/bot${env.TELEGRAM_BOT_TOKEN}/sendMessage`, {
+    method: 'POST',
+    headers: { 'content-type': 'application/json' },
+    body: JSON.stringify({
+      chat_id: env.TELEGRAM_CHAT_ID,
+      text,
+      parse_mode: 'HTML',
+      disable_web_page_preview: true,
+    }),
+  });
+  if (!res.ok) console.error('Telegram a refusé le message :', res.status, (await res.text()).slice(0, 200));
+  return res.ok;
+}
+
+/**
+ * Alerte quand les relevés s'arrêtent, et signale la reprise.
+ *
+ * L'alarme part du Worker, pas du moteur : quand la chaîne est en panne, le
+ * moteur ne tourne précisément plus. Elle ne se répète pas avant six heures —
+ * une panne prolongée ne doit pas devenir un harcèlement.
+ */
+async function watchdog(env, age) {
+  const row = await env.DB.prepare("SELECT value FROM settings WHERE key = 'meta:alarm'").first();
+  let alarm = null;
+  try { alarm = row ? JSON.parse(row.value) : null; } catch { alarm = null; }
+
+  const broken = age === null || age > ALERT_MINUTES;
+  const save = (value) => env.DB.prepare(
+    "INSERT INTO settings (key, value) VALUES ('meta:alarm', ?1) ON CONFLICT(key) DO UPDATE SET value = ?1"
+  ).bind(JSON.stringify(value)).run();
+
+  if (!broken) {
+    if (alarm) {
+      await telegram(env, '✅ <b>Les relevés ont repris.</b>\n\nLa surveillance est de nouveau à jour.');
+      await env.DB.prepare("DELETE FROM settings WHERE key = 'meta:alarm'").run();
+    }
+    return;
+  }
+
+  const since = alarm && alarm.last_sent ? (Date.now() - Date.parse(alarm.last_sent)) / 60000 : Infinity;
+  if (since < ALARM_REPEAT_MINUTES) return;
+
+  const duree = age === null ? 'aucun relevé n’a jamais abouti'
+    : `dernier relevé il y a ${age < 120 ? Math.round(age) + ' minutes' : Math.round(age / 60) + ' heures'}`;
+  const sent = await telegram(env,
+    `🚨 <b>La surveillance s’est arrêtée</b>\n\n${duree}.\n`
+    + 'Les prix affichés ne sont plus à jour. Le déclencheur externe ou GitHub Actions est en cause.');
+  await save({ last_sent: sent ? nowIso() : (alarm && alarm.last_sent) || null, since: (alarm && alarm.since) || nowIso() });
+}
+
 async function noteCron(env, action, age) {
   await env.DB.prepare(
     "INSERT INTO settings (key, value) VALUES ('meta:last_cron', ?1) ON CONFLICT(key) DO UPDATE SET value = ?1"
@@ -616,7 +673,7 @@ async function noteCron(env, action, age) {
 
 export default {
   async scheduled(event, env, ctx) {
-    ctx.waitUntil(runScheduled(env));
+    ctx.waitUntil(runScheduled(env).then(() => minutesSinceLastRun(env)).then((age) => watchdog(env, age)));
   },
 
   async fetch(request, env) {
