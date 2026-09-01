@@ -1,14 +1,104 @@
 {
-  "ran_at": "2026-09-01T12:50:52Z",
+  "ran_at": "2026-09-01T13:46:20Z",
   "source": "api",
   "watches": [
+    {
+      "id": "bangkok-fevrier",
+      "label": "Bangkok en février",
+      "threshold": 600.0,
+      "currency": "EUR",
+      "elapsed_s": 6.2,
+      "quotes_found": 90,
+      "errors": [],
+      "combinations": 14,
+      "status": "ok",
+      "best_price": 598.0,
+      "best_route": "BRU→BKK",
+      "best_depart": "2027-02-08",
+      "best_return": "2027-02-22",
+      "provider": "google_flights",
+      "airlines": [
+        "British Airways"
+      ],
+      "booking_url": "https://www.google.com/travel/flights/search?tfs=GhwSCjIwMjctMDItMDgoAWoFEgNCUlVyBRIDQktLGhwSCjIwMjctMDItMjIoAWoFEgNCS0tyBRIDQlJVQgEBSAGYAQE=&hl=fr&curr=EUR",
+      "reason": "seuil déjà notifié (cooldown)",
+      "alerted": false,
+      "stats": {
+        "count": 45,
+        "min": 572.0,
+        "max": 598.0,
+        "median": 598.0,
+        "avg": 596.27,
+        "last": 598.0
+      }
+    },
+    {
+      "id": "fevrier-2026",
+      "label": "THIERRY --> FEVRIER 2026",
+      "threshold": 650.0,
+      "currency": "EUR",
+      "elapsed_s": 6.4,
+      "quotes_found": 101,
+      "errors": [],
+      "combinations": 21,
+      "status": "ok",
+      "best_price": 689.0,
+      "best_route": "CDG→BKK",
+      "best_depart": "2027-02-18",
+      "best_return": "2027-03-04",
+      "provider": "google_flights",
+      "airlines": [
+        "Austrian"
+      ],
+      "booking_url": "https://www.google.com/travel/flights/search?tfs=GhwSCjIwMjctMDItMTgoAWoFEgNDREdyBRIDQktLGhwSCjIwMjctMDMtMDQoAWoFEgNCS0tyBRIDQ0RHQgEBSAGYAQE=&hl=fr&curr=EUR",
+      "reason": "au-dessus du seuil",
+      "alerted": false,
+      "stats": {
+        "count": 38,
+        "min": 598.0,
+        "max": 706.0,
+        "median": 643.0,
+        "avg": 662.5,
+        "last": 689.0
+      }
+    },
+    {
+      "id": "asmet",
+      "label": "ASMET",
+      "threshold": 600.0,
+      "currency": "EUR",
+      "elapsed_s": 1.0,
+      "quotes_found": 6,
+      "errors": [],
+      "combinations": 2,
+      "status": "ok",
+      "best_price": 588.0,
+      "best_route": "ORY→PTP",
+      "best_depart": "2026-09-25",
+      "best_return": "2026-10-05",
+      "provider": "google_flights",
+      "airlines": [
+        "Corsair"
+      ],
+      "booking_url": "https://www.google.com/travel/flights/search?tfs=GhoSCjIwMjYtMDktMjVqBRIDT1JZcgUSA1BUUBoaEgoyMDI2LTEwLTA1agUSA1BUUHIFEgNPUllCAQFIAZgBAQ==&hl=fr&curr=EUR",
+      "reason": "seuil déjà notifié (cooldown)",
+      "alerted": false,
+      "stats": {
+        "count": 38,
+        "min": 548.0,
+        "max": 588.0,
+        "median": 588.0,
+        "avg": 586.95,
+        "last": 588.0
+      }
+    },
     {
       "id": "norvege-2026",
       "label": "Norvège 2026",
       "threshold": 300.0,
       "currency": "EUR",
-      "elapsed_s": 7.8,
-      "quotes_found": 32,
+      "elapsed_s": 9.3,
+      "quotes_found": 31,
       "errors": [],
       "combinations": 6,
       "status": "ok",
@@ -22,10 +112,10 @@
         "Lufthansa"
       ],
       "booking_url": "https://www.google.com/travel/flights/search?tfs=GhwSCjIwMjYtMTAtMjEoAWoFEgNDREdyBRIDT1NMGhwSCjIwMjYtMTEtMTIoAWoFEgNPU0xyBRIDQ0RHQgEBSAGYAQE=&hl=fr&curr=EUR",
-      "reason": "seuil",
-      "alerted": true,
+      "reason": "seuil déjà notifié (cooldown)",
+      "alerted": false,
       "stats": {
-        "count": 1,
+        "count": 2,
         "min": 167.0,
         "max": 167.0,
         "median": 167.0,
@@ -34,20 +124,20 @@
       }
     }
   ],
-  "alerts_sent": 1,
+  "alerts_sent": 0,
   "errors": [],
   "providers": {
-    "ryanair": {
-      "attempts": 12,
-      "failures": 0,
-      "sample": ""
-    },
     "google_flights": {
-      "attempts": 12,
+      "attempts": 59,
       "failures": 0,
       "sample": ""
     },
     "wizzair": {
+      "attempts": 12,
+      "failures": 0,
+      "sample": ""
+    },
+    "ryanair": {
       "attempts": 12,
       "failures": 0,
       "sample": ""
