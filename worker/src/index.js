@@ -9,6 +9,7 @@
 
 import UI from './ui.html';
 import AIRPORTS from './airports.js';
+import COMPAGNIES from './compagnies.js';
 
 const SESSION_COOKIE = 'fw_session';
 const SESSION_TTL_S = 60 * 60 * 24 * 90;      // 90 jours : « mémorisé sur l'appareil »
@@ -400,6 +401,10 @@ async function handleApi(request, env, url, path) {
   // Référentiel figé : le navigateur peut le garder une journée.
   if (path === '/api/airports' && method === 'GET') {
     return json({ airports: AIRPORTS }, 200, { 'cache-control': 'private, max-age=86400' });
+  }
+
+  if (path === '/api/compagnies' && method === 'GET') {
+    return json({ compagnies: COMPAGNIES }, 200, { 'cache-control': 'private, max-age=86400' });
   }
 
   if (path === '/api/feed' && method === 'GET') {

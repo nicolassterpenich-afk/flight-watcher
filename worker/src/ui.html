@@ -400,6 +400,15 @@
   .fil-dates.hors { background: rgba(207,79,69,.11); color: var(--critical); }
 
   .route .flex.partage { color: var(--accent); font-weight: 600; }
+
+  #d-verifier { margin-top: 26px; }
+  #d-verifier .controls { margin-top: 12px; }
+  a.verif { border: 1px solid var(--border); border-radius: 999px; padding: 8px 15px;
+            font-size: 13px; font-weight: 600; text-decoration: none; color: var(--ink-2);
+            background: transparent; }
+  a.verif:hover { border-color: var(--accent); color: var(--accent); }
+  a.verif.deep, a.verif.meta { color: var(--accent); border-color: var(--accent); }
+  a.verif.meta { background: var(--sunk); }
 </style>
 </head>
 <body>
@@ -461,6 +470,8 @@
       <button type="button" class="chip" data-days="30">30 jours</button>
       <button type="button" class="chip" data-days="90">tout</button>
     </div>
+    <div id="d-verifier" class="hidden"></div>
+
     <div id="bydate" class="hidden">
       <h4>Quel jour partir</h4>
       <p class="hint" id="bydate-note"></p>
@@ -1000,6 +1011,7 @@ function renderDetail() {
   loadByDate(w.id).then((data) => {
     if (selected === w.id) drawByDate(w, data);
   });
+  renderVerifier(w);
 
   const tbody = $('#d-table tbody');
   tbody.replaceChildren();
@@ -1059,6 +1071,97 @@ function renderStats(w) {
 }
 
 const bold = (text) => el('b', null, text);
+
+/* --------------------------------------------- vérifier chez la compagnie */
+
+let COMPAGNIES = null;
+
+async function loadCompagnies() {
+  if (COMPAGNIES) return COMPAGNIES;
+  try {
+    const data = await api('/api/compagnies');
+    COMPAGNIES = (data.compagnies || []).map((r) => {
+      const [genre, nom, gabarit] = r.split('|');
+      return { genre, nom, gabarit };
+    });
+  } catch {
+    COMPAGNIES = [];
+  }
+  return COMPAGNIES;
+}
+
+const compact = (iso) => (iso || '').slice(2).replace(/-/g, '');
+
+/** Remplit un gabarit. Les jetons les plus longs d'abord, sinon {ret_c}
+ *  serait mangé par {ret}. */
+function remplir(gabarit, r, adultes) {
+  const ret = r.ret || '';
+  return gabarit
+    .replace(/\{origin_l\}/g, (r.origin || '').toLowerCase())
+    .replace(/\{destination_l\}/g, (r.destination || '').toLowerCase())
+    .replace(/\{depart_c\}/g, compact(r.depart))
+    .replace(/\{ret_c\}/g, compact(ret))
+    .replace(/\{ret_ou_null\}/g, ret || 'null')
+    .replace(/\{est_ar\}/g, ret ? 'true' : 'false')
+    .replace(/\{origin\}/g, r.origin || '')
+    .replace(/\{destination\}/g, r.destination || '')
+    .replace(/\{depart\}/g, r.depart || '')
+    .replace(/\{ret\}/g, ret)
+    .replace(/\{adults\}/g, String(adultes))
+    // Un retour vide laisse « //» au milieu du chemin ; le slash final, lui,
+    // fait partie du gabarit et doit rester.
+    .replace(/([^:])\/{2,}/g, '$1/');
+}
+
+/** Le relevé qui a produit le prix affiché : c'est lui qui porte les dates. */
+function dernierReleve(watchId) {
+  const lignes = STATE.history.filter((h) => h.watch_id === watchId);
+  return lignes.length ? lignes[lignes.length - 1] : null;
+}
+
+async function renderVerifier(w) {
+  const box = $('#d-verifier');
+  box.replaceChildren();
+  const r = dernierReleve(w.id);
+  if (!r) { box.classList.add('hidden'); return; }
+
+  const table = await loadCompagnies();
+  if (!table.length) { box.classList.add('hidden'); return; }
+  box.classList.remove('hidden');
+
+  const adultes = (w.passengers && w.passengers.adults) || 1;
+  let compagnies = [];
+  try { compagnies = JSON.parse(r.airlines || '[]'); } catch {}
+
+  const bouton = (nom, href, genre) => {
+    const a = el('a', `verif ${genre}`, nom);
+    a.href = href;
+    a.target = '_blank';
+    a.rel = 'noopener noreferrer';
+    a.title = genre === 'home'
+      ? `${nom} — page d'accueil, la recherche n'est pas pré-remplie`
+      : `${nom} — recherche pré-remplie ${r.origin}→${r.destination}`;
+    return a;
+  };
+
+  const rangee = el('div', 'controls');
+
+  // Les compagnies du vol relevé d'abord : ce sont elles qu'on veut vérifier.
+  for (const nom of compagnies) {
+    const c = table.find((x) => x.nom.toLowerCase() === String(nom).toLowerCase());
+    if (c) rangee.append(bouton(c.nom, remplir(c.gabarit, r, adultes), c.genre));
+    else rangee.append(bouton(nom, `https://www.google.com/search?q=${encodeURIComponent(nom + ' vols')}`, 'home'));
+  }
+
+  for (const c of table.filter((x) => x.genre === 'meta')) {
+    rangee.append(bouton(c.nom, remplir(c.gabarit, r, adultes), 'meta'));
+  }
+
+  box.append(el('h4', 'section-hist', 'Vérifier soi-même'),
+             el('p', 'hint', `Sur ${r.origin}→${r.destination}, ${r.depart}${r.ret ? ' ⇄ ' + r.ret : ''}. `
+                + 'Les liens s’ouvrent dans votre navigateur, avec votre session et vos tarifs membre.'),
+             rangee);
+}
 
 /* ------------------------------------------------- prix par date de départ */
 

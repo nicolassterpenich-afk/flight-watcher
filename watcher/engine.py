@@ -10,7 +10,7 @@ from datetime import datetime, timedelta
 from typing import Any
 from zoneinfo import ZoneInfo
 
-from . import remote, store
+from . import compagnies, remote, store
 from .alerts import Telegram, esc
 from .config import expand_dates, load_watches
 from .models import Quote, Watch, WatchResult
@@ -309,6 +309,15 @@ def format_alert(watch: Watch, best: Quote, reason: str, ctx: dict[str, Any]) ->
     if best.booking_url:
         lines.append("")
         lines.append(f'<a href="{esc(best.booking_url)}">🔗 Ouvrir la recherche</a>')
+
+    # Vérifier soi-même chez la compagnie : le lien s'ouvre dans le navigateur
+    # de l'utilisateur, donc avec sa session et ses tarifs membre. Aucun
+    # identifiant n'est stocké de notre côté.
+    verifs = compagnies.liens(watch, best)
+    if verifs:
+        lines.append("")
+        lines.append("Vérifier : " + " · ".join(
+            f'<a href="{esc(url)}">{esc(nom)}</a>' for _, nom, url in verifs[:5]))
     lines.append(f"\n<i>{esc(best.provider)} • {datetime.now(TZ).strftime('%d/%m %H:%M')}</i>")
     return "\n".join(lines)
 
