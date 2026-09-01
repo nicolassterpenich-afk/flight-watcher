@@ -1,5 +1,5 @@
 {
-  "ran_at": "2026-09-01T07:16:00Z",
+  "ran_at": "2026-09-01T07:45:32Z",
   "source": "api",
   "watches": [
     {
@@ -7,7 +7,7 @@
       "label": "Bangkok en février",
       "threshold": 600.0,
       "currency": "EUR",
-      "elapsed_s": 5.6,
+      "elapsed_s": 5.5,
       "quotes_found": 90,
       "errors": [],
       "status": "ok",
@@ -23,31 +23,21 @@
       "reason": "seuil déjà notifié (cooldown)",
       "alerted": false,
       "stats": {
-        "count": 33,
+        "count": 34,
         "min": 572.0,
         "max": 598.0,
         "median": 598.0,
-        "avg": 595.64,
+        "avg": 595.71,
         "last": 598.0
       }
-    },
-    {
-      "id": "rarotonga-mai-2027",
-      "label": "Îles Cook — Rarotonga mai 2027",
-      "threshold": 1500.0,
-      "currency": "EUR",
-      "elapsed_s": 4.3,
-      "quotes_found": 0,
-      "errors": [],
-      "status": "aucun prix"
     },
     {
       "id": "fevrier-2026",
       "label": "FEVRIER 2026",
       "threshold": 700.0,
       "currency": "EUR",
-      "elapsed_s": 6.6,
-      "quotes_found": 100,
+      "elapsed_s": 6.7,
+      "quotes_found": 99,
       "errors": [],
       "status": "ok",
       "best_price": 706.0,
@@ -62,11 +52,11 @@
       "reason": "au-dessus du seuil",
       "alerted": false,
       "stats": {
-        "count": 26,
+        "count": 27,
         "min": 598.0,
         "max": 706.0,
         "median": 637.0,
-        "avg": 647.0,
+        "avg": 649.19,
         "last": 706.0
       }
     },
@@ -75,7 +65,7 @@
       "label": "ASMET",
       "threshold": 600.0,
       "currency": "EUR",
-      "elapsed_s": 1.2,
+      "elapsed_s": 1.0,
       "quotes_found": 6,
       "errors": [],
       "status": "ok",
@@ -91,41 +81,12 @@
       "reason": "seuil déjà notifié (cooldown)",
       "alerted": false,
       "stats": {
-        "count": 26,
+        "count": 27,
         "min": 588.0,
         "max": 588.0,
         "median": 588.0,
         "avg": 588.0,
         "last": 588.0
-      }
-    },
-    {
-      "id": "jeff",
-      "label": "Jeff",
-      "threshold": 100.0,
-      "currency": "EUR",
-      "elapsed_s": 1.2,
-      "quotes_found": 13,
-      "errors": [],
-      "status": "ok",
-      "best_price": 148.0,
-      "best_route": "CDG→LHR",
-      "best_depart": "2026-09-14",
-      "best_return": "2026-09-17",
-      "provider": "google_flights",
-      "airlines": [
-        "Air France"
-      ],
-      "booking_url": "https://www.google.com/travel/flights/search?tfs=GhoSCjIwMjYtMDktMTRqBRIDQ0RHcgUSA0xIUhoaEgoyMDI2LTA5LTE3agUSA0xIUnIFEgNDREdCAQFIAZgBAQ==&hl=fr&curr=EUR",
-      "reason": "au-dessus du seuil",
-      "alerted": false,
-      "stats": {
-        "count": 23,
-        "min": 148.0,
-        "max": 157.0,
-        "median": 153.0,
-        "avg": 153.96,
-        "last": 148.0
       }
     }
   ],
