@@ -313,11 +313,41 @@ async function handleApi(request, env, url, path) {
     const watchId = url.searchParams.get('watch');
     const days = Math.min(Math.max(Number(url.searchParams.get('days')) || 90, 1), 400);
     const since = new Date(Date.now() - days * 86400000).toISOString();
+    const cols = 'watch_id, MIN(price) AS price, currency, checked_at, origin, destination, depart, ret,'
+               + ' airlines, stops, booking_url';
     const stmt = watchId
-      ? env.DB.prepare('SELECT * FROM history WHERE watch_id = ?1 AND checked_at >= ?2 ORDER BY checked_at').bind(watchId, since)
-      : env.DB.prepare('SELECT * FROM history WHERE checked_at >= ?1 ORDER BY checked_at').bind(since);
+      ? env.DB.prepare(`SELECT ${cols} FROM history WHERE watch_id = ?1 AND checked_at >= ?2`
+          + ' GROUP BY watch_id, checked_at ORDER BY checked_at').bind(watchId, since)
+      : env.DB.prepare(`SELECT ${cols} FROM history WHERE checked_at >= ?1`
+          + ' GROUP BY watch_id, checked_at ORDER BY checked_at').bind(since);
     const { results } = await stmt.all();
     return json({ rows: results || [] });
+  }
+
+  // Prix par date de départ : ce que le relevé teste depuis toujours et qu'on
+  // jetait. C'est la question « quel jour partir », pas « comment le prix
+  // évolue ».
+  if (path === '/api/by-date' && method === 'GET') {
+    const watchId = url.searchParams.get('watch');
+    if (!watchId) throw new HttpError(400, 'paramètre watch requis');
+    const days = Math.min(Math.max(Number(url.searchParams.get('days')) || 30, 1), 400);
+    const since = new Date(Date.now() - days * 86400000).toISOString();
+
+    const last = await env.DB.prepare(
+      'SELECT MAX(checked_at) AS ts FROM history WHERE watch_id = ?1').bind(watchId).first();
+    if (!last || !last.ts) return json({ checked_at: null, latest: [], best: [] });
+
+    const [latest, best] = await Promise.all([
+      env.DB.prepare(
+        'SELECT depart, ret, MIN(price) AS price, origin, destination, currency, booking_url, airlines'
+        + ' FROM history WHERE watch_id = ?1 AND checked_at = ?2 GROUP BY depart ORDER BY depart'
+      ).bind(watchId, last.ts).all(),
+      env.DB.prepare(
+        'SELECT depart, MIN(price) AS price FROM history WHERE watch_id = ?1 AND checked_at >= ?2'
+        + ' GROUP BY depart ORDER BY depart'
+      ).bind(watchId, since).all(),
+    ]);
+    return json({ checked_at: last.ts, days, latest: latest.results || [], best: best.results || [] });
   }
 
   if (path === '/api/watches' && method === 'POST') {
@@ -397,9 +427,14 @@ async function stateResponse(env) {
   const [watches, states, history, settings] = await Promise.all([
     env.DB.prepare('SELECT * FROM watches ORDER BY created_at').all(),
     env.DB.prepare('SELECT * FROM alert_state').all(),
+    // Une ligne par relevé, pas par combinaison de dates : depuis qu'on garde
+    // toutes les combinaisons, la charge utile brute serait vingt fois plus
+    // lourde. SQLite garantit que les colonnes nues d'un GROUP BY avec MIN()
+    // proviennent de la ligne qui a produit ce minimum.
     env.DB.prepare(
-      'SELECT watch_id, price, currency, checked_at, origin, destination, depart, ret, airlines, stops, booking_url'
-      + ' FROM history WHERE checked_at >= ?1 ORDER BY checked_at').bind(since).all(),
+      'SELECT watch_id, MIN(price) AS price, currency, checked_at, origin, destination, depart, ret,'
+      + ' airlines, stops, booking_url FROM history WHERE checked_at >= ?1'
+      + ' GROUP BY watch_id, checked_at ORDER BY checked_at').bind(since).all(),
     loadSettings(env),
   ]);
 

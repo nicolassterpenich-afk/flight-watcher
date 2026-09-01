@@ -108,6 +108,24 @@ def run_watch(watch: Watch, settings: dict[str, Any]) -> WatchResult:
     return WatchResult(watch=watch, quotes=quotes, errors=errors)
 
 
+def best_per_combination(quotes: list[Quote]) -> list[Quote]:
+    """Le meilleur prix de chaque (origine, destination, aller, retour).
+
+    Un relevé interroge jusqu'à 21 combinaisons et n'en gardait qu'une : tout
+    le reste était perdu, alors que c'est précisément ce qui dit quel jour
+    partir. Ces lignes ne vont qu'en base — le fichier JSONL du dépôt, lui,
+    garde une ligne par relevé, sinon l'historique committé enflerait d'un
+    facteur vingt à chaque passage.
+    """
+    best: dict[tuple, Quote] = {}
+    for q in quotes:
+        if not q.price or q.price <= 0:
+            continue
+        key = (q.origin, q.destination, q.depart, q.ret)
+        if key not in best or q.price < best[key].price:
+            best[key] = q
+    return sorted(best.values(), key=lambda q: (q.depart, q.origin))
+
 # --------------------------------------------------------------------------
 # Décision d'alerte
 # --------------------------------------------------------------------------
@@ -267,7 +285,8 @@ def run(force_notify: bool = False, only: str | None = None,
         "alerts_sent": 0,
         "errors": [],
     }
-    to_store: list[Quote] = []
+    to_store: list[Quote] = []      # un par surveillance — fichier JSONL et dashboard
+    to_push: list[Quote] = []       # un par combinaison de dates — base D1
 
     for watch in active:
         started = time.time()
@@ -293,6 +312,9 @@ def run(force_notify: bool = False, only: str | None = None,
             continue
 
         to_store.append(best)
+        combinations = best_per_combination(result.quotes)
+        to_push.extend(combinations)
+        entry["combinations"] = len(combinations)
         should, reason, ctx = decide_alert(watch, best, state, settings)
         # Un relevé forcé (/check, "Run workflow") doit toujours répondre, mais
         # il ne doit pas se faire passer pour une vraie alerte de seuil ni
@@ -362,7 +384,7 @@ def run(force_notify: bool = False, only: str | None = None,
         # jamais faire échouer un relevé déjà abouti.
         if remote.configured():
             try:
-                pushed = remote.push_results(summary["ran_at"], summary["watches"], to_store, state)
+                pushed = remote.push_results(summary["ran_at"], summary["watches"], to_push, state)
                 log.info("Worker mis à jour : %s prix sur %s surveillance(s)",
                          pushed.get("quotes"), pushed.get("watches"))
                 summary["pushed"] = True

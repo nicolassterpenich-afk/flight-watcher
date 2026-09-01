@@ -167,12 +167,15 @@ def replace_watches(watches: list[Watch]) -> dict[str, Any]:
 
 def push_results(ran_at: str, entries: list[dict[str, Any]],
                  quotes: list[Quote], state: dict[str, Any]) -> dict[str, Any]:
-    """Renvoie au Worker le meilleur prix de chaque surveillance et son état.
+    """Renvoie au Worker les prix relevés et l'état de chaque surveillance.
 
-    `entries` est `summary["watches"]`, `quotes` la liste des meilleurs devis
-    (un par surveillance, comme dans data/history.jsonl).
+    `entries` est `summary["watches"]`, `quotes` le meilleur prix de chaque
+    combinaison de dates — plusieurs lignes par surveillance, contrairement au
+    fichier JSONL du dépôt qui n'en garde qu'une.
     """
-    by_watch = {q.watch_id: q for q in quotes}
+    par_surveillance: dict[str, list[Quote]] = {}
+    for q in quotes:
+        par_surveillance.setdefault(q.watch_id, []).append(q)
     results = []
 
     for entry in entries:
@@ -180,10 +183,10 @@ def push_results(ran_at: str, entries: list[dict[str, Any]],
         if not wid:
             continue
         node = state.get(wid, {})
-        best = by_watch.get(wid)
+        releves = par_surveillance.get(wid, [])
         results.append({
             "watch_id": wid,
-            "quotes": [best.to_dict()] if best else [],
+            "quotes": [q.to_dict() for q in releves],
             "state": {
                 "last_price": node.get("last_price"),
                 "best_ever": node.get("best_ever"),

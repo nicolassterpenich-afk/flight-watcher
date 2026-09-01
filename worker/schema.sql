@@ -40,9 +40,14 @@ CREATE TABLE IF NOT EXISTS history (
   checked_at   TEXT NOT NULL
 );
 CREATE INDEX IF NOT EXISTS idx_history_watch ON history(watch_id, checked_at);
--- Un seul relevé par surveillance et par horodatage : rejouer un POST results
--- (relance de job, doublon réseau) ne duplique pas l'historique.
-CREATE UNIQUE INDEX IF NOT EXISTS idx_history_unique ON history(watch_id, checked_at, provider, origin, destination, depart);
+-- Un relevé garde désormais le meilleur prix de CHAQUE combinaison de dates :
+-- la clé d'unicité doit donc inclure le retour, sinon deux combinaisons qui ne
+-- diffèrent que par lui s'écraseraient. ifnull() parce qu'en SQLite deux NULL
+-- sont considérés distincts dans un index unique — les allers simples ne
+-- seraient jamais dédoublonnés.
+CREATE UNIQUE INDEX IF NOT EXISTS idx_history_unique
+  ON history(watch_id, checked_at, provider, origin, destination, depart, ifnull(ret, ''));
+CREATE INDEX IF NOT EXISTS idx_history_depart ON history(watch_id, depart, price);
 
 CREATE TABLE IF NOT EXISTS alert_state (
   watch_id          TEXT PRIMARY KEY,
