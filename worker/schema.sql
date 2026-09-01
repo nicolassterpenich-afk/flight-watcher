@@ -14,6 +14,8 @@ CREATE TABLE IF NOT EXISTS watches (
   max_stops     INTEGER,
   flex_days     INTEGER NOT NULL DEFAULT 0,   -- ± N jours autour de l'aller
   flex_days_ret INTEGER,                      -- ± N jours autour du retour ; NULL = comme l'aller
+  nights_min    INTEGER,                      -- séjour souple : « 7 à 10 nuits »
+  nights_max    INTEGER,                      -- le retour est alors calculé, ret reste NULL
   passengers    TEXT NOT NULL DEFAULT '{"adults":1,"children":0,"infants_in_seat":0,"infants_on_lap":0}',
   providers     TEXT NOT NULL DEFAULT '["google_flights"]',
   enabled       INTEGER NOT NULL DEFAULT 1,

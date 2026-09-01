@@ -36,6 +36,8 @@ class Watch:
     max_stops: Optional[int] = None
     flex_days: int = 0               # ± N jours autour de l'aller
     flex_days_ret: Optional[int] = None   # ± N jours autour du retour ; None = comme l'aller
+    nights_min: Optional[int] = None      # séjour souple : « 7 à 10 nuits »
+    nights_max: Optional[int] = None      # le retour est alors calculé, pas fixé
     passengers: Passengers = field(default_factory=Passengers)
     providers: list[str] = field(default_factory=lambda: ["google_flights"])
     enabled: bool = True
@@ -44,13 +46,26 @@ class Watch:
 
     @property
     def is_round_trip(self) -> bool:
-        return bool(self.ret)
+        # Un séjour souple n'a pas de date de retour fixe, mais c'est bien un
+        # aller-retour : elle est calculée depuis la durée.
+        return bool(self.ret) or self.nights_min is not None
+
+    @property
+    def nights_range(self) -> Optional[range]:
+        if self.nights_min is None:
+            return None
+        return range(self.nights_min, (self.nights_max if self.nights_max is not None else self.nights_min) + 1)
 
     def display(self) -> str:
         if self.label:
             return self.label
         route = f"{'/'.join(self.origins)} → {'/'.join(self.destinations)}"
-        dates = self.depart + (f" ⇄ {self.ret}" if self.ret else "")
+        if self.nights_min is not None:
+            nuits = (f"{self.nights_min} nuits" if self.nights_max in (None, self.nights_min)
+                     else f"{self.nights_min}-{self.nights_max} nuits")
+            dates = f"{self.depart} + {nuits}"
+        else:
+            dates = self.depart + (f" ⇄ {self.ret}" if self.ret else "")
         return f"{route} {dates}"
 
 

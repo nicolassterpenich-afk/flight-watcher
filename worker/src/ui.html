@@ -374,6 +374,12 @@
       <div><label for="f-depart">Aller</label><input type="date" id="f-depart" required></div>
       <div><label for="f-ret">Retour <span class="opt">(vide = aller simple)</span></label>
         <input type="date" id="f-ret"></div>
+      <div style="grid-column: 1 / -1"><label for="f-nights-min">Durée de séjour souple
+        <span class="opt">— laisse vide pour garder une date de retour fixe</span></label>
+        <div style="display:flex; gap:10px; align-items:center">
+          <input type="number" id="f-nights-min" min="1" max="60" placeholder="de … nuits" style="flex:1">
+          <input type="number" id="f-nights-max" min="1" max="60" placeholder="à … nuits" style="flex:1">
+        </div></div>
       <div><label for="f-threshold">Seuil d'alerte (€)</label>
         <input type="number" id="f-threshold" min="0" step="10" placeholder="600"></div>
       <div><label for="f-flex">Souplesse aller <span class="opt">(± jours)</span></label>
@@ -553,6 +559,16 @@ function renderKpis() {
   tile(`Relevés (${STATE.history_days || 7} j)`, String(STATE.history.length), 'lignes d’historique');
 }
 
+/** Dates d'une surveillance, en tenant compte d'un éventuel séjour souple. */
+function datesOf(w) {
+  if (w.nights_min != null) {
+    const nuits = w.nights_max != null && w.nights_max !== w.nights_min
+      ? `${w.nights_min}–${w.nights_max} nuits` : `${w.nights_min} nuits`;
+    return `${w.depart} + ${nuits}`;
+  }
+  return w.depart + (w.ret ? ' ⇄ ' + w.ret : '');
+}
+
 function statusBadge(w) {
   let cls = 'none', text = 'en attente';
   if (CHECKING.has(w.id)) { cls = 'checking'; text = 'relevé en cours…'; }
@@ -592,7 +608,7 @@ function renderCards() {
     const head = el('div', 'card-head');
     const left = el('div');
     left.append(el('div', 'name', w.label || w.id),
-                el('div', 'route', `${w.origins.join('/')} → ${w.destinations.join('/')} · ${w.depart}${w.ret ? ' ⇄ ' + w.ret : ''}`));
+                el('div', 'route', `${w.origins.join('/')} → ${w.destinations.join('/')} · ${datesOf(w)}`));
     head.append(left, statusBadge(w));
 
     const row = el('div', 'row');
@@ -702,7 +718,7 @@ function renderDetail() {
     box.append(a);
   }
   $('#d-sub').textContent =
-    `${w.origins.join('/')} → ${w.destinations.join('/')} · ${w.depart}${w.ret ? ' ⇄ ' + w.ret : ''}`
+    `${w.origins.join('/')} → ${w.destinations.join('/')} · ${datesOf(w)}`
     + ` · ± ${w.flex_days} j · ${w.max_stops == null ? 'escales libres' : w.max_stops + ' escale(s) max'}`
     + ` · dernier contrôle ${dateTime(w.last_checked_at)}`;
   $('#d-toggle').textContent = w.enabled ? 'Mettre en pause' : 'Réactiver';
@@ -1134,8 +1150,15 @@ function updateCost() {
   const back = raw === '' ? out : Math.min(Math.max(Number(raw) || 0, 0), 7);
   const hasReturn = Boolean($('#f-ret').value);
 
+  const nMin = Number($('#f-nights-min').value) || 0;
+  const nMax = Number($('#f-nights-max').value) || nMin;
+
   let pairs, mode;
-  if (!hasReturn) {
+  if (nMin > 0) {
+    const durees = Math.max(nMax - nMin + 1, 1);
+    pairs = (2 * out + 1) * durees;
+    mode = `${2 * out + 1} date(s) de départ × ${durees} durée(s) de séjour`;
+  } else if (!hasReturn) {
     pairs = 2 * out + 1;
     mode = `${pairs} date${pairs > 1 ? 's' : ''} de départ`;
   } else if (back === out) {
@@ -1165,6 +1188,8 @@ function openForm(w) {
   fDestinations.set(w ? w.destinations : []);
   $('#f-depart').value = w ? w.depart : '';
   $('#f-ret').value = w && w.ret ? w.ret : '';
+  $('#f-nights-min').value = w && w.nights_min != null ? w.nights_min : '';
+  $('#f-nights-max').value = w && w.nights_max != null ? w.nights_max : '';
   $('#f-threshold').value = w && w.threshold != null ? w.threshold : '';
   $('#f-flex').value = w ? w.flex_days : 0;
   $('#f-flex-ret').value = w && w.flex_days_ret != null ? w.flex_days_ret : '';
@@ -1178,7 +1203,7 @@ function openForm(w) {
 }
 const closeForm = () => $('#modal').classList.add('hidden');
 
-['#f-flex', '#f-flex-ret', '#f-ret', '#f-providers'].forEach((sel) =>
+['#f-flex', '#f-flex-ret', '#f-ret', '#f-providers', '#f-nights-min', '#f-nights-max'].forEach((sel) =>
   $(sel).addEventListener('input', updateCost));
 
 $('#btn-new').addEventListener('click', () => openForm(null));
@@ -1206,6 +1231,8 @@ $('#watch-form').addEventListener('submit', async (e) => {
     threshold: numOrNull($('#f-threshold').value),
     flex_days: Number($('#f-flex').value || 0),
     flex_days_ret: $('#f-flex-ret').value === '' ? null : Number($('#f-flex-ret').value),
+    nights_min: $('#f-nights-min').value === '' ? null : Number($('#f-nights-min').value),
+    nights_max: $('#f-nights-max').value === '' ? null : Number($('#f-nights-max').value),
     max_stops: numOrNull($('#f-stops').value),
     passengers: { adults: Number($('#f-adults').value || 1), children: 0, infants_in_seat: 0, infants_on_lap: 0 },
     seat: $('#f-seat').value,

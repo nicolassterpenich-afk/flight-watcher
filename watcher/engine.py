@@ -51,6 +51,17 @@ def build_jobs(watch: Watch, settings: dict[str, Any]) -> list[tuple[str, str, s
         for destination in watch.destinations:
             if origin == destination:
                 continue
+            # Séjour souple : le retour se déduit de chaque date d'aller, ce
+            # qui explore les durées au lieu des dates de retour. « Partir en
+            # février pour 7 à 10 nuits » ne s'exprime pas autrement.
+            nights = watch.nights_range
+            if nights is not None:
+                for d in departs:
+                    dd = datetime.strptime(d, "%Y-%m-%d").date()
+                    for n in nights:
+                        jobs.append((origin, destination, d, (dd + timedelta(days=n)).isoformat()))
+                continue
+
             if not watch.ret:
                 jobs.extend((origin, destination, d, None) for d in departs)
                 continue

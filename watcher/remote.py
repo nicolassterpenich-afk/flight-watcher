@@ -98,6 +98,8 @@ def _to_watch(raw: dict[str, Any]) -> Watch:
         flex_days=int(raw.get("flex_days") or 0),
         flex_days_ret=(int(raw["flex_days_ret"])
                        if raw.get("flex_days_ret") is not None else None),
+        nights_min=(int(raw["nights_min"]) if raw.get("nights_min") is not None else None),
+        nights_max=(int(raw["nights_max"]) if raw.get("nights_max") is not None else None),
         passengers=Passengers(
             adults=int(pax.get("adults", 1)),
             children=int(pax.get("children", 0)),
@@ -142,6 +144,8 @@ def _to_payload(w: Watch) -> dict[str, Any]:
         "max_stops": w.max_stops,
         "flex_days": w.flex_days,
         "flex_days_ret": w.flex_days_ret,
+        "nights_min": w.nights_min,
+        "nights_max": w.nights_max,
         "passengers": {
             "adults": w.passengers.adults,
             "children": w.passengers.children,

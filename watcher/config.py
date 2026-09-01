@@ -61,6 +61,8 @@ def load_watches(path: Path | None = None) -> tuple[list[Watch], dict]:
                 flex_days=int(merged.get("flex_days") or 0),
                 flex_days_ret=(int(merged["flex_days_ret"])
                                if merged.get("flex_days_ret") is not None else None),
+                nights_min=(int(merged["nights_min"]) if merged.get("nights_min") is not None else None),
+                nights_max=(int(merged["nights_max"]) if merged.get("nights_max") is not None else None),
                 passengers=Passengers(
                     adults=int(pax_raw.get("adults", 1)),
                     children=int(pax_raw.get("children", 0)),
@@ -119,6 +121,10 @@ def save_watches(watches: list[Watch], settings: dict, path: Path | None = None)
             entry["flex_days"] = w.flex_days
         if w.flex_days_ret is not None:
             entry["flex_days_ret"] = w.flex_days_ret
+        if w.nights_min is not None:
+            entry["nights_min"] = w.nights_min
+        if w.nights_max is not None:
+            entry["nights_max"] = w.nights_max
         if w.passengers.total != 1:
             entry["passengers"] = {
                 "adults": w.passengers.adults,

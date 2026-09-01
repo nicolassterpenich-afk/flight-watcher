@@ -143,8 +143,22 @@ function watchFromBody(body, existing = null) {
   const destinations = body.destinations === undefined && existing
     ? JSON.parse(existing.destinations) : codes(body.destinations, 'destinations');
   const depart = body.depart === undefined && existing ? existing.depart : isoDate(body.depart, 'depart');
-  const ret = body.ret === undefined && existing ? existing.ret : isoDate(body.ret, 'ret', { optional: true });
+  let ret = body.ret === undefined && existing ? existing.ret : isoDate(body.ret, 'ret', { optional: true });
   if (ret && ret < depart) throw new HttpError(400, 'La date de retour précède celle de l’aller');
+
+  // Séjour souple : le retour se déduit de la durée. On efface la date fixe
+  // pour qu'il n'existe jamais deux définitions concurrentes du retour.
+  const nightsMin = body.nights_min === undefined && existing
+    ? existing.nights_min : num(body.nights_min, 'nights_min', { min: 1, max: 60, integer: true });
+  const nightsMax = body.nights_max === undefined && existing
+    ? existing.nights_max : num(body.nights_max, 'nights_max', { min: 1, max: 60, integer: true });
+  if (nightsMax != null && nightsMin == null) {
+    throw new HttpError(400, 'nights_max sans nights_min : indiquez une durée minimale');
+  }
+  if (nightsMin != null && nightsMax != null && nightsMax < nightsMin) {
+    throw new HttpError(400, 'La durée maximale de séjour est inférieure à la minimale');
+  }
+  if (nightsMin != null) ret = null;
 
   const pax = body.passengers === undefined && existing
     ? JSON.parse(existing.passengers)
@@ -189,6 +203,8 @@ function watchFromBody(body, existing = null) {
       ? existing.flex_days : (num(body.flex_days, 'flex_days', { min: 0, max: 7, integer: true }) ?? 0),
     flex_days_ret: body.flex_days_ret === undefined && existing
       ? existing.flex_days_ret : num(body.flex_days_ret, 'flex_days_ret', { min: 0, max: 7, integer: true }),
+    nights_min: nightsMin ?? null,
+    nights_max: nightsMax ?? null,
     passengers: JSON.stringify(pax),
     providers: JSON.stringify(providers),
     enabled: Number(Boolean(get('enabled', true) === true || get('enabled', true) === 1)),
@@ -211,6 +227,8 @@ const rowToWatch = (r) => ({
   max_stops: r.max_stops,
   flex_days: r.flex_days,
   flex_days_ret: r.flex_days_ret,
+  nights_min: r.nights_min,
+  nights_max: r.nights_max,
   passengers: JSON.parse(r.passengers),
   providers: JSON.parse(r.providers),
   enabled: Boolean(r.enabled),
@@ -381,12 +399,12 @@ async function handleApi(request, env, url, path) {
     const ts = nowIso();
     await env.DB.prepare(
       `INSERT INTO watches (id, label, origins, destinations, depart, ret, threshold, currency, seat,
-                            max_stops, flex_days, flex_days_ret, passengers, providers, enabled,
-                            alert_on_drop, notes, created_at, updated_at)
-       VALUES (?1,?2,?3,?4,?5,?6,?7,?8,?9,?10,?11,?12,?13,?14,?15,?16,?17,?18,?18)`
+                            max_stops, flex_days, flex_days_ret, nights_min, nights_max,
+                            passengers, providers, enabled, alert_on_drop, notes, created_at, updated_at)
+       VALUES (?1,?2,?3,?4,?5,?6,?7,?8,?9,?10,?11,?12,?13,?14,?15,?16,?17,?18,?19,?20,?20)`
     ).bind(w.id, w.label, w.origins, w.destinations, w.depart, w.ret, w.threshold, w.currency, w.seat,
-           w.max_stops, w.flex_days, w.flex_days_ret, w.passengers, w.providers, w.enabled,
-           w.alert_on_drop, w.notes, ts).run();
+           w.max_stops, w.flex_days, w.flex_days_ret, w.nights_min, w.nights_max, w.passengers,
+           w.providers, w.enabled, w.alert_on_drop, w.notes, ts).run();
     return json({ ok: true, watch: rowToWatch({ ...w, created_at: ts, updated_at: ts }) }, 201);
   }
 
@@ -402,12 +420,12 @@ async function handleApi(request, env, url, path) {
       await env.DB.prepare(
         `UPDATE watches SET label=?2, origins=?3, destinations=?4, depart=?5, ret=?6, threshold=?7,
                             currency=?8, seat=?9, max_stops=?10, flex_days=?11, flex_days_ret=?12,
-                            passengers=?13, providers=?14, enabled=?15, alert_on_drop=?16,
-                            notes=?17, updated_at=?18
+                            nights_min=?13, nights_max=?14, passengers=?15, providers=?16,
+                            enabled=?17, alert_on_drop=?18, notes=?19, updated_at=?20
          WHERE id = ?1`
       ).bind(id, w.label, w.origins, w.destinations, w.depart, w.ret, w.threshold, w.currency, w.seat,
-             w.max_stops, w.flex_days, w.flex_days_ret, w.passengers, w.providers, w.enabled,
-             w.alert_on_drop, w.notes, ts).run();
+             w.max_stops, w.flex_days, w.flex_days_ret, w.nights_min, w.nights_max, w.passengers,
+             w.providers, w.enabled, w.alert_on_drop, w.notes, ts).run();
       return json({ ok: true, watch: rowToWatch({ ...w, created_at: existing.created_at, updated_at: ts }) });
     }
 
@@ -603,16 +621,16 @@ async function agentReplaceWatches(env, body) {
     const createdAt = known.has(id) ? known.get(id).created_at : ts;
     stmts.push(env.DB.prepare(
       `INSERT INTO watches (id, label, origins, destinations, depart, ret, threshold, currency, seat,
-                            max_stops, flex_days, flex_days_ret, passengers, providers, enabled,
-                            alert_on_drop, notes, created_at, updated_at)
-       VALUES (?1,?2,?3,?4,?5,?6,?7,?8,?9,?10,?11,?12,?13,?14,?15,?16,?17,?18,?19)
+                            max_stops, flex_days, flex_days_ret, nights_min, nights_max,
+                            passengers, providers, enabled, alert_on_drop, notes, created_at, updated_at)
+       VALUES (?1,?2,?3,?4,?5,?6,?7,?8,?9,?10,?11,?12,?13,?14,?15,?16,?17,?18,?19,?20,?21)
        ON CONFLICT(id) DO UPDATE SET
          label=?2, origins=?3, destinations=?4, depart=?5, ret=?6, threshold=?7, currency=?8,
-         seat=?9, max_stops=?10, flex_days=?11, flex_days_ret=?12, passengers=?13, providers=?14,
-         enabled=?15, alert_on_drop=?16, notes=?17, updated_at=?19`
+         seat=?9, max_stops=?10, flex_days=?11, flex_days_ret=?12, nights_min=?13, nights_max=?14,
+         passengers=?15, providers=?16, enabled=?17, alert_on_drop=?18, notes=?19, updated_at=?21`
     ).bind(id, w.label, w.origins, w.destinations, w.depart, w.ret, w.threshold, w.currency, w.seat,
-           w.max_stops, w.flex_days, w.flex_days_ret, w.passengers, w.providers, w.enabled,
-           w.alert_on_drop, w.notes, createdAt, ts));
+           w.max_stops, w.flex_days, w.flex_days_ret, w.nights_min, w.nights_max, w.passengers,
+           w.providers, w.enabled, w.alert_on_drop, w.notes, createdAt, ts));
   }
 
   const removed = [...known.keys()].filter((id) => !seen.has(id));
