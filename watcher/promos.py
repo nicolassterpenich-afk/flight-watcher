@@ -15,14 +15,16 @@ alertes de prix. Le filtrage est donc délibérément strict.
 
 from __future__ import annotations
 
+import calendar
 import hashlib
+import html
 import json
 import logging
 import os
 import re
 import xml.etree.ElementTree as ET
 from dataclasses import dataclass, field
-from datetime import datetime, timedelta, timezone
+from datetime import date, datetime, timedelta, timezone
 from email.utils import parsedate_to_datetime
 from pathlib import Path
 from typing import Any, Iterable
@@ -267,8 +269,128 @@ def extraire_lieux(entree: Entree, voc: dict[str, frozenset[str]] | None = None)
 
 
 # --------------------------------------------------------------------------
+# Période de voyage annoncée
+# --------------------------------------------------------------------------
+
+MOIS_EN = {
+    "january": 1, "jan": 1, "february": 2, "feb": 2, "march": 3, "mar": 3,
+    "april": 4, "apr": 4, "may": 5, "june": 6, "jun": 6, "july": 7, "jul": 7,
+    "august": 8, "aug": 8, "september": 9, "sep": 9, "sept": 9, "october": 10,
+    "oct": 10, "november": 11, "nov": 11, "december": 12, "dec": 12,
+}
+_MOIS = "|".join(sorted(MOIS_EN, key=len, reverse=True))
+
+# « Travel dates: Wide availability in September – December 2026 » — le bloc
+# est régulier chez Fly4Free ; c'est le seul endroit où la période figure, le
+# résumé RSS n'étant qu'une accroche.
+TRAVEL = re.compile(r"(?i)travel dates?\s*[:\-–]\s*([^\n<]{0,160})")
+PLAGE = re.compile(rf"(?i)\b({_MOIS})\b\s*(\d{{4}})?\s*(?:[-–—]|to|until|jusqu)\s*\b({_MOIS})\b\s*(\d{{4}})?")
+SEUL = re.compile(rf"(?i)\b({_MOIS})\b\s*(\d{{4}})")
+
+
+
+@dataclass
+class Periode:
+    debut: date
+    fin: date
+    texte: str
+
+    def couvre(self, jour: str) -> bool:
+        try:
+            d = date.fromisoformat(jour)
+        except (TypeError, ValueError):
+            return False
+        return self.debut <= d <= self.fin
+
+    def chevauche(self, debut: date, fin: date) -> bool:
+        return self.debut <= fin and debut <= self.fin
+
+
+def _fin_du_mois(annee: int, mois: int) -> int:
+    # calendar plutôt qu'une table écrite à la main : la mienne portait 29 en
+    # février et produisait une date invalide les années non bissextiles.
+    return calendar.monthrange(annee, mois)[1]
+
+
+def _phrase(fragment: str, fin: int) -> str:
+    """Le libellé s'arrête à la fin de l'expression de dates.
+
+    La page est aplatie en une seule ligne : sans cette coupe, le libellé
+    emportait « Route: From: Brussels To: … Baggage allowance: … ».
+    """
+    return fragment[:fin].strip(" -–—:")
+
+
+def periode_de_voyage(texte: str, aujourdhui: date | None = None) -> Periode | None:
+    """Extrait « September – December 2026 » d'une page d'article.
+
+    Une plage sans année de début hérite de celle de fin ; si le mois de début
+    est postérieur à celui de fin, la plage franchit l'année — « October 2026
+    – March 2027 » écrit « October – March 2027 ».
+    """
+    m = TRAVEL.search(texte)
+    fragment = m.group(1) if m else ""
+    if not fragment:
+        return None
+
+    plage = PLAGE.search(fragment)
+    if plage:
+        m1, a1, m2, a2 = plage.groups()
+        mois1, mois2 = MOIS_EN[m1.lower()], MOIS_EN[m2.lower()]
+        annee2 = int(a2) if a2 else (int(a1) if a1 else (aujourdhui or date.today()).year)
+        annee1 = int(a1) if a1 else (annee2 - 1 if mois1 > mois2 else annee2)
+        return Periode(date(annee1, mois1, 1),
+                       date(annee2, mois2, _fin_du_mois(annee2, mois2)),
+                       _phrase(fragment, plage.end()))
+
+    seul = SEUL.search(fragment)
+    if seul:
+        mois, annee = MOIS_EN[seul.group(1).lower()], int(seul.group(2))
+        return Periode(date(annee, mois, 1), date(annee, mois, _fin_du_mois(annee, mois)),
+                       _phrase(fragment, seul.end()))
+    return None
+
+
+def texte_de_page(html_brut: str) -> str:
+    """HTML d'un article → texte plat, scripts et styles retirés."""
+    corps = re.sub(r"(?is)<(script|style|nav|header|footer)[^>]*>.*?</\1>", " ", html_brut)
+    return re.sub(r"\s+", " ", html.unescape(re.sub(r"<[^>]+>", " ", corps)))
+
+
+def enrichir(entree: Entree, timeout=TIMEOUT) -> Periode | None:
+    """Va chercher la période sur la page de l'article.
+
+    Un appel par correspondance seulement — jamais pour les cinquante entrées
+    d'un flux. Toute erreur est avalée : la période est un bonus, son absence
+    ne doit pas faire perdre la correspondance.
+    """
+    if not entree.url:
+        return None
+    try:
+        rep = requests.get(entree.url, headers={"User-Agent": ENTETES["User-Agent"]}, timeout=timeout)
+        rep.raise_for_status()
+    except requests.RequestException as exc:
+        log.info("Période de voyage indisponible pour %s : %s", entree.url, exc)
+        return None
+    return periode_de_voyage(texte_de_page(rep.text))
+
+# --------------------------------------------------------------------------
 # Recoupement avec les surveillances
 # --------------------------------------------------------------------------
+
+def fenetre_de_depart(w: Watch) -> tuple[date, date] | None:
+    """Les dates de départ que la surveillance accepte réellement.
+
+    Le pivot seul ne suffit pas : une souplesse de ± 3 jours élargit la
+    fenêtre, et c'est elle qu'il faut confronter à la période de la promo.
+    """
+    try:
+        pivot = date.fromisoformat(w.depart)
+    except (TypeError, ValueError):
+        return None
+    marge = timedelta(days=max(int(w.flex_days or 0), 0))
+    return pivot - marge, pivot + marge
+
 
 @dataclass
 class Correspondance:
@@ -276,6 +398,8 @@ class Correspondance:
     watch: Watch
     lieux: Lieux
     raison: str
+    periode: Periode | None = None
+    couvre: bool | None = None       # None = période inconnue
 
     def codes_communs(self) -> list[str]:
         return sorted(set(self.watch.destinations) & self.lieux.destinations)
@@ -352,6 +476,11 @@ def pour_stockage(entree: Entree, correspondances: list[Correspondance],
         "places": {"origines": sorted(lieux.origines), "destinations": sorted(lieux.destinations)},
         "matched_watch_id": correspondances[0].watch.id if correspondances else None,
         "reason": correspondances[0].raison if correspondances else None,
+        "travel_from": p.debut.isoformat() if (p := (correspondances[0].periode if correspondances else None)) else None,
+        "travel_to": p.fin.isoformat() if p else None,
+        "travel_text": p.texte[:160] if p else None,
+        "covers": (None if not correspondances or correspondances[0].couvre is None
+                   else int(correspondances[0].couvre)),
     }
 
 
@@ -387,10 +516,20 @@ def formater_alerte(correspondances: Correspondance | list[Correspondance],
     lignes.append(f"{esc(entree.source)}{age}")
     lignes.append("")
 
+    periode = groupe[0].periode
+    if periode:
+        lignes.append(f"🗓 Voyage : {esc(periode.texte)}")
+        lignes.append("")
+
     for c in groupe:
         suivi = prix.get(c.watch.id)
         detail = f" — ton meilleur prix suivi : {suivi:.0f} {c.watch.currency}" if suivi else ""
         lignes.append(f"↳ <b>{esc(c.watch.display())}</b> · {esc(c.raison)}{detail}")
+        # Le point qui décide : la promo tombe-t-elle sur mes dates ?
+        if c.couvre is True:
+            lignes.append(f"   ✅ couvre ton départ du {esc(c.watch.depart)}")
+        elif c.couvre is False:
+            lignes.append(f"   ⚠️ ne couvre pas ton départ du {esc(c.watch.depart)}")
 
     if entree.url:
         lignes.append("")
@@ -448,6 +587,15 @@ def relever(watches: Iterable[Watch], config: dict[str, Any] | None = None,
             bilan["nouvelles"] += 1
             bilan["ids"].append(e.id)
             trouvees = recouper(e, watches, voc)
+            if trouvees:
+                # Une seule requête par annonce retenue, jamais pour les
+                # cinquante entrées du flux.
+                periode = enrichir(e)
+                for c in trouvees:
+                    c.periode = periode
+                    fenetre = fenetre_de_depart(c.watch)
+                    if periode and fenetre:
+                        c.couvre = periode.chevauche(*fenetre)
             bilan["correspondances"].extend(trouvees)
             # Toutes les entrées lues sont conservées, pas seulement celles qui
             # matchent : l'interface montre le fil, la correspondance le

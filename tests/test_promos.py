@@ -242,6 +242,92 @@ class TestPassageComplet(unittest.TestCase):
         self.assertEqual(promos.relever(self.watches, self.config, {"vus": []})["entrees"], 0)
 
 
+class TestPeriodeDeVoyage(unittest.TestCase):
+    def periode(self, texte):
+        return promos.periode_de_voyage(texte)
+
+    def test_plage_de_mois_avec_annee_finale(self):
+        p = self.periode("Travel dates: Wide availability in September – December 2026")
+        self.assertEqual((p.debut.isoformat(), p.fin.isoformat()), ("2026-09-01", "2026-12-31"))
+
+    def test_mois_seul(self):
+        p = self.periode("Travel dates: January 2027")
+        self.assertEqual((p.debut.isoformat(), p.fin.isoformat()), ("2027-01-01", "2027-01-31"))
+
+    def test_plage_a_cheval_sur_deux_annees(self):
+        # « October – March 2027 » : le mois de début est postérieur à celui
+        # de fin, la plage franchit donc l'année.
+        p = self.periode("Travel dates: October – March 2027")
+        self.assertEqual((p.debut.isoformat(), p.fin.isoformat()), ("2026-10-01", "2027-03-31"))
+
+    def test_annees_explicites_des_deux_cotes(self):
+        p = self.periode("Travel dates: October 2026 - March 2027")
+        self.assertEqual((p.debut.isoformat(), p.fin.isoformat()), ("2026-10-01", "2027-03-31"))
+
+    def test_fevrier_bissextile(self):
+        self.assertEqual(self.periode("Travel dates: February 2028").fin.isoformat(), "2028-02-29")
+
+    def test_libelle_sarrete_apres_les_dates(self):
+        # La page est aplatie en une ligne : sans coupe, le libellé emportait
+        # « Route: From: Brussels To: … Baggage allowance: … ».
+        p = self.periode("Travel dates: Wide availability in September – December 2026 "
+                         "Route: From: Brussels To: Bangkok Baggage allowance: one bag")
+        self.assertEqual(p.texte, "Wide availability in September – December 2026")
+
+    def test_sans_bloc_de_dates(self):
+        self.assertIsNone(self.periode("Un article sans la moindre date de voyage"))
+
+    def test_hors_du_bloc_travel_dates(self):
+        # Un mois cité ailleurs dans la page ne doit pas être pris pour la
+        # période de voyage.
+        self.assertIsNone(self.periode("Publié en June 2026. Un très bon plan."))
+
+    def test_html_reduit_en_texte(self):
+        brut = "<div><script>var x='March 2030';</script><p>Travel dates: May 2027</p></div>"
+        p = self.periode(promos.texte_de_page(brut))
+        self.assertEqual(p.debut.isoformat(), "2027-05-01")
+
+
+class TestFenetreEtCouverture(unittest.TestCase):
+    def test_fenetre_tient_compte_de_la_souplesse(self):
+        w = surveillance()
+        w.flex_days = 3
+        debut, fin = promos.fenetre_de_depart(w)
+        self.assertEqual((debut.isoformat(), fin.isoformat()), ("2027-02-03", "2027-02-09"))
+
+    def test_periode_couvrant_le_depart(self):
+        p = promos.periode_de_voyage("Travel dates: January – March 2027")
+        self.assertTrue(p.chevauche(*promos.fenetre_de_depart(surveillance())))
+
+    def test_periode_ne_couvrant_pas_le_depart(self):
+        # Le cas réel : promo septembre-décembre 2026, départ surveillé en
+        # février 2027.
+        p = promos.periode_de_voyage("Travel dates: September – December 2026")
+        self.assertFalse(p.chevauche(*promos.fenetre_de_depart(surveillance())))
+
+    def test_chevauchement_partiel_suffit(self):
+        w = surveillance()
+        w.flex_days = 3          # 3 au 9 février
+        p = promos.periode_de_voyage("Travel dates: February 2027")
+        self.assertTrue(p.chevauche(*promos.fenetre_de_depart(w)))
+
+    def test_message_signale_la_non_couverture(self):
+        e = promos.parser_flux(rss(item("Bruxelles → Thaïlande à 376 €")), "Fly4Free")[0]
+        p = promos.periode_de_voyage("Travel dates: September – December 2026")
+        c = promos.Correspondance(entree=e, watch=surveillance(), lieux=promos.Lieux(),
+                                  raison="r", periode=p, couvre=False)
+        msg = promos.formater_alerte(c)
+        self.assertIn("ne couvre pas", msg)
+        self.assertIn("2027-02-06", msg)
+
+    def test_message_signale_la_couverture(self):
+        e = promos.parser_flux(rss(item("Bruxelles → Thaïlande")), "Fly4Free")[0]
+        p = promos.periode_de_voyage("Travel dates: February 2027")
+        c = promos.Correspondance(entree=e, watch=surveillance(), lieux=promos.Lieux(),
+                                  raison="r", periode=p, couvre=True)
+        self.assertIn("couvre ton départ", promos.formater_alerte(c))
+
+
 class TestMessage(unittest.TestCase):
     def test_alerte_lisible(self):
         e = promos.parser_flux(rss(item("Air France : Bruxelles → Bangkok à 449 € A/R")), "Fly4Free")[0]

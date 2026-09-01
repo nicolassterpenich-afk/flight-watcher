@@ -286,16 +286,23 @@ async function handleApi(request, env, url, path) {
       const ts = nowIso();
       const stmts = items.slice(0, 200).map((it) => env.DB.prepare(
         `INSERT INTO feed_items (id, source, title, url, published_at, seen_at, places,
-                                 matched_watch_id, reason, notified)
-         VALUES (?1,?2,?3,?4,?5,?6,?7,?8,?9,?10)
+                                 matched_watch_id, reason, travel_from, travel_to,
+                                 travel_text, covers, notified)
+         VALUES (?1,?2,?3,?4,?5,?6,?7,?8,?9,?10,?11,?12,?13,?14)
          ON CONFLICT(id) DO UPDATE SET
            matched_watch_id = COALESCE(excluded.matched_watch_id, matched_watch_id),
            reason = COALESCE(excluded.reason, reason),
+           travel_from = COALESCE(excluded.travel_from, travel_from),
+           travel_to = COALESCE(excluded.travel_to, travel_to),
+           travel_text = COALESCE(excluded.travel_text, travel_text),
+           covers = COALESCE(excluded.covers, covers),
            notified = MAX(notified, excluded.notified)`
       ).bind(String(it.id || '').slice(0, 64), String(it.source || '').slice(0, 80),
              String(it.title || '').slice(0, 400), String(it.url || '').slice(0, 600),
              it.published_at ?? null, ts, JSON.stringify(it.places || {}),
-             it.matched_watch_id ?? null, it.reason ?? null, Number(Boolean(it.notified))));
+             it.matched_watch_id ?? null, it.reason ?? null,
+             it.travel_from ?? null, it.travel_to ?? null, it.travel_text ?? null,
+             it.covers ?? null, Number(Boolean(it.notified))));
 
       // Purge : ces entrées n'ont aucune valeur historique.
       stmts.push(env.DB.prepare(
@@ -384,10 +391,13 @@ async function handleApi(request, env, url, path) {
   if (path === '/api/feed' && method === 'GET') {
     const limite = Math.min(Math.max(Number(url.searchParams.get('limit')) || 40, 1), 200);
     const { results } = await env.DB.prepare(
-      'SELECT id, source, title, url, published_at, places, matched_watch_id, reason'
-      // Les correspondances d'abord : dans un fil chronologique, la seule
-      // entrée qui vous concerne se retrouvait au 47e rang sur 50.
+      'SELECT id, source, title, url, published_at, places, matched_watch_id, reason,'
+      + ' travel_from, travel_to, travel_text, covers'
+      // Les correspondances d'abord, et parmi elles celles qui tombent sur
+      // les dates surveillées : dans un fil chronologique, la seule entrée
+      // qui vous concerne se retrouvait au 47e rang sur 50.
       + ' FROM feed_items ORDER BY (matched_watch_id IS NULL),'
+      + ' CASE WHEN covers = 1 THEN 0 ELSE 1 END,'
       + ' COALESCE(published_at, seen_at) DESC LIMIT ?1'
     ).bind(limite).all();
     const suivis = await env.DB.prepare(

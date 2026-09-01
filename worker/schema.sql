@@ -83,6 +83,10 @@ CREATE TABLE IF NOT EXISTS feed_items (
   places           TEXT NOT NULL DEFAULT '{}',   -- lieux extraits, JSON
   matched_watch_id TEXT,                          -- NULL si aucune correspondance
   reason           TEXT,
+  travel_from      TEXT,               -- période de voyage annoncée par l'article
+  travel_to        TEXT,
+  travel_text      TEXT,               -- la phrase d'origine, pour l'afficher telle quelle
+  covers           INTEGER,            -- 1/0 : recouvre la fenêtre de départ ; NULL = inconnu
   notified         INTEGER NOT NULL DEFAULT 0
 );
 CREATE INDEX IF NOT EXISTS idx_feed_published ON feed_items(published_at);
