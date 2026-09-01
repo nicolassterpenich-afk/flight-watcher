@@ -1,0 +1,44 @@
+# Veille éditoriale des bons plans — brique 1 de PLANPROMOS.md.
+#
+# Les flux sont ici et non en dur : ces sites changent d'adresse, et il faut
+# pouvoir en ajouter ou en retirer sans redéployer. Vérifier chaque nouvelle
+# URL avec curl avant de l'activer — celles de la spec étaient présumées, pas
+# testées.
+
+feeds:
+  # Vérifié le 01/09/2026 : HTTP 200, application/rss+xml, 50 entrées.
+  # L'adresse sans « www » redirige ; on pointe directement la bonne.
+  - nom: Fly4Free
+    url: https://www.fly4free.com/feed/
+    actif: true
+
+  # Les suivants restent à vérifier un par un avant activation.
+  - nom: Secret Flying
+    url: https://www.secretflying.com/feed/
+    actif: false
+  - nom: The Flight Deal
+    url: https://theflightdeal.com/feed/
+    actif: false
+  - nom: HolidayPirates
+    url: https://www.holidaypirates.com/feed
+    actif: false
+
+settings:
+  # Fenêtre de fraîcheur. C'est la mémoire anti-doublon qui empêche de
+  # réalerter, pas cette fenêtre : elle ne sert qu'à éviter un déluge au tout
+  # premier passage. Elle peut donc être large. Réglée d'abord à 48 h, elle
+  # écartait la seule vraie trouvaille du flux — « Bruxelles → Thaïlande à
+  # 376 € », vieille de trois jours et toujours réservable.
+  max_age_hours: 168
+
+# Noms qu'un article peut employer sans que le référentiel des aéroports les
+# connaisse. À enrichir à la main quand une alerte a été manquée.
+synonymes:
+  BKK:
+    - siam
+  PTP:
+    - guadeloupe
+    - antilles françaises
+  RAR:
+    - cook islands
+    - îles cook
