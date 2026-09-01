@@ -184,9 +184,13 @@ def push_results(ran_at: str, entries: list[dict[str, Any]],
             continue
         node = state.get(wid, {})
         releves = par_surveillance.get(wid, [])
+        # Toutes les offres d'un même passage portent l'horodatage du run.
+        # Sans ça, chaque Quote garde l'instant de sa création : les lignes
+        # d'un même relevé ne se regroupent plus, la courbe se hérisse et la
+        # vue par date de départ ne voit qu'une poignée d'offres.
         results.append({
             "watch_id": wid,
-            "quotes": [q.to_dict() for q in releves],
+            "quotes": [{**q.to_dict(), "checked_at": ran_at} for q in releves],
             "state": {
                 "last_price": node.get("last_price"),
                 "best_ever": node.get("best_ever"),
