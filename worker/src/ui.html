@@ -508,6 +508,11 @@
      </div>
      <p class="hint" id="fil-vide">Aucune veille pour l’instant.</p>
      <ul class="fil-liste" id="fil-liste"></ul>
+
+     <h2>Rendez-vous des promos</h2>
+     <ul class="fil-liste" id="cal-rdv"></ul>
+     <p class="hint" style="margin-top:16px">Ventes flash : pas de date, seulement un accès direct.</p>
+     <div class="controls" id="cal-liens" style="margin-top:10px"></div>
    </aside>
   </div>
 </div>
@@ -674,6 +679,7 @@ async function refresh() {
   if (selected && !STATE.watches.some((w) => w.id === selected)) selected = null;
   renderDetail();
   renderFil();
+  renderCalendrier();
 }
 
 function renderHeader() {
@@ -1075,11 +1081,13 @@ const bold = (text) => el('b', null, text);
 /* --------------------------------------------- vérifier chez la compagnie */
 
 let COMPAGNIES = null;
+let CALENDRIER_BRUT = [];
 
 async function loadCompagnies() {
   if (COMPAGNIES) return COMPAGNIES;
   try {
     const data = await api('/api/compagnies');
+    CALENDRIER_BRUT = data.calendrier || [];
     COMPAGNIES = (data.compagnies || []).map((r) => {
       const [genre, nom, gabarit] = r.split('|');
       return { genre, nom, gabarit };
@@ -1504,6 +1512,88 @@ function airportField(box, placeholder) {
 const fOrigins = airportField($('#f-origins'), 'Bruxelles, BRU…');
 const fDestinations = airportField($('#f-destinations'), 'Bangkok, BKK…');
 
+/* ------------------------------------------------- calendrier des promos */
+
+/** Black Friday : lendemain du 4e jeudi de novembre. C'est une date calculable,
+ *  pas une date inventée — d'où le calcul plutôt qu'une valeur en dur. */
+function blackFriday(annee) {
+  const premier = new Date(Date.UTC(annee, 10, 1));
+  const decalage = (4 - premier.getUTCDay() + 7) % 7;      // premier jeudi
+  return new Date(Date.UTC(annee, 10, 1 + decalage + 21 + 1));
+}
+
+/** Quand tombe ce rendez-vous, et où il en est. */
+function echeance(genre, regle) {
+  const maintenant = new Date();
+  const an = maintenant.getUTCFullYear();
+  const jour = (d) => new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate()));
+  const aujourdhui = jour(maintenant);
+
+  if (genre === 'mensuel') {
+    const fin = new Date(Date.UTC(an, maintenant.getUTCMonth() + 1, 0));
+    const reste = Math.round((fin - aujourdhui) / 86400000);
+    return { etat: 'encours',
+             texte: `En cours — ${reste} jour${reste > 1 ? 's' : ''} pour en profiter` };
+  }
+
+  if (genre === 'regle' && regle === 'black-friday') {
+    let bf = blackFriday(an);
+    if (aujourdhui > new Date(bf.getTime() + 4 * 86400000)) bf = blackFriday(an + 1);
+    const cm = new Date(bf.getTime() + 3 * 86400000);
+    const jours = Math.round((bf - aujourdhui) / 86400000);
+    const quand = `${bf.getUTCDate()} et ${cm.getUTCDate()} novembre ${bf.getUTCFullYear()}`;
+    if (jours <= 0 && aujourdhui <= cm) return { etat: 'encours', texte: `En cours — ${quand}` };
+    return { etat: 'avenir', texte: `${quand} · dans ${jours} jours` };
+  }
+
+  if (genre === 'fenetre' && regle) {
+    const [d1, d2] = regle.split(':');
+    const [m1, j1] = d1.split('-').map(Number);
+    const [m2, j2] = d2.split('-').map(Number);
+    let debut = new Date(Date.UTC(an, m1 - 1, j1));
+    let fin = new Date(Date.UTC(an, m2 - 1, j2));
+    if (aujourdhui > fin) { debut = new Date(Date.UTC(an + 1, m1 - 1, j1)); fin = new Date(Date.UTC(an + 1, m2 - 1, j2)); }
+    const MOIS = ['janvier','février','mars','avril','mai','juin','juillet','août','septembre','octobre','novembre','décembre'];
+    const quand = `${debut.getUTCDate()}–${fin.getUTCDate()} ${MOIS[fin.getUTCMonth()]} ${fin.getUTCFullYear()}`;
+    if (aujourdhui >= debut) return { etat: 'encours', texte: `En cours — ${quand}` };
+    return { etat: 'avenir', texte: `${quand} · dans ${Math.round((debut - aujourdhui) / 86400000)} jours` };
+  }
+  return null;
+}
+
+async function renderCalendrier() {
+  const table = await loadCompagnies();       // la même requête sert les deux
+  const entrees = (CALENDRIER_BRUT || []).map((r) => {
+    const [genre, regle, titre, note, url] = r.split('|');
+    return { genre, regle, titre, note, url };
+  });
+  if (!entrees.length) return;
+
+  const rdv = $('#cal-rdv');
+  rdv.replaceChildren();
+  for (const e of entrees.filter((x) => x.genre !== 'permanent')) {
+    const quand = echeance(e.genre, e.regle);
+    const li = el('li', quand && quand.etat === 'encours' ? 'touche' : '');
+    const a = el('a', null, e.titre);
+    a.href = e.url; a.target = '_blank'; a.rel = 'noopener noreferrer';
+    li.append(a);
+    if (quand) li.append(el('div', `fil-dates${quand.etat === 'encours' ? ' couvre' : ''}`, quand.texte));
+    li.append(el('div', 'fil-lieux', e.note));
+    rdv.append(li);
+  }
+
+  // Les ventes flash n'ont pas de date : les afficher comme un rendez-vous
+  // ferait rater les vrais. Ce sont des accès directs, rien de plus.
+  const liens = $('#cal-liens');
+  liens.replaceChildren();
+  for (const e of entrees.filter((x) => x.genre === 'permanent')) {
+    const a = el('a', 'verif', e.titre);
+    a.href = e.url; a.target = '_blank'; a.rel = 'noopener noreferrer';
+    a.title = e.note;
+    liens.append(a);
+  }
+}
+
 /* ------------------------------------------------------ fil de veille */
 
 /** « il y a 3 h », « il y a 2 j » — la fraîcheur compte plus que la date. */
@@ -1815,7 +1905,7 @@ $('#d-run').addEventListener('click', () => { const w = current(); if (w) runNow
   try {
     STATE = await api('/api/state');
     showApp();
-    renderHeader(); renderKpis(); renderCards(); renderDetail(); renderFil();
+    renderHeader(); renderKpis(); renderCards(); renderDetail(); renderFil(); renderCalendrier();
     loadAirports().then(() => { renderCards(); renderDetail(); });
   } catch {
     showGate();
