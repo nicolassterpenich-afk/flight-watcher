@@ -23,6 +23,16 @@ def _as_list(value: Any) -> list[str]:
     return [str(v).strip().upper() for v in value if str(v).strip()]
 
 
+def _as_list_brute(value: Any) -> list[str]:
+    """Comme _as_list mais sans passer en majuscules : un identifiant de
+    conversation n'est pas un code d'aéroport."""
+    if value is None:
+        return []
+    if isinstance(value, (str, int)):
+        return [v.strip() for v in str(value).replace(";", ",").split(",") if v.strip()]
+    return [str(v).strip() for v in value if str(v).strip()]
+
+
 def _merge(defaults: dict, raw: dict) -> dict:
     out = dict(defaults)
     out.update({k: v for k, v in raw.items() if v is not None})
@@ -72,6 +82,7 @@ def load_watches(path: Path | None = None) -> tuple[list[Watch], dict]:
                 providers=[str(p) for p in (merged.get("providers") or ["google_flights"])],
                 enabled=bool(merged.get("enabled", True)),
                 alert_on_drop=bool(merged.get("alert_on_drop", True)),
+                chat_ids=[str(c).strip() for c in _as_list_brute(merged.get("chat_ids"))],
                 notes=str(merged.get("notes") or ""),
             )
         )
@@ -136,6 +147,8 @@ def save_watches(watches: list[Watch], settings: dict, path: Path | None = None)
             entry["providers"] = w.providers
         if not w.enabled:
             entry["enabled"] = False
+        if w.chat_ids:
+            entry["chat_ids"] = w.chat_ids
         if w.notes:
             entry["notes"] = w.notes
         payload["watches"].append(entry)

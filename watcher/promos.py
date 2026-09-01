@@ -659,10 +659,10 @@ def main(argv: list[str] | None = None) -> int:
         from .alerts import Telegram
         telegram = Telegram()
         for groupe in groupes:
-            try:
-                telegram.send(formater_alerte(groupe, prix))
-            except Exception as exc:                # noqa: BLE001
-                log.error("Alerte promo non envoyée : %s", exc)
+            # Mêmes destinataires que les alertes de prix : qui suit une
+            # destination doit aussi en recevoir les bons plans.
+            destinataires = sorted({c for g in groupe for c in (g.watch.chat_ids or [])})
+            telegram.send_to(formater_alerte(groupe, prix), destinataires)
 
     for groupe in groupes:
         print(f"\n--- {', '.join(c.watch.id for c in groupe)} ---\n{formater_alerte(groupe, prix)}")

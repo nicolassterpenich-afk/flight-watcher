@@ -32,6 +32,7 @@ HELP = """<b>Commandes disponibles</b>
     options : <code>flex=3</code> <code>escales=1</code> <code>pax=2</code> <code>#Mon libellé</code>
 /seuil &lt;id&gt; &lt;prix&gt; — change le seuil
 /pause &lt;id&gt; · /reprendre &lt;id&gt;
+/monid — ton identifiant, à donner pour recevoir des alertes
 /suppr &lt;id&gt; — supprime une surveillance
 /stats &lt;id&gt; — historique des 30 derniers jours
 /check — relève les prix maintenant
@@ -238,6 +239,25 @@ def process_commands() -> dict[str, Any]:
         chat = str((message.get("chat") or {}).get("id", ""))
         if not text.startswith("/"):
             continue
+
+        # Un bot Telegram ne peut écrire qu'à qui lui a déjà parlé. Pour
+        # recevoir les alertes d'une destination, un proche doit donc démarrer
+        # le bot puis communiquer son identifiant : /monid le lui donne. C'est
+        # le seul ordre accepté d'une conversation non autorisée, et il ne
+        # révèle que ce que l'appelant sait déjà de lui-même.
+        if text.split()[0].lstrip("/").split("@")[0].lower() in {"monid", "myid", "id"}:
+            try:
+                telegram.send(
+                    "Ton identifiant de conversation :\n"
+                    f"<code>{esc(chat)}</code>\n\n"
+                    "Transmets-le au propriétaire de la veille pour recevoir "
+                    "les alertes d'une destination.",
+                    chat_id=chat)
+            except Exception as exc:                # noqa: BLE001
+                log.error("Réponse /monid impossible : %s", exc)
+            processed += 1
+            continue
+
         if chat != allowed:
             log.warning("Commande ignorée : chat %s non autorisé", chat)
             continue

@@ -432,12 +432,14 @@ def run(force_notify: bool = False, only: str | None = None,
             if dry_run:
                 print("\n--- ALERTE (dry-run) ---\n" + message + "\n")
             else:
-                try:
-                    telegram.send(message)
-                except Exception as exc:            # noqa: BLE001
-                    summary["errors"].append(f"Telegram : {exc}")
-                    log.error("Envoi Telegram impossible : %s", exc)
-                else:
+                echecs = telegram.send_to(message, watch.chat_ids)
+                if echecs:
+                    summary["errors"].append(
+                        f"Telegram : alerte non remise à {', '.join(echecs)}")
+                # Une remise partielle reste une alerte envoyée : on ne
+                # rejouera pas la même demain sous prétexte qu'un des
+                # destinataires n'a pas démarré le bot.
+                if len(echecs) < len(watch.chat_ids or [telegram.chat_id]):
                     if genuine:
                         node["last_alert_price"] = best.price
                         node["last_alert_at"] = iso()

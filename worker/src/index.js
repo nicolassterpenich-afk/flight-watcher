@@ -180,6 +180,18 @@ function watchFromBody(body, existing = null) {
     throw new HttpError(400, `seat : « ${seat} » inconnu`);
   }
 
+  // Identifiants de conversation Telegram : chiffres, éventuellement précédés
+  // d'un « - » pour un groupe. Vide = le propriétaire de la veille.
+  const chatIds = body.chat_ids === undefined && existing
+    ? JSON.parse(existing.chat_ids || '[]')
+    : (Array.isArray(body.chat_ids) ? body.chat_ids : String(body.chat_ids ?? '').split(/[,;\s]+/))
+        .map((c) => String(c).trim()).filter(Boolean);
+  for (const c of chatIds) {
+    if (!/^-?\d{5,20}$/.test(c)) {
+      throw new HttpError(400, `« ${c} » n'est pas un identifiant de conversation Telegram`);
+    }
+  }
+
   const label = String(get('label', '')).trim().slice(0, 120);
   const id = existing
     ? existing.id
@@ -205,6 +217,7 @@ function watchFromBody(body, existing = null) {
       ? existing.flex_days_ret : num(body.flex_days_ret, 'flex_days_ret', { min: 0, max: 7, integer: true }),
     nights_min: nightsMin ?? null,
     nights_max: nightsMax ?? null,
+    chat_ids: JSON.stringify([...new Set(chatIds)]),
     passengers: JSON.stringify(pax),
     providers: JSON.stringify(providers),
     enabled: Number(Boolean(get('enabled', true) === true || get('enabled', true) === 1)),
@@ -229,6 +242,7 @@ const rowToWatch = (r) => ({
   flex_days_ret: r.flex_days_ret,
   nights_min: r.nights_min,
   nights_max: r.nights_max,
+  chat_ids: JSON.parse(r.chat_ids || '[]'),
   passengers: JSON.parse(r.passengers),
   providers: JSON.parse(r.providers),
   enabled: Boolean(r.enabled),
@@ -454,11 +468,12 @@ async function handleApi(request, env, url, path) {
     await env.DB.prepare(
       `INSERT INTO watches (id, label, origins, destinations, depart, ret, threshold, currency, seat,
                             max_stops, flex_days, flex_days_ret, nights_min, nights_max,
-                            passengers, providers, enabled, alert_on_drop, notes, created_at, updated_at)
-       VALUES (?1,?2,?3,?4,?5,?6,?7,?8,?9,?10,?11,?12,?13,?14,?15,?16,?17,?18,?19,?20,?20)`
+                            passengers, providers, enabled, alert_on_drop, chat_ids, notes,
+                            created_at, updated_at)
+       VALUES (?1,?2,?3,?4,?5,?6,?7,?8,?9,?10,?11,?12,?13,?14,?15,?16,?17,?18,?19,?20,?21,?21)`
     ).bind(w.id, w.label, w.origins, w.destinations, w.depart, w.ret, w.threshold, w.currency, w.seat,
            w.max_stops, w.flex_days, w.flex_days_ret, w.nights_min, w.nights_max, w.passengers,
-           w.providers, w.enabled, w.alert_on_drop, w.notes, ts).run();
+           w.providers, w.enabled, w.alert_on_drop, w.chat_ids, w.notes, ts).run();
     return json({ ok: true, watch: rowToWatch({ ...w, created_at: ts, updated_at: ts }) }, 201);
   }
 
@@ -475,11 +490,11 @@ async function handleApi(request, env, url, path) {
         `UPDATE watches SET label=?2, origins=?3, destinations=?4, depart=?5, ret=?6, threshold=?7,
                             currency=?8, seat=?9, max_stops=?10, flex_days=?11, flex_days_ret=?12,
                             nights_min=?13, nights_max=?14, passengers=?15, providers=?16,
-                            enabled=?17, alert_on_drop=?18, notes=?19, updated_at=?20
+                            enabled=?17, alert_on_drop=?18, chat_ids=?19, notes=?20, updated_at=?21
          WHERE id = ?1`
       ).bind(id, w.label, w.origins, w.destinations, w.depart, w.ret, w.threshold, w.currency, w.seat,
              w.max_stops, w.flex_days, w.flex_days_ret, w.nights_min, w.nights_max, w.passengers,
-             w.providers, w.enabled, w.alert_on_drop, w.notes, ts).run();
+             w.providers, w.enabled, w.alert_on_drop, w.chat_ids, w.notes, ts).run();
       return json({ ok: true, watch: rowToWatch({ ...w, created_at: existing.created_at, updated_at: ts }) });
     }
 
@@ -676,15 +691,17 @@ async function agentReplaceWatches(env, body) {
     stmts.push(env.DB.prepare(
       `INSERT INTO watches (id, label, origins, destinations, depart, ret, threshold, currency, seat,
                             max_stops, flex_days, flex_days_ret, nights_min, nights_max,
-                            passengers, providers, enabled, alert_on_drop, notes, created_at, updated_at)
-       VALUES (?1,?2,?3,?4,?5,?6,?7,?8,?9,?10,?11,?12,?13,?14,?15,?16,?17,?18,?19,?20,?21)
+                            passengers, providers, enabled, alert_on_drop, chat_ids, notes,
+                            created_at, updated_at)
+       VALUES (?1,?2,?3,?4,?5,?6,?7,?8,?9,?10,?11,?12,?13,?14,?15,?16,?17,?18,?19,?20,?21,?22)
        ON CONFLICT(id) DO UPDATE SET
          label=?2, origins=?3, destinations=?4, depart=?5, ret=?6, threshold=?7, currency=?8,
          seat=?9, max_stops=?10, flex_days=?11, flex_days_ret=?12, nights_min=?13, nights_max=?14,
-         passengers=?15, providers=?16, enabled=?17, alert_on_drop=?18, notes=?19, updated_at=?21`
+         passengers=?15, providers=?16, enabled=?17, alert_on_drop=?18, chat_ids=?19, notes=?20,
+         updated_at=?22`
     ).bind(id, w.label, w.origins, w.destinations, w.depart, w.ret, w.threshold, w.currency, w.seat,
            w.max_stops, w.flex_days, w.flex_days_ret, w.nights_min, w.nights_max, w.passengers,
-           w.providers, w.enabled, w.alert_on_drop, w.notes, createdAt, ts));
+           w.providers, w.enabled, w.alert_on_drop, w.chat_ids, w.notes, createdAt, ts));
   }
 
   const removed = [...known.keys()].filter((id) => !seen.has(id));

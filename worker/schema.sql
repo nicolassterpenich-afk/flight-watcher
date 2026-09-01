@@ -20,6 +20,7 @@ CREATE TABLE IF NOT EXISTS watches (
   providers     TEXT NOT NULL DEFAULT '["google_flights"]',
   enabled       INTEGER NOT NULL DEFAULT 1,
   alert_on_drop INTEGER NOT NULL DEFAULT 1,
+  chat_ids      TEXT NOT NULL DEFAULT '[]',  -- destinataires Telegram ; vide = le propriétaire
   notes         TEXT NOT NULL DEFAULT '',
   created_at    TEXT NOT NULL,
   updated_at    TEXT NOT NULL

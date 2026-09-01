@@ -42,6 +42,7 @@ class Watch:
     providers: list[str] = field(default_factory=lambda: ["google_flights"])
     enabled: bool = True
     alert_on_drop: bool = True       # alerte aussi sur chute inhabituelle
+    chat_ids: list[str] = field(default_factory=list)   # vide = le propriétaire
     notes: str = ""
 
     @property

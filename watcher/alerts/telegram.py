@@ -33,14 +33,32 @@ class Telegram:
             raise RuntimeError(f"Telegram {method} a échoué : {data.get('description', resp.text[:200])}")
         return data
 
-    def send(self, text: str, disable_preview: bool = True) -> None:
-        if not self.configured:
+    def send(self, text: str, disable_preview: bool = True, chat_id: str | None = None) -> None:
+        cible = str(chat_id or self.chat_id or "")
+        if not self.token or not cible:
             log.warning("Telegram non configuré — message ignoré :\n%s", text)
             return
         # Telegram coupe à 4096 caractères
         for chunk in _split(text, 3900):
-            self._call("sendMessage", chat_id=self.chat_id, text=chunk,
+            self._call("sendMessage", chat_id=cible, text=chunk,
                        parse_mode="HTML", disable_web_page_preview=disable_preview)
+
+    def send_to(self, text: str, destinataires: list[str] | None) -> list[str]:
+        """Envoie à chaque destinataire, ou au propriétaire si la liste est vide.
+
+        Un destinataire injoignable n'empêche pas les autres de recevoir :
+        Telegram refuse d'écrire à qui n'a jamais démarré le bot, et cette
+        erreur-là ne doit pas faire disparaître l'alerte pour tout le monde.
+        """
+        cibles = [str(c) for c in (destinataires or []) if str(c).strip()] or [self.chat_id]
+        echecs: list[str] = []
+        for cible in cibles:
+            try:
+                self.send(text, chat_id=cible)
+            except Exception as exc:                # noqa: BLE001
+                log.error("Alerte non remise à %s : %s", cible, exc)
+                echecs.append(str(cible))
+        return echecs
 
     def get_updates(self, offset: int | None = None) -> list[dict[str, Any]]:
         if not self.token:
