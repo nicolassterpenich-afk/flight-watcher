@@ -1,5 +1,5 @@
 {
-  "ran_at": "2026-09-02T20:46:01Z",
+  "ran_at": "2026-09-02T21:16:01Z",
   "source": "api",
   "watches": [
     {
@@ -7,12 +7,10 @@
       "label": "THIERRY --> FEVRIER 2026",
       "threshold": 650.0,
       "currency": "EUR",
-      "elapsed_s": 17.1,
-      "quotes_found": 97,
-      "errors": [
-        "Google Flights injoignable pour BRU→DMK 2027-02-20: Extra data: line 1 column 236 (char 235)"
-      ],
-      "combinations": 20,
+      "elapsed_s": 11.4,
+      "quotes_found": 98,
+      "errors": [],
+      "combinations": 21,
       "status": "ok",
       "best_price": 706.0,
       "best_route": "BRU→BKK",
@@ -26,11 +24,11 @@
       "reason": "au-dessus du seuil",
       "alerted": false,
       "stats": {
-        "count": 99,
+        "count": 100,
         "min": 598.0,
         "max": 706.0,
         "median": 706.0,
-        "avg": 682.43,
+        "avg": 682.67,
         "last": 706.0
       }
     },
@@ -39,7 +37,7 @@
       "label": "ASMET",
       "threshold": 600.0,
       "currency": "EUR",
-      "elapsed_s": 3.7,
+      "elapsed_s": 0.9,
       "quotes_found": 6,
       "errors": [],
       "combinations": 2,
@@ -56,11 +54,11 @@
       "reason": "seuil déjà notifié (cooldown)",
       "alerted": false,
       "stats": {
-        "count": 100,
+        "count": 101,
         "min": 498.0,
         "max": 598.0,
         "median": 568.0,
-        "avg": 559.24,
+        "avg": 559.13,
         "last": 548.0
       }
     },
@@ -69,7 +67,7 @@
       "label": "Norvège 2026",
       "threshold": 300.0,
       "currency": "EUR",
-      "elapsed_s": 14.2,
+      "elapsed_s": 8.0,
       "quotes_found": 32,
       "errors": [],
       "combinations": 6,
@@ -87,11 +85,11 @@
       "reason": "seuil déjà notifié (cooldown)",
       "alerted": false,
       "stats": {
-        "count": 63,
+        "count": 64,
         "min": 167.0,
         "max": 181.0,
         "median": 167.0,
-        "avg": 169.0,
+        "avg": 168.97,
         "last": 167.0
       }
     },
@@ -100,30 +98,29 @@
       "label": "toronto 2027",
       "threshold": 600.0,
       "currency": "EUR",
-      "elapsed_s": 84.1,
+      "elapsed_s": 79.6,
       "quotes_found": 0,
       "errors": [
-        "Google Flights injoignable pour BRU→YYZ 2027-10-01: Extra data: line 1 column 235 (char 234)",
-        "Google Flights injoignable pour BRU→YYZ 2027-10-02: Extra data: line 1 column 235 (char 234)",
-        "Google Flights injoignable pour BRU→YYZ 2027-10-03: Extra data: line 1 column 235 (char 234)",
-        "Google Flights injoignable pour BRU→YYZ 2027-10-04: Extra data: line 1 column 235 (char 234)",
-        "Google Flights injoignable pour BRU→YYZ 2027-10-05: Extra data: line 1 column 231 (char 230)"
+        "Google Flights injoignable pour BRU→YYZ 2027-10-01: Extra data: line 1 column 234 (char 233)",
+        "Google Flights injoignable pour BRU→YYZ 2027-10-03: Extra data: line 1 column 234 (char 233)",
+        "Google Flights injoignable pour BRU→YYZ 2027-10-02: Extra data: line 1 column 234 (char 233)",
+        "Google Flights injoignable pour BRU→YYZ 2027-10-04: Extra data: line 1 column 234 (char 233)",
+        "Google Flights injoignable pour BRU→YYZ 2027-10-05: Extra data: line 1 column 234 (char 233)"
       ],
       "status": "aucun prix"
     }
   ],
   "alerts_sent": 0,
   "errors": [
-    "Google Flights injoignable pour BRU→DMK 2027-02-20: Extra data: line 1 column 236 (char 235)",
-    "Google Flights injoignable pour BRU→YYZ 2027-10-01: Extra data: line 1 column 235 (char 234)",
-    "Google Flights injoignable pour BRU→YYZ 2027-10-02: Extra data: line 1 column 235 (char 234)",
-    "Google Flights injoignable pour BRU→YYZ 2027-10-03: Extra data: line 1 column 235 (char 234)"
+    "Google Flights injoignable pour BRU→YYZ 2027-10-01: Extra data: line 1 column 234 (char 233)",
+    "Google Flights injoignable pour BRU→YYZ 2027-10-03: Extra data: line 1 column 234 (char 233)",
+    "Google Flights injoignable pour BRU→YYZ 2027-10-02: Extra data: line 1 column 234 (char 233)"
   ],
   "providers": {
     "google_flights": {
       "attempts": 65,
-      "failures": 28,
-      "sample": "Google Flights injoignable pour BRU→DMK 2027-02-20: Extra data: line 1 column 236 (char 235)"
+      "failures": 27,
+      "sample": "Google Flights injoignable pour BRU→YYZ 2027-10-01: Extra data: line 1 column 234 (char 233)"
     },
     "ryanair": {
       "attempts": 12,
