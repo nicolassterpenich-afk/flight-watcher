@@ -1,5 +1,5 @@
 {
-  "ran_at": "2026-09-02T07:16:03Z",
+  "ran_at": "2026-09-02T07:34:11Z",
   "source": "api",
   "watches": [
     {
@@ -7,7 +7,7 @@
       "label": "THIERRY --> FEVRIER 2026",
       "threshold": 650.0,
       "currency": "EUR",
-      "elapsed_s": 6.8,
+      "elapsed_s": 6.2,
       "quotes_found": 97,
       "errors": [],
       "combinations": 21,
@@ -24,11 +24,11 @@
       "reason": "au-dessus du seuil",
       "alerted": false,
       "stats": {
-        "count": 71,
+        "count": 72,
         "min": 598.0,
         "max": 706.0,
         "median": 706.0,
-        "avg": 678.75,
+        "avg": 679.12,
         "last": 706.0
       }
     },
@@ -37,29 +37,29 @@
       "label": "ASMET",
       "threshold": 600.0,
       "currency": "EUR",
-      "elapsed_s": 1.0,
-      "quotes_found": 6,
+      "elapsed_s": 0.8,
+      "quotes_found": 5,
       "errors": [],
       "combinations": 2,
       "status": "ok",
-      "best_price": 498.0,
+      "best_price": 598.0,
       "best_route": "ORY→PTP",
       "best_depart": "2026-09-25",
       "best_return": "2026-10-05",
       "provider": "google_flights",
       "airlines": [
-        "Corsair"
+        "Air Caraibes"
       ],
       "booking_url": "https://www.google.com/travel/flights/search?tfs=GhoSCjIwMjYtMDktMjVqBRIDT1JZcgUSA1BUUBoaEgoyMDI2LTEwLTA1agUSA1BUUHIFEgNPUllCAQFIAZgBAQ==&hl=fr&curr=EUR",
       "reason": "seuil déjà notifié (cooldown)",
       "alerted": false,
       "stats": {
-        "count": 72,
+        "count": 73,
         "min": 498.0,
-        "max": 588.0,
+        "max": 598.0,
         "median": 588.0,
-        "avg": 560.83,
-        "last": 498.0
+        "avg": 561.34,
+        "last": 598.0
       }
     },
     {
@@ -67,7 +67,7 @@
       "label": "Norvège 2026",
       "threshold": 300.0,
       "currency": "EUR",
-      "elapsed_s": 8.2,
+      "elapsed_s": 8.6,
       "quotes_found": 32,
       "errors": [],
       "combinations": 6,
@@ -85,11 +85,11 @@
       "reason": "seuil déjà notifié (cooldown)",
       "alerted": false,
       "stats": {
-        "count": 35,
+        "count": 36,
         "min": 167.0,
         "max": 181.0,
         "median": 167.0,
-        "avg": 170.6,
+        "avg": 170.5,
         "last": 167.0
       }
     },
@@ -98,14 +98,14 @@
       "label": "toronto 2027",
       "threshold": 600.0,
       "currency": "EUR",
-      "elapsed_s": 81.3,
+      "elapsed_s": 77.9,
       "quotes_found": 0,
       "errors": [
-        "Google Flights injoignable pour BRU→YYZ 2027-10-01: Extra data: line 1 column 235 (char 234)",
-        "Google Flights injoignable pour BRU→YYZ 2027-10-03: Extra data: line 1 column 235 (char 234)",
-        "Google Flights injoignable pour BRU→YYZ 2027-10-02: Extra data: line 1 column 235 (char 234)",
-        "Google Flights injoignable pour BRU→YYZ 2027-10-04: Extra data: line 1 column 235 (char 234)",
-        "Google Flights injoignable pour BRU→YYZ 2027-10-06: Extra data: line 1 column 235 (char 234)"
+        "Google Flights injoignable pour BRU→YYZ 2027-10-03: Extra data: line 1 column 234 (char 233)",
+        "Google Flights injoignable pour BRU→YYZ 2027-10-02: Extra data: line 1 column 234 (char 233)",
+        "Google Flights injoignable pour BRU→YYZ 2027-10-01: Extra data: line 1 column 234 (char 233)",
+        "Google Flights injoignable pour BRU→YYZ 2027-10-04: Extra data: line 1 column 231 (char 230)",
+        "Google Flights injoignable pour BRU→YYZ 2027-10-06: Extra data: line 1 column 234 (char 233)"
       ],
       "status": "aucun prix"
     },
@@ -114,7 +114,7 @@
       "label": "Surpsie",
       "threshold": 1300.0,
       "currency": "EUR",
-      "elapsed_s": 0.9,
+      "elapsed_s": 0.8,
       "quotes_found": 2,
       "errors": [],
       "combinations": 1,
@@ -131,26 +131,26 @@
       "reason": "seuil déjà notifié (cooldown)",
       "alerted": false,
       "stats": {
-        "count": 30,
+        "count": 31,
         "min": 1253.0,
         "max": 1353.0,
-        "median": 1303.0,
-        "avg": 1303.0,
+        "median": 1253.0,
+        "avg": 1301.39,
         "last": 1253.0
       }
     }
   ],
   "alerts_sent": 0,
   "errors": [
-    "Google Flights injoignable pour BRU→YYZ 2027-10-01: Extra data: line 1 column 235 (char 234)",
-    "Google Flights injoignable pour BRU→YYZ 2027-10-03: Extra data: line 1 column 235 (char 234)",
-    "Google Flights injoignable pour BRU→YYZ 2027-10-02: Extra data: line 1 column 235 (char 234)"
+    "Google Flights injoignable pour BRU→YYZ 2027-10-03: Extra data: line 1 column 234 (char 233)",
+    "Google Flights injoignable pour BRU→YYZ 2027-10-02: Extra data: line 1 column 234 (char 233)",
+    "Google Flights injoignable pour BRU→YYZ 2027-10-01: Extra data: line 1 column 234 (char 233)"
   ],
   "providers": {
     "google_flights": {
       "attempts": 66,
       "failures": 27,
-      "sample": "Google Flights injoignable pour BRU→YYZ 2027-10-01: Extra data: line 1 column 235 (char 234)"
+      "sample": "Google Flights injoignable pour BRU→YYZ 2027-10-03: Extra data: line 1 column 234 (char 233)"
     },
     "ryanair": {
       "attempts": 12,
