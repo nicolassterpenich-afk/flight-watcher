@@ -21,7 +21,7 @@
     "last_alert_at": "2026-09-02T11:16:08Z",
     "last_alert_price": 548.0,
     "last_alert_reason": "seuil_rappel",
-    "last_checked_at": "2026-09-02T12:16:12Z",
+    "last_checked_at": "2026-09-02T12:29:39Z",
     "last_price": 548.0
   },
   "bangkok-fevrier": {
@@ -55,8 +55,8 @@
     "last_alert_at": "2026-09-02T05:46:21Z",
     "last_alert_price": 598.0,
     "last_alert_reason": "nouveau_plus_bas",
-    "last_checked_at": "2026-09-02T12:16:05Z",
-    "last_price": 706.0
+    "last_checked_at": "2026-09-02T12:29:32Z",
+    "last_price": 598.0
   },
   "jeff": {
     "best_ever": 148.0,
@@ -68,7 +68,7 @@
     "last_alert_at": "2026-09-02T01:16:18Z",
     "last_alert_price": 167.0,
     "last_alert_reason": "seuil_rappel",
-    "last_checked_at": "2026-09-02T12:16:16Z",
+    "last_checked_at": "2026-09-02T12:29:44Z",
     "last_price": 167.0
   },
   "surpsie": {
