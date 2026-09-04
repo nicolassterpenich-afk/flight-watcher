@@ -1,5 +1,5 @@
 {
-  "ran_at": "2026-09-04T00:41:44Z",
+  "ran_at": "2026-09-04T01:16:02Z",
   "source": "api",
   "watches": [
     {
@@ -7,7 +7,7 @@
       "label": "THIERRY --> FEVRIER 2026",
       "threshold": 650.0,
       "currency": "EUR",
-      "elapsed_s": 15.4,
+      "elapsed_s": 23.4,
       "quotes_found": 99,
       "errors": [],
       "combinations": 21,
@@ -24,11 +24,11 @@
       "reason": "au-dessus du seuil",
       "alerted": false,
       "stats": {
-        "count": 156,
+        "count": 157,
         "min": 598.0,
         "max": 706.0,
         "median": 699.0,
-        "avg": 686.65,
+        "avg": 686.73,
         "last": 699.0
       }
     },
@@ -37,7 +37,7 @@
       "label": "ASMET",
       "threshold": 600.0,
       "currency": "EUR",
-      "elapsed_s": 0.8,
+      "elapsed_s": 3.8,
       "quotes_found": 7,
       "errors": [],
       "combinations": 2,
@@ -54,11 +54,11 @@
       "reason": "seuil déjà notifié (cooldown)",
       "alerted": false,
       "stats": {
-        "count": 157,
+        "count": 158,
         "min": 498.0,
         "max": 598.0,
         "median": 548.0,
-        "avg": 555.16,
+        "avg": 555.11,
         "last": 548.0
       }
     },
@@ -67,9 +67,15 @@
       "label": "Norvège 2026",
       "threshold": 300.0,
       "currency": "EUR",
-      "elapsed_s": 11.8,
+      "elapsed_s": 13.1,
       "quotes_found": 33,
-      "errors": [],
+      "errors": [
+        "Ryanair injoignable BRU→OSL 2026-10-21: 403 Client Error: Forbidden for url: https://services-api.ryanair.com/farfnd/v4/roundTripFares?departureAirportIataCode=BRU&arrivalAirportIataCode=OSL&outboundDepartureDateFrom=2026-10-21&outboundDepartureDateTo=2026-10-21&currency=EUR&inboundDepartureDateFrom=2026-11-12&inboundDepartureDateTo=2026-11-12",
+        "Ryanair injoignable BRU→OSL 2026-10-22: 403 Client Error: Forbidden for url: https://services-api.ryanair.com/farfnd/v4/roundTripFares?departureAirportIataCode=BRU&arrivalAirportIataCode=OSL&outboundDepartureDateFrom=2026-10-22&outboundDepartureDateTo=2026-10-22&currency=EUR&inboundDepartureDateFrom=2026-11-13&inboundDepartureDateTo=2026-11-13",
+        "Ryanair injoignable BRU→OSL 2026-10-23: 403 Client Error: Forbidden for url: https://services-api.ryanair.com/farfnd/v4/roundTripFares?departureAirportIataCode=BRU&arrivalAirportIataCode=OSL&outboundDepartureDateFrom=2026-10-23&outboundDepartureDateTo=2026-10-23&currency=EUR&inboundDepartureDateFrom=2026-11-14&inboundDepartureDateTo=2026-11-14",
+        "Ryanair injoignable BRU→TRF 2026-10-21: 403 Client Error: Forbidden for url: https://services-api.ryanair.com/farfnd/v4/roundTripFares?departureAirportIataCode=BRU&arrivalAirportIataCode=TRF&outboundDepartureDateFrom=2026-10-21&outboundDepartureDateTo=2026-10-21&currency=EUR&inboundDepartureDateFrom=2026-11-12&inboundDepartureDateTo=2026-11-12",
+        "Ryanair injoignable BRU→TRF 2026-10-22: 403 Client Error: Forbidden for url: https://services-api.ryanair.com/farfnd/v4/roundTripFares?departureAirportIataCode=BRU&arrivalAirportIataCode=TRF&outboundDepartureDateFrom=2026-10-22&outboundDepartureDateTo=2026-10-22&currency=EUR&inboundDepartureDateFrom=2026-11-13&inboundDepartureDateTo=2026-11-13"
+      ],
       "combinations": 6,
       "status": "ok",
       "best_price": 167.0,
@@ -85,11 +91,11 @@
       "reason": "seuil déjà notifié (cooldown)",
       "alerted": false,
       "stats": {
-        "count": 120,
+        "count": 121,
         "min": 167.0,
         "max": 181.0,
         "median": 167.0,
-        "avg": 168.05,
+        "avg": 168.04,
         "last": 167.0
       }
     },
@@ -98,34 +104,37 @@
       "label": "toronto 2027",
       "threshold": 600.0,
       "currency": "EUR",
-      "elapsed_s": 82.0,
+      "elapsed_s": 80.2,
       "quotes_found": 0,
       "errors": [
-        "Google Flights injoignable pour BRU→YYZ 2027-10-01: Extra data: line 1 column 235 (char 234)",
-        "Google Flights injoignable pour BRU→YYZ 2027-10-03: Extra data: line 1 column 235 (char 234)",
-        "Google Flights injoignable pour BRU→YYZ 2027-10-02: Extra data: line 1 column 235 (char 234)",
-        "Google Flights injoignable pour BRU→YYZ 2027-10-05: Extra data: line 1 column 235 (char 234)",
-        "Google Flights injoignable pour BRU→YYZ 2027-10-04: Extra data: line 1 column 235 (char 234)"
+        "Google Flights injoignable pour BRU→YYZ 2027-10-01: Extra data: line 1 column 234 (char 233)",
+        "Google Flights injoignable pour BRU→YYZ 2027-10-03: Extra data: line 1 column 234 (char 233)",
+        "Google Flights injoignable pour BRU→YYZ 2027-10-02: Extra data: line 1 column 234 (char 233)",
+        "Google Flights injoignable pour BRU→YYZ 2027-10-04: Extra data: line 1 column 233 (char 232)",
+        "Google Flights injoignable pour BRU→YYZ 2027-10-06: Extra data: line 1 column 233 (char 232)"
       ],
       "status": "aucun prix"
     }
   ],
   "alerts_sent": 0,
   "errors": [
-    "Google Flights injoignable pour BRU→YYZ 2027-10-01: Extra data: line 1 column 235 (char 234)",
-    "Google Flights injoignable pour BRU→YYZ 2027-10-03: Extra data: line 1 column 235 (char 234)",
-    "Google Flights injoignable pour BRU→YYZ 2027-10-02: Extra data: line 1 column 235 (char 234)"
+    "Ryanair injoignable BRU→OSL 2026-10-21: 403 Client Error: Forbidden for url: https://services-api.ryanair.com/farfnd/v4/roundTripFares?departureAirportIataCode=BRU&arrivalAirportIataCode=OSL&outboundDepartureDateFrom=2026-10-21&outboundDepartureDateTo=2026-10-21&currency=EUR&inboundDepartureDateFrom=2026-11-12&inboundDepartureDateTo=2026-11-12",
+    "Ryanair injoignable BRU→OSL 2026-10-22: 403 Client Error: Forbidden for url: https://services-api.ryanair.com/farfnd/v4/roundTripFares?departureAirportIataCode=BRU&arrivalAirportIataCode=OSL&outboundDepartureDateFrom=2026-10-22&outboundDepartureDateTo=2026-10-22&currency=EUR&inboundDepartureDateFrom=2026-11-13&inboundDepartureDateTo=2026-11-13",
+    "Ryanair injoignable BRU→OSL 2026-10-23: 403 Client Error: Forbidden for url: https://services-api.ryanair.com/farfnd/v4/roundTripFares?departureAirportIataCode=BRU&arrivalAirportIataCode=OSL&outboundDepartureDateFrom=2026-10-23&outboundDepartureDateTo=2026-10-23&currency=EUR&inboundDepartureDateFrom=2026-11-14&inboundDepartureDateTo=2026-11-14",
+    "Google Flights injoignable pour BRU→YYZ 2027-10-01: Extra data: line 1 column 234 (char 233)",
+    "Google Flights injoignable pour BRU→YYZ 2027-10-03: Extra data: line 1 column 234 (char 233)",
+    "Google Flights injoignable pour BRU→YYZ 2027-10-02: Extra data: line 1 column 234 (char 233)"
   ],
   "providers": {
     "google_flights": {
       "attempts": 65,
       "failures": 27,
-      "sample": "Google Flights injoignable pour BRU→YYZ 2027-10-01: Extra data: line 1 column 235 (char 234)"
+      "sample": "Google Flights injoignable pour BRU→YYZ 2027-10-01: Extra data: line 1 column 234 (char 233)"
     },
     "ryanair": {
       "attempts": 12,
-      "failures": 0,
-      "sample": ""
+      "failures": 12,
+      "sample": "Ryanair injoignable BRU→OSL 2026-10-21: 403 Client Error: Forbidden for url: https://services-api.ryanair.com/farfnd/v4/roundTripFares?departureAirportIataCode=BRU&arrivalAirportIataCode=OSL&outboundDepartureDateFrom=2026-10-21&outboundDepartureDateTo=2026-10-21&currency=EUR&inboundDepartureDateFrom=2026-11-12&inboundDepartureDateTo=2026-11-12"
     },
     "wizzair": {
       "attempts": 12,
