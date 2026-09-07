@@ -1,5 +1,5 @@
 {
-  "ran_at": "2026-09-07T20:45:53Z",
+  "ran_at": "2026-09-07T21:15:56Z",
   "source": "api",
   "watches": [
     {
@@ -7,8 +7,8 @@
       "label": "THIERRY --> FEVRIER 2026",
       "threshold": 650.0,
       "currency": "EUR",
-      "elapsed_s": 7.1,
-      "quotes_found": 101,
+      "elapsed_s": 7.6,
+      "quotes_found": 100,
       "errors": [],
       "combinations": 21,
       "status": "ok",
@@ -25,11 +25,11 @@
       "reason": "au-dessus du seuil",
       "alerted": false,
       "stats": {
-        "count": 343,
+        "count": 344,
         "min": 598.0,
         "max": 770.0,
         "median": 706.0,
-        "avg": 694.45,
+        "avg": 694.35,
         "last": 659.0
       }
     },
@@ -38,7 +38,7 @@
       "label": "ASMET",
       "threshold": 600.0,
       "currency": "EUR",
-      "elapsed_s": 0.9,
+      "elapsed_s": 1.0,
       "quotes_found": 6,
       "errors": [],
       "combinations": 2,
@@ -55,11 +55,11 @@
       "reason": "seuil déjà notifié (cooldown)",
       "alerted": false,
       "stats": {
-        "count": 344,
+        "count": 345,
         "min": 498.0,
         "max": 984.0,
         "median": 548.0,
-        "avg": 551.48,
+        "avg": 551.46,
         "last": 545.0
       }
     },
@@ -68,12 +68,12 @@
       "label": "Norvège 2026",
       "threshold": 300.0,
       "currency": "EUR",
-      "elapsed_s": 7.8,
-      "quotes_found": 28,
+      "elapsed_s": 10.9,
+      "quotes_found": 27,
       "errors": [],
       "combinations": 6,
       "status": "ok",
-      "best_price": 167.0,
+      "best_price": 168.0,
       "best_route": "CDG→OSL",
       "best_depart": "2026-10-21",
       "best_return": "2026-11-12",
@@ -86,12 +86,12 @@
       "reason": "seuil déjà notifié (cooldown)",
       "alerted": false,
       "stats": {
-        "count": 307,
+        "count": 308,
         "min": 167.0,
         "max": 328.0,
         "median": 167.0,
         "avg": 168.46,
-        "last": 167.0
+        "last": 168.0
       }
     },
     {
@@ -99,13 +99,13 @@
       "label": "toronto 2027",
       "threshold": 600.0,
       "currency": "EUR",
-      "elapsed_s": 83.1,
+      "elapsed_s": 82.0,
       "quotes_found": 0,
       "errors": [
-        "Google Flights injoignable pour BRU→YYZ 2027-10-03: Extra data: line 1 column 233 (char 232)",
-        "Google Flights injoignable pour BRU→YYZ 2027-10-01: Extra data: line 1 column 233 (char 232)",
+        "Google Flights injoignable pour BRU→YYZ 2027-10-03: Extra data: line 1 column 235 (char 234)",
+        "Google Flights injoignable pour BRU→YYZ 2027-10-01: Extra data: line 1 column 235 (char 234)",
         "Google Flights injoignable pour BRU→YYZ 2027-10-02: Extra data: line 1 column 235 (char 234)",
-        "Google Flights injoignable pour BRU→YYZ 2027-10-05: Extra data: line 1 column 230 (char 229)",
+        "Google Flights injoignable pour BRU→YYZ 2027-10-06: Extra data: line 1 column 235 (char 234)",
         "Google Flights injoignable pour BRU→YYZ 2027-10-04: Extra data: line 1 column 234 (char 233)"
       ],
       "status": "aucun prix"
@@ -113,22 +113,22 @@
   ],
   "alerts_sent": 0,
   "errors": [
-    "Google Flights injoignable pour BRU→YYZ 2027-10-03: Extra data: line 1 column 233 (char 232)",
-    "Google Flights injoignable pour BRU→YYZ 2027-10-01: Extra data: line 1 column 233 (char 232)",
+    "Google Flights injoignable pour BRU→YYZ 2027-10-03: Extra data: line 1 column 235 (char 234)",
+    "Google Flights injoignable pour BRU→YYZ 2027-10-01: Extra data: line 1 column 235 (char 234)",
     "Google Flights injoignable pour BRU→YYZ 2027-10-02: Extra data: line 1 column 235 (char 234)"
   ],
   "providers": {
     "google_flights": {
       "attempts": 65,
       "failures": 27,
-      "sample": "Google Flights injoignable pour BRU→YYZ 2027-10-03: Extra data: line 1 column 233 (char 232)"
+      "sample": "Google Flights injoignable pour BRU→YYZ 2027-10-03: Extra data: line 1 column 235 (char 234)"
     },
-    "wizzair": {
+    "ryanair": {
       "attempts": 12,
       "failures": 0,
       "sample": ""
     },
-    "ryanair": {
+    "wizzair": {
       "attempts": 12,
       "failures": 0,
       "sample": ""
