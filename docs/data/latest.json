@@ -1,5 +1,5 @@
 {
-  "ran_at": "2026-09-07T08:46:00Z",
+  "ran_at": "2026-09-07T09:15:58Z",
   "source": "api",
   "watches": [
     {
@@ -7,7 +7,7 @@
       "label": "THIERRY --> FEVRIER 2026",
       "threshold": 650.0,
       "currency": "EUR",
-      "elapsed_s": 14.9,
+      "elapsed_s": 12.4,
       "quotes_found": 104,
       "errors": [],
       "combinations": 21,
@@ -24,11 +24,11 @@
       "reason": "au-dessus du seuil",
       "alerted": false,
       "stats": {
-        "count": 319,
+        "count": 320,
         "min": 598.0,
         "max": 710.0,
         "median": 706.0,
-        "avg": 694.66,
+        "avg": 694.69,
         "last": 706.0
       }
     },
@@ -37,7 +37,7 @@
       "label": "ASMET",
       "threshold": 600.0,
       "currency": "EUR",
-      "elapsed_s": 0.7,
+      "elapsed_s": 4.2,
       "quotes_found": 6,
       "errors": [],
       "combinations": 2,
@@ -54,11 +54,11 @@
       "reason": "seuil déjà notifié (cooldown)",
       "alerted": false,
       "stats": {
-        "count": 320,
+        "count": 321,
         "min": 498.0,
         "max": 598.0,
         "median": 548.0,
-        "avg": 550.49,
+        "avg": 550.48,
         "last": 548.0
       }
     },
@@ -67,13 +67,10 @@
       "label": "Norvège 2026",
       "threshold": 300.0,
       "currency": "EUR",
-      "elapsed_s": 19.3,
-      "quotes_found": 22,
-      "errors": [
-        "Google Flights injoignable pour CDG→TRF 2026-10-21: Extra data: line 1 column 234 (char 233)",
-        "Google Flights injoignable pour CDG→TRF 2026-10-23: Extra data: line 1 column 235 (char 234)"
-      ],
-      "combinations": 4,
+      "elapsed_s": 13.6,
+      "quotes_found": 31,
+      "errors": [],
+      "combinations": 6,
       "status": "ok",
       "best_price": 167.0,
       "best_route": "CDG→OSL",
@@ -88,11 +85,11 @@
       "reason": "seuil déjà notifié (cooldown)",
       "alerted": false,
       "stats": {
-        "count": 283,
+        "count": 284,
         "min": 167.0,
         "max": 181.0,
         "median": 167.0,
-        "avg": 167.45,
+        "avg": 167.44,
         "last": 167.0
       }
     },
@@ -101,31 +98,29 @@
       "label": "toronto 2027",
       "threshold": 600.0,
       "currency": "EUR",
-      "elapsed_s": 79.9,
+      "elapsed_s": 79.4,
       "quotes_found": 0,
       "errors": [
         "Google Flights injoignable pour BRU→YYZ 2027-10-02: Extra data: line 1 column 233 (char 232)",
-        "Google Flights injoignable pour BRU→YYZ 2027-10-01: Extra data: line 1 column 234 (char 233)",
-        "Google Flights injoignable pour BRU→YYZ 2027-10-03: Extra data: line 1 column 234 (char 233)",
-        "Google Flights injoignable pour BRU→YYZ 2027-10-04: Extra data: line 1 column 233 (char 232)",
-        "Google Flights injoignable pour BRU→YYZ 2027-10-05: Extra data: line 1 column 233 (char 232)"
+        "Google Flights injoignable pour BRU→YYZ 2027-10-03: Extra data: line 1 column 233 (char 232)",
+        "Google Flights injoignable pour BRU→YYZ 2027-10-01: Extra data: line 1 column 230 (char 229)",
+        "Google Flights injoignable pour BRU→YYZ 2027-10-05: Extra data: line 1 column 234 (char 233)",
+        "Google Flights injoignable pour BRU→YYZ 2027-10-06: Extra data: line 1 column 233 (char 232)"
       ],
       "status": "aucun prix"
     }
   ],
   "alerts_sent": 0,
   "errors": [
-    "Google Flights injoignable pour CDG→TRF 2026-10-21: Extra data: line 1 column 234 (char 233)",
-    "Google Flights injoignable pour CDG→TRF 2026-10-23: Extra data: line 1 column 235 (char 234)",
     "Google Flights injoignable pour BRU→YYZ 2027-10-02: Extra data: line 1 column 233 (char 232)",
-    "Google Flights injoignable pour BRU→YYZ 2027-10-01: Extra data: line 1 column 234 (char 233)",
-    "Google Flights injoignable pour BRU→YYZ 2027-10-03: Extra data: line 1 column 234 (char 233)"
+    "Google Flights injoignable pour BRU→YYZ 2027-10-03: Extra data: line 1 column 233 (char 232)",
+    "Google Flights injoignable pour BRU→YYZ 2027-10-01: Extra data: line 1 column 230 (char 229)"
   ],
   "providers": {
     "google_flights": {
       "attempts": 65,
-      "failures": 29,
-      "sample": "Google Flights injoignable pour CDG→TRF 2026-10-21: Extra data: line 1 column 234 (char 233)"
+      "failures": 27,
+      "sample": "Google Flights injoignable pour BRU→YYZ 2027-10-02: Extra data: line 1 column 233 (char 232)"
     },
     "ryanair": {
       "attempts": 12,
