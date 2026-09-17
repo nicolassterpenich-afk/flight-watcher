@@ -1,5 +1,5 @@
 {
-  "ran_at": "2026-09-17T07:46:28Z",
+  "ran_at": "2026-09-17T08:16:12Z",
   "source": "api",
   "watches": [
     {
@@ -7,7 +7,7 @@
       "label": "THIERRY --> FEVRIER 2026",
       "threshold": 650.0,
       "currency": "EUR",
-      "elapsed_s": 2.7,
+      "elapsed_s": 2.4,
       "quotes_found": 32,
       "errors": [],
       "combinations": 7,
@@ -25,11 +25,11 @@
       "reason": "au-dessus du seuil",
       "alerted": false,
       "stats": {
-        "count": 800,
+        "count": 801,
         "min": 598.0,
         "max": 871.0,
         "median": 743.0,
-        "avg": 742.56,
+        "avg": 742.59,
         "last": 764.0
       }
     },
@@ -38,7 +38,7 @@
       "label": "ASMET",
       "threshold": 600.0,
       "currency": "EUR",
-      "elapsed_s": 1.1,
+      "elapsed_s": 0.5,
       "quotes_found": 6,
       "errors": [],
       "combinations": 2,
@@ -52,14 +52,14 @@
         "Corsair"
       ],
       "booking_url": "https://www.google.com/travel/flights/search?tfs=GhoSCjIwMjYtMDktMjVqBRIDT1JZcgUSA1BUUBoaEgoyMDI2LTEwLTA1agUSA1BUUHIFEgNPUllCAQFIAZgBAQ==&hl=fr&curr=EUR",
-      "reason": "seuil déjà notifié (cooldown)",
-      "alerted": false,
+      "reason": "seuil_rappel",
+      "alerted": true,
       "stats": {
-        "count": 800,
+        "count": 801,
         "min": 498.0,
         "max": 2688.0,
         "median": 545.0,
-        "avg": 550.0,
+        "avg": 549.99,
         "last": 540.0
       }
     },
@@ -68,7 +68,7 @@
       "label": "Norvège 2026",
       "threshold": 300.0,
       "currency": "EUR",
-      "elapsed_s": 7.8,
+      "elapsed_s": 7.6,
       "quotes_found": 29,
       "errors": [],
       "combinations": 6,
@@ -85,11 +85,11 @@
       "reason": "seuil déjà notifié (cooldown)",
       "alerted": false,
       "stats": {
-        "count": 764,
+        "count": 765,
         "min": 165.0,
         "max": 328.0,
         "median": 167.0,
-        "avg": 168.9,
+        "avg": 168.91,
         "last": 173.0
       }
     },
@@ -98,29 +98,29 @@
       "label": "toronto 2027",
       "threshold": 600.0,
       "currency": "EUR",
-      "elapsed_s": 81.2,
+      "elapsed_s": 80.3,
       "quotes_found": 0,
       "errors": [
-        "Google Flights injoignable pour BRU→YYZ 2027-10-01: Extra data: line 1 column 233 (char 232)",
-        "Google Flights injoignable pour BRU→YYZ 2027-10-03: Extra data: line 1 column 233 (char 232)",
         "Google Flights injoignable pour BRU→YYZ 2027-10-02: Extra data: line 1 column 233 (char 232)",
-        "Google Flights injoignable pour BRU→YYZ 2027-10-05: Extra data: line 1 column 233 (char 232)",
-        "Google Flights injoignable pour BRU→YYZ 2027-10-04: Extra data: line 1 column 233 (char 232)"
+        "Google Flights injoignable pour BRU→YYZ 2027-10-03: Extra data: line 1 column 233 (char 232)",
+        "Google Flights injoignable pour BRU→YYZ 2027-10-01: Extra data: line 1 column 233 (char 232)",
+        "Google Flights injoignable pour BRU→YYZ 2027-10-06: Extra data: line 1 column 233 (char 232)",
+        "Google Flights injoignable pour BRU→YYZ 2027-10-05: Extra data: line 1 column 233 (char 232)"
       ],
       "status": "aucun prix"
     }
   ],
-  "alerts_sent": 0,
+  "alerts_sent": 1,
   "errors": [
-    "Google Flights injoignable pour BRU→YYZ 2027-10-01: Extra data: line 1 column 233 (char 232)",
+    "Google Flights injoignable pour BRU→YYZ 2027-10-02: Extra data: line 1 column 233 (char 232)",
     "Google Flights injoignable pour BRU→YYZ 2027-10-03: Extra data: line 1 column 233 (char 232)",
-    "Google Flights injoignable pour BRU→YYZ 2027-10-02: Extra data: line 1 column 233 (char 232)"
+    "Google Flights injoignable pour BRU→YYZ 2027-10-01: Extra data: line 1 column 233 (char 232)"
   ],
   "providers": {
     "google_flights": {
       "attempts": 49,
       "failures": 27,
-      "sample": "Google Flights injoignable pour BRU→YYZ 2027-10-01: Extra data: line 1 column 233 (char 232)"
+      "sample": "Google Flights injoignable pour BRU→YYZ 2027-10-02: Extra data: line 1 column 233 (char 232)"
     },
     "ryanair": {
       "attempts": 12,
