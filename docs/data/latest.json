@@ -1,5 +1,5 @@
 {
-  "ran_at": "2026-09-20T13:46:06Z",
+  "ran_at": "2026-09-20T13:57:54Z",
   "source": "api",
   "watches": [
     {
@@ -7,10 +7,12 @@
       "label": "THIERRY --> FEVRIER 2026",
       "threshold": 650.0,
       "currency": "EUR",
-      "elapsed_s": 2.6,
-      "quotes_found": 31,
-      "errors": [],
-      "combinations": 7,
+      "elapsed_s": 10.8,
+      "quotes_found": 24,
+      "errors": [
+        "Google Flights injoignable pour CDG→BKK 2027-02-19: Extra data: line 1 column 236 (char 235)"
+      ],
+      "combinations": 6,
       "status": "ok",
       "best_price": 766.0,
       "best_route": "AMS→BKK",
@@ -25,11 +27,11 @@
       "reason": "au-dessus du seuil",
       "alerted": false,
       "stats": {
-        "count": 958,
+        "count": 959,
         "min": 598.0,
         "max": 871.0,
         "median": 764.0,
-        "avg": 745.25,
+        "avg": 745.27,
         "last": 766.0
       }
     },
@@ -38,7 +40,7 @@
       "label": "ASMET",
       "threshold": 600.0,
       "currency": "EUR",
-      "elapsed_s": 0.8,
+      "elapsed_s": 3.7,
       "quotes_found": 6,
       "errors": [],
       "combinations": 2,
@@ -55,11 +57,11 @@
       "reason": "seuil déjà notifié (cooldown)",
       "alerted": false,
       "stats": {
-        "count": 958,
+        "count": 959,
         "min": 498.0,
         "max": 2688.0,
         "median": 545.0,
-        "avg": 548.91,
+        "avg": 548.9,
         "last": 545.0
       }
     },
@@ -68,7 +70,7 @@
       "label": "Norvège 2026",
       "threshold": 300.0,
       "currency": "EUR",
-      "elapsed_s": 9.3,
+      "elapsed_s": 17.1,
       "quotes_found": 36,
       "errors": [],
       "combinations": 6,
@@ -85,7 +87,7 @@
       "reason": "seuil déjà notifié (cooldown)",
       "alerted": false,
       "stats": {
-        "count": 922,
+        "count": 923,
         "min": 159.0,
         "max": 328.0,
         "median": 168.0,
@@ -98,29 +100,30 @@
       "label": "toronto 2027",
       "threshold": 600.0,
       "currency": "EUR",
-      "elapsed_s": 78.2,
+      "elapsed_s": 77.5,
       "quotes_found": 0,
       "errors": [
+        "Google Flights injoignable pour BRU→YYZ 2027-10-03: Extra data: line 1 column 235 (char 234)",
         "Google Flights injoignable pour BRU→YYZ 2027-10-01: Extra data: line 1 column 235 (char 234)",
-        "Google Flights injoignable pour BRU→YYZ 2027-10-03: Extra data: line 1 column 233 (char 232)",
-        "Google Flights injoignable pour BRU→YYZ 2027-10-02: Extra data: line 1 column 233 (char 232)",
-        "Google Flights injoignable pour BRU→YYZ 2027-10-05: Extra data: line 1 column 234 (char 233)",
-        "Google Flights injoignable pour BRU→YYZ 2027-10-06: Extra data: line 1 column 233 (char 232)"
+        "Google Flights injoignable pour BRU→YYZ 2027-10-02: Extra data: line 1 column 235 (char 234)",
+        "Google Flights injoignable pour BRU→YYZ 2027-10-05: Extra data: line 1 column 233 (char 232)",
+        "Google Flights injoignable pour BRU→YYZ 2027-10-04: Extra data: line 1 column 235 (char 234)"
       ],
       "status": "aucun prix"
     }
   ],
   "alerts_sent": 0,
   "errors": [
+    "Google Flights injoignable pour CDG→BKK 2027-02-19: Extra data: line 1 column 236 (char 235)",
+    "Google Flights injoignable pour BRU→YYZ 2027-10-03: Extra data: line 1 column 235 (char 234)",
     "Google Flights injoignable pour BRU→YYZ 2027-10-01: Extra data: line 1 column 235 (char 234)",
-    "Google Flights injoignable pour BRU→YYZ 2027-10-03: Extra data: line 1 column 233 (char 232)",
-    "Google Flights injoignable pour BRU→YYZ 2027-10-02: Extra data: line 1 column 233 (char 232)"
+    "Google Flights injoignable pour BRU→YYZ 2027-10-02: Extra data: line 1 column 235 (char 234)"
   ],
   "providers": {
     "google_flights": {
       "attempts": 49,
-      "failures": 27,
-      "sample": "Google Flights injoignable pour BRU→YYZ 2027-10-01: Extra data: line 1 column 235 (char 234)"
+      "failures": 28,
+      "sample": "Google Flights injoignable pour CDG→BKK 2027-02-19: Extra data: line 1 column 236 (char 235)"
     },
     "wizzair": {
       "attempts": 12,
