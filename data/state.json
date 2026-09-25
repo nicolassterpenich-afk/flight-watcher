@@ -21,7 +21,7 @@
     "last_alert_at": "2026-09-25T00:14:08Z",
     "last_alert_price": 578.0,
     "last_alert_reason": "seuil_rappel",
-    "last_checked_at": "2026-09-25T03:46:05Z",
+    "last_checked_at": "2026-09-25T04:16:05Z",
     "last_price": 578.0
   },
   "bangkok-fevrier": {
@@ -68,7 +68,7 @@
     "last_alert_at": "2026-09-24T17:46:11Z",
     "last_alert_price": 179.0,
     "last_alert_reason": "seuil_rappel",
-    "last_checked_at": "2026-09-25T03:46:11Z",
+    "last_checked_at": "2026-09-25T04:16:11Z",
     "last_price": 179.0
   },
   "surpsie": {
