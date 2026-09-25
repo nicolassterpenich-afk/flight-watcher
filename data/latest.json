@@ -1,5 +1,5 @@
 {
-  "ran_at": "2026-09-25T16:16:03Z",
+  "ran_at": "2026-09-25T16:46:03Z",
   "source": "api",
   "watches": [
     {
@@ -7,12 +7,12 @@
       "label": "ASMET",
       "threshold": 600.0,
       "currency": "EUR",
-      "elapsed_s": 1.1,
+      "elapsed_s": 0.8,
       "quotes_found": 3,
       "errors": [],
       "combinations": 1,
       "status": "ok",
-      "best_price": 2710.0,
+      "best_price": 2708.0,
       "best_route": "BRU→PTP",
       "best_depart": "2026-09-25",
       "best_return": "2026-10-05",
@@ -25,12 +25,12 @@
       "reason": "au-dessus du seuil",
       "alerted": false,
       "stats": {
-        "count": 1207,
+        "count": 1208,
         "min": 498.0,
         "max": 2710.0,
         "median": 545.0,
-        "avg": 576.38,
-        "last": 2710.0
+        "avg": 578.14,
+        "last": 2708.0
       }
     },
     {
@@ -38,7 +38,7 @@
       "label": "Norvège 2026",
       "threshold": 300.0,
       "currency": "EUR",
-      "elapsed_s": 8.6,
+      "elapsed_s": 8.8,
       "quotes_found": 24,
       "errors": [],
       "combinations": 6,
@@ -56,11 +56,11 @@
       "reason": "seuil déjà notifié (cooldown)",
       "alerted": false,
       "stats": {
-        "count": 1171,
+        "count": 1172,
         "min": 159.0,
         "max": 328.0,
         "median": 168.0,
-        "avg": 171.52,
+        "avg": 171.54,
         "last": 192.0
       }
     },
@@ -69,29 +69,29 @@
       "label": "toronto 2027",
       "threshold": 600.0,
       "currency": "EUR",
-      "elapsed_s": 81.3,
+      "elapsed_s": 82.0,
       "quotes_found": 0,
       "errors": [
-        "Google Flights injoignable pour BRU→YYZ 2027-10-02: Extra data: line 1 column 233 (char 232)",
-        "Google Flights injoignable pour BRU→YYZ 2027-10-01: Extra data: line 1 column 234 (char 233)",
-        "Google Flights injoignable pour BRU→YYZ 2027-10-03: Extra data: line 1 column 234 (char 233)",
-        "Google Flights injoignable pour BRU→YYZ 2027-10-04: Extra data: line 1 column 233 (char 232)",
-        "Google Flights injoignable pour BRU→YYZ 2027-10-05: Extra data: line 1 column 234 (char 233)"
+        "Google Flights injoignable pour BRU→YYZ 2027-10-01: Extra data: line 1 column 235 (char 234)",
+        "Google Flights injoignable pour BRU→YYZ 2027-10-03: Extra data: line 1 column 233 (char 232)",
+        "Google Flights injoignable pour BRU→YYZ 2027-10-02: Extra data: line 1 column 235 (char 234)",
+        "Google Flights injoignable pour BRU→YYZ 2027-10-05: Extra data: line 1 column 235 (char 234)",
+        "Google Flights injoignable pour BRU→YYZ 2027-10-04: Extra data: line 1 column 235 (char 234)"
       ],
       "status": "aucun prix"
     }
   ],
   "alerts_sent": 0,
   "errors": [
-    "Google Flights injoignable pour BRU→YYZ 2027-10-02: Extra data: line 1 column 233 (char 232)",
-    "Google Flights injoignable pour BRU→YYZ 2027-10-01: Extra data: line 1 column 234 (char 233)",
-    "Google Flights injoignable pour BRU→YYZ 2027-10-03: Extra data: line 1 column 234 (char 233)"
+    "Google Flights injoignable pour BRU→YYZ 2027-10-01: Extra data: line 1 column 235 (char 234)",
+    "Google Flights injoignable pour BRU→YYZ 2027-10-03: Extra data: line 1 column 233 (char 232)",
+    "Google Flights injoignable pour BRU→YYZ 2027-10-02: Extra data: line 1 column 235 (char 234)"
   ],
   "providers": {
     "google_flights": {
       "attempts": 41,
       "failures": 27,
-      "sample": "Google Flights injoignable pour BRU→YYZ 2027-10-02: Extra data: line 1 column 233 (char 232)"
+      "sample": "Google Flights injoignable pour BRU→YYZ 2027-10-01: Extra data: line 1 column 235 (char 234)"
     },
     "ryanair": {
       "attempts": 12,
