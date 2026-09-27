@@ -1,5 +1,5 @@
 {
-  "ran_at": "2026-09-27T10:45:56Z",
+  "ran_at": "2026-09-27T11:16:01Z",
   "source": "api",
   "watches": [
     {
@@ -7,11 +7,11 @@
       "label": "ASMET",
       "threshold": 600.0,
       "currency": "EUR",
-      "elapsed_s": 9.8,
+      "elapsed_s": 8.6,
       "quotes_found": 0,
       "errors": [
-        "Google Flights injoignable pour ORY→PTP 2026-09-25: Extra data: line 1 column 235 (char 234)",
-        "Google Flights injoignable pour BRU→PTP 2026-09-25: Extra data: line 1 column 232 (char 231)"
+        "Google Flights injoignable pour BRU→PTP 2026-09-25: Extra data: line 1 column 235 (char 234)",
+        "Google Flights injoignable pour ORY→PTP 2026-09-25: Extra data: line 1 column 235 (char 234)"
       ],
       "status": "aucun prix"
     },
@@ -20,10 +20,14 @@
       "label": "Norvège 2026",
       "threshold": 300.0,
       "currency": "EUR",
-      "elapsed_s": 8.1,
-      "quotes_found": 31,
-      "errors": [],
-      "combinations": 6,
+      "elapsed_s": 17.2,
+      "quotes_found": 24,
+      "errors": [
+        "Google Flights injoignable pour BRU→OSL 2026-10-22: Extra data: line 1 column 236 (char 235)",
+        "Google Flights injoignable pour BRU→TRF 2026-10-23: Extra data: line 1 column 236 (char 235)",
+        "Google Flights injoignable pour CDG→OSL 2026-10-21: Extra data: line 1 column 236 (char 235)"
+      ],
+      "combinations": 5,
       "status": "ok",
       "best_price": 182.0,
       "best_route": "CDG→OSL",
@@ -35,14 +39,14 @@
         "Lufthansa"
       ],
       "booking_url": "https://www.google.com/travel/flights/search?tfs=GhwSCjIwMjYtMTAtMjIoAWoFEgNDREdyBRIDT1NMGhwSCjIwMjYtMTEtMTMoAWoFEgNPU0xyBRIDQ0RHQgEBSAGYAQE=&hl=fr&curr=EUR",
-      "reason": "seuil déjà notifié (cooldown)",
-      "alerted": false,
+      "reason": "seuil_rappel",
+      "alerted": true,
       "stats": {
-        "count": 1256,
+        "count": 1257,
         "min": 159.0,
         "max": 328.0,
         "median": 168.0,
-        "avg": 172.51,
+        "avg": 172.52,
         "last": 182.0
       }
     },
@@ -51,38 +55,41 @@
       "label": "toronto 2027",
       "threshold": 600.0,
       "currency": "EUR",
-      "elapsed_s": 78.4,
+      "elapsed_s": 83.7,
       "quotes_found": 0,
       "errors": [
-        "Google Flights injoignable pour BRU→YYZ 2027-10-02: Extra data: line 1 column 233 (char 232)",
         "Google Flights injoignable pour BRU→YYZ 2027-10-03: Extra data: line 1 column 235 (char 234)",
-        "Google Flights injoignable pour BRU→YYZ 2027-10-01: Extra data: line 1 column 233 (char 232)",
-        "Google Flights injoignable pour BRU→YYZ 2027-10-05: Extra data: line 1 column 232 (char 231)",
-        "Google Flights injoignable pour BRU→YYZ 2027-10-04: Extra data: line 1 column 235 (char 234)"
+        "Google Flights injoignable pour BRU→YYZ 2027-10-02: Extra data: line 1 column 235 (char 234)",
+        "Google Flights injoignable pour BRU→YYZ 2027-10-01: Extra data: line 1 column 235 (char 234)",
+        "Google Flights injoignable pour BRU→YYZ 2027-10-04: Extra data: line 1 column 235 (char 234)",
+        "Google Flights injoignable pour BRU→YYZ 2027-10-06: Extra data: line 1 column 235 (char 234)"
       ],
       "status": "aucun prix"
     }
   ],
-  "alerts_sent": 0,
+  "alerts_sent": 1,
   "errors": [
+    "Google Flights injoignable pour BRU→PTP 2026-09-25: Extra data: line 1 column 235 (char 234)",
     "Google Flights injoignable pour ORY→PTP 2026-09-25: Extra data: line 1 column 235 (char 234)",
-    "Google Flights injoignable pour BRU→PTP 2026-09-25: Extra data: line 1 column 232 (char 231)",
-    "Google Flights injoignable pour BRU→YYZ 2027-10-02: Extra data: line 1 column 233 (char 232)",
+    "Google Flights injoignable pour BRU→OSL 2026-10-22: Extra data: line 1 column 236 (char 235)",
+    "Google Flights injoignable pour BRU→TRF 2026-10-23: Extra data: line 1 column 236 (char 235)",
+    "Google Flights injoignable pour CDG→OSL 2026-10-21: Extra data: line 1 column 236 (char 235)",
     "Google Flights injoignable pour BRU→YYZ 2027-10-03: Extra data: line 1 column 235 (char 234)",
-    "Google Flights injoignable pour BRU→YYZ 2027-10-01: Extra data: line 1 column 233 (char 232)"
+    "Google Flights injoignable pour BRU→YYZ 2027-10-02: Extra data: line 1 column 235 (char 234)",
+    "Google Flights injoignable pour BRU→YYZ 2027-10-01: Extra data: line 1 column 235 (char 234)"
   ],
   "providers": {
     "google_flights": {
       "attempts": 41,
-      "failures": 29,
-      "sample": "Google Flights injoignable pour ORY→PTP 2026-09-25: Extra data: line 1 column 235 (char 234)"
+      "failures": 32,
+      "sample": "Google Flights injoignable pour BRU→PTP 2026-09-25: Extra data: line 1 column 235 (char 234)"
     },
-    "wizzair": {
+    "ryanair": {
       "attempts": 12,
       "failures": 0,
       "sample": ""
     },
-    "ryanair": {
+    "wizzair": {
       "attempts": 12,
       "failures": 0,
       "sample": ""
