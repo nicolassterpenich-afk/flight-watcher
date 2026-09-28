@@ -1,5 +1,5 @@
 {
-  "ran_at": "2026-09-28T13:16:05Z",
+  "ran_at": "2026-09-28T13:45:54Z",
   "source": "api",
   "watches": [
     {
@@ -7,7 +7,7 @@
       "label": "ASMET",
       "threshold": 600.0,
       "currency": "EUR",
-      "elapsed_s": 10.1,
+      "elapsed_s": 9.7,
       "quotes_found": 0,
       "errors": [
         "Google Flights injoignable pour BRU→PTP 2026-09-25: Extra data: line 1 column 233 (char 232)",
@@ -20,7 +20,7 @@
       "label": "Norvège 2026",
       "threshold": 300.0,
       "currency": "EUR",
-      "elapsed_s": 12.0,
+      "elapsed_s": 9.2,
       "quotes_found": 33,
       "errors": [],
       "combinations": 6,
@@ -37,11 +37,11 @@
       "reason": "seuil déjà notifié (cooldown)",
       "alerted": false,
       "stats": {
-        "count": 1309,
+        "count": 1310,
         "min": 159.0,
         "max": 374.0,
         "median": 168.0,
-        "avg": 173.34,
+        "avg": 173.35,
         "last": 190.0
       }
     },
@@ -50,14 +50,14 @@
       "label": "toronto 2027",
       "threshold": 600.0,
       "currency": "EUR",
-      "elapsed_s": 82.4,
+      "elapsed_s": 82.9,
       "quotes_found": 0,
       "errors": [
+        "Google Flights injoignable pour BRU→YYZ 2027-10-03: Extra data: line 1 column 234 (char 233)",
+        "Google Flights injoignable pour BRU→YYZ 2027-10-01: Extra data: line 1 column 235 (char 234)",
         "Google Flights injoignable pour BRU→YYZ 2027-10-02: Extra data: line 1 column 234 (char 233)",
-        "Google Flights injoignable pour BRU→YYZ 2027-10-03: Extra data: line 1 column 233 (char 232)",
-        "Google Flights injoignable pour BRU→YYZ 2027-10-01: Extra data: line 1 column 234 (char 233)",
-        "Google Flights injoignable pour BRU→YYZ 2027-10-05: Extra data: line 1 column 232 (char 231)",
-        "Google Flights injoignable pour BRU→YYZ 2027-10-04: Extra data: line 1 column 234 (char 233)"
+        "Google Flights injoignable pour BRU→YYZ 2027-10-04: Extra data: line 1 column 233 (char 232)",
+        "Google Flights injoignable pour BRU→YYZ 2027-10-05: Extra data: line 1 column 234 (char 233)"
       ],
       "status": "aucun prix"
     }
@@ -66,9 +66,9 @@
   "errors": [
     "Google Flights injoignable pour BRU→PTP 2026-09-25: Extra data: line 1 column 233 (char 232)",
     "Google Flights injoignable pour ORY→PTP 2026-09-25: Extra data: line 1 column 233 (char 232)",
-    "Google Flights injoignable pour BRU→YYZ 2027-10-02: Extra data: line 1 column 234 (char 233)",
-    "Google Flights injoignable pour BRU→YYZ 2027-10-03: Extra data: line 1 column 233 (char 232)",
-    "Google Flights injoignable pour BRU→YYZ 2027-10-01: Extra data: line 1 column 234 (char 233)"
+    "Google Flights injoignable pour BRU→YYZ 2027-10-03: Extra data: line 1 column 234 (char 233)",
+    "Google Flights injoignable pour BRU→YYZ 2027-10-01: Extra data: line 1 column 235 (char 234)",
+    "Google Flights injoignable pour BRU→YYZ 2027-10-02: Extra data: line 1 column 234 (char 233)"
   ],
   "providers": {
     "google_flights": {
