@@ -65,10 +65,10 @@
   },
   "norvege-2026": {
     "best_ever": 159.0,
-    "last_alert_at": "2026-09-27T23:46:32Z",
-    "last_alert_price": 192.0,
+    "last_alert_at": "2026-09-28T12:16:34Z",
+    "last_alert_price": 190.0,
     "last_alert_reason": "seuil_rappel",
-    "last_checked_at": "2026-09-28T11:46:28Z",
+    "last_checked_at": "2026-09-28T12:16:23Z",
     "last_price": 190.0
   },
   "surpsie": {
