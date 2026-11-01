@@ -2,7 +2,7 @@
   "_providers": {
     "google_flights": {
       "alerted": true,
-      "consecutive_failures": 13
+      "consecutive_failures": 14
     },
     "ryanair": {
       "alerted": false,
