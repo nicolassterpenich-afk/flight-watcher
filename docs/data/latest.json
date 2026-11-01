@@ -1,5 +1,5 @@
 {
-  "ran_at": "2026-11-01T17:33:59Z",
+  "ran_at": "2026-11-01T21:37:46Z",
   "source": "api",
   "watches": [
     {
@@ -7,13 +7,13 @@
       "label": "Norvège 2026",
       "threshold": 300.0,
       "currency": "EUR",
-      "elapsed_s": 18.7,
+      "elapsed_s": 17.8,
       "quotes_found": 0,
       "errors": [
-        "Google Flights injoignable pour BRU→OSL 2026-10-22: Extra data: line 1 column 234 (char 233)",
-        "Google Flights injoignable pour BRU→TRF 2026-10-22: Extra data: line 1 column 234 (char 233)",
-        "Google Flights injoignable pour CDG→OSL 2026-10-22: Extra data: line 1 column 234 (char 233)",
-        "Google Flights injoignable pour CDG→TRF 2026-10-22: Extra data: line 1 column 235 (char 234)"
+        "Google Flights injoignable pour BRU→TRF 2026-10-22: Extra data: line 1 column 233 (char 232)",
+        "Google Flights injoignable pour BRU→OSL 2026-10-22: Extra data: line 1 column 233 (char 232)",
+        "Google Flights injoignable pour CDG→OSL 2026-10-22: Extra data: line 1 column 233 (char 232)",
+        "Google Flights injoignable pour CDG→TRF 2026-10-22: Extra data: line 1 column 233 (char 232)"
       ],
       "status": "aucun prix"
     },
@@ -22,26 +22,26 @@
       "label": "toronto 2027",
       "threshold": 600.0,
       "currency": "EUR",
-      "elapsed_s": 81.8,
+      "elapsed_s": 89.3,
       "quotes_found": 0,
       "errors": [
-        "Google Flights injoignable pour BRU→YYZ 2027-10-03: Extra data: line 1 column 234 (char 233)",
-        "Google Flights injoignable pour BRU→YYZ 2027-10-01: Extra data: line 1 column 234 (char 233)",
-        "Google Flights injoignable pour BRU→YYZ 2027-10-02: Extra data: line 1 column 234 (char 233)",
-        "Google Flights injoignable pour BRU→YYZ 2027-10-04: Extra data: line 1 column 234 (char 233)",
-        "Google Flights injoignable pour BRU→YYZ 2027-10-06: Extra data: line 1 column 234 (char 233)"
+        "Google Flights injoignable pour BRU→YYZ 2027-10-02: Extra data: line 1 column 232 (char 231)",
+        "Google Flights injoignable pour BRU→YYZ 2027-10-01: Extra data: line 1 column 233 (char 232)",
+        "Google Flights injoignable pour BRU→YYZ 2027-10-03: Extra data: line 1 column 233 (char 232)",
+        "Google Flights injoignable pour BRU→YYZ 2027-10-05: Extra data: line 1 column 233 (char 232)",
+        "Google Flights injoignable pour BRU→YYZ 2027-10-06: Extra data: line 1 column 233 (char 232)"
       ],
       "status": "aucun prix"
     }
   ],
   "alerts_sent": 0,
   "errors": [
-    "Google Flights injoignable pour BRU→OSL 2026-10-22: Extra data: line 1 column 234 (char 233)",
-    "Google Flights injoignable pour BRU→TRF 2026-10-22: Extra data: line 1 column 234 (char 233)",
-    "Google Flights injoignable pour CDG→OSL 2026-10-22: Extra data: line 1 column 234 (char 233)",
-    "Google Flights injoignable pour BRU→YYZ 2027-10-03: Extra data: line 1 column 234 (char 233)",
-    "Google Flights injoignable pour BRU→YYZ 2027-10-01: Extra data: line 1 column 234 (char 233)",
-    "Google Flights injoignable pour BRU→YYZ 2027-10-02: Extra data: line 1 column 234 (char 233)"
+    "Google Flights injoignable pour BRU→TRF 2026-10-22: Extra data: line 1 column 233 (char 232)",
+    "Google Flights injoignable pour BRU→OSL 2026-10-22: Extra data: line 1 column 233 (char 232)",
+    "Google Flights injoignable pour CDG→OSL 2026-10-22: Extra data: line 1 column 233 (char 232)",
+    "Google Flights injoignable pour BRU→YYZ 2027-10-02: Extra data: line 1 column 232 (char 231)",
+    "Google Flights injoignable pour BRU→YYZ 2027-10-01: Extra data: line 1 column 233 (char 232)",
+    "Google Flights injoignable pour BRU→YYZ 2027-10-03: Extra data: line 1 column 233 (char 232)"
   ],
   "providers": {
     "ryanair": {
@@ -57,7 +57,7 @@
     "google_flights": {
       "attempts": 31,
       "failures": 31,
-      "sample": "Google Flights injoignable pour BRU→OSL 2026-10-22: Extra data: line 1 column 234 (char 233)"
+      "sample": "Google Flights injoignable pour BRU→TRF 2026-10-22: Extra data: line 1 column 233 (char 232)"
     }
   },
   "provider_alerts": []
