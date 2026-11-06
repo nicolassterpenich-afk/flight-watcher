@@ -1,8 +1,8 @@
 {
   "_providers": {
     "google_flights": {
-      "alerted": true,
-      "consecutive_failures": 33
+      "alerted": false,
+      "consecutive_failures": 0
     },
     "ryanair": {
       "alerted": false,
@@ -86,5 +86,10 @@
     "last_alert_reason": "seuil",
     "last_checked_at": "2026-08-31T13:15:35Z",
     "last_price": 96.0
+  },
+  "vacances-sterp-2027": {
+    "best_ever": 1081.0,
+    "last_checked_at": "2026-11-06T12:41:53Z",
+    "last_price": 1081.0
   }
 }
