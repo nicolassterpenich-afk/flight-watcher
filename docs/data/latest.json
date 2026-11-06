@@ -1,5 +1,5 @@
 {
-  "ran_at": "2026-11-06T12:41:29Z",
+  "ran_at": "2026-11-06T19:49:15Z",
   "source": "api",
   "watches": [
     {
@@ -7,12 +7,10 @@
       "label": "Vacances Sterp 2027",
       "threshold": 900.0,
       "currency": "EUR",
-      "elapsed_s": 31.7,
-      "quotes_found": 283,
-      "errors": [
-        "Google Flights injoignable pour AMS→KIX 2027-07-28: Extra data: line 1 column 236 (char 235)"
-      ],
-      "combinations": 42,
+      "elapsed_s": 20.2,
+      "quotes_found": 294,
+      "errors": [],
+      "combinations": 43,
       "status": "ok",
       "best_price": 1081.0,
       "best_route": "FRA→NRT",
@@ -27,7 +25,7 @@
       "reason": "au-dessus du seuil",
       "alerted": false,
       "stats": {
-        "count": 1,
+        "count": 2,
         "min": 1081.0,
         "max": 1081.0,
         "median": 1081.0,
@@ -37,17 +35,13 @@
     }
   ],
   "alerts_sent": 0,
-  "errors": [
-    "Google Flights injoignable pour AMS→KIX 2027-07-28: Extra data: line 1 column 236 (char 235)"
-  ],
+  "errors": [],
   "providers": {
     "google_flights": {
       "attempts": 48,
-      "failures": 1,
-      "sample": "Google Flights injoignable pour AMS→KIX 2027-07-28: Extra data: line 1 column 236 (char 235)"
+      "failures": 0,
+      "sample": ""
     }
   },
-  "provider_alerts": [
-    "✅ <b>google_flights</b> répond de nouveau."
-  ]
+  "provider_alerts": []
 }
