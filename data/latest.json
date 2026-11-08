@@ -1,5 +1,5 @@
 {
-  "ran_at": "2026-11-07T20:42:23Z",
+  "ran_at": "2026-11-08T00:09:16Z",
   "source": "api",
   "watches": [
     {
@@ -7,8 +7,8 @@
       "label": "Vacances Sterp 2027",
       "threshold": 900.0,
       "currency": "EUR",
-      "elapsed_s": 13.9,
-      "quotes_found": 295,
+      "elapsed_s": 30.5,
+      "quotes_found": 294,
       "errors": [],
       "combinations": 43,
       "status": "ok",
@@ -25,7 +25,7 @@
       "reason": "au-dessus du seuil",
       "alerted": false,
       "stats": {
-        "count": 7,
+        "count": 8,
         "min": 1081.0,
         "max": 1081.0,
         "median": 1081.0,
