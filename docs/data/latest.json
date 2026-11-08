@@ -1,5 +1,5 @@
 {
-  "ran_at": "2026-11-08T06:27:47Z",
+  "ran_at": "2026-11-08T13:46:00Z",
   "source": "api",
   "watches": [
     {
@@ -7,12 +7,10 @@
       "label": "Vacances Sterp 2027",
       "threshold": 900.0,
       "currency": "EUR",
-      "elapsed_s": 36.6,
-      "quotes_found": 284,
-      "errors": [
-        "Google Flights injoignable pour BRU→HND 2027-07-28: Extra data: line 1 column 235 (char 234)"
-      ],
-      "combinations": 42,
+      "elapsed_s": 17.6,
+      "quotes_found": 288,
+      "errors": [],
+      "combinations": 43,
       "status": "ok",
       "best_price": 1081.0,
       "best_route": "FRA→NRT",
@@ -27,7 +25,7 @@
       "reason": "au-dessus du seuil",
       "alerted": false,
       "stats": {
-        "count": 9,
+        "count": 10,
         "min": 1081.0,
         "max": 1081.0,
         "median": 1081.0,
@@ -37,14 +35,12 @@
     }
   ],
   "alerts_sent": 0,
-  "errors": [
-    "Google Flights injoignable pour BRU→HND 2027-07-28: Extra data: line 1 column 235 (char 234)"
-  ],
+  "errors": [],
   "providers": {
     "google_flights": {
       "attempts": 48,
-      "failures": 1,
-      "sample": "Google Flights injoignable pour BRU→HND 2027-07-28: Extra data: line 1 column 235 (char 234)"
+      "failures": 0,
+      "sample": ""
     }
   },
   "provider_alerts": []
