@@ -1,5 +1,5 @@
 {
-  "ran_at": "2026-11-10T03:07:54Z",
+  "ran_at": "2026-11-10T11:29:31Z",
   "source": "api",
   "watches": [
     {
@@ -7,11 +7,10 @@
       "label": "Vacances Sterp 2027",
       "threshold": 900.0,
       "currency": "EUR",
-      "elapsed_s": 36.5,
-      "quotes_found": 285,
+      "elapsed_s": 24.0,
+      "quotes_found": 278,
       "errors": [
-        "Google Flights injoignable pour BRU→KIX 2027-07-28: Extra data: line 1 column 235 (char 234)",
-        "Google Flights injoignable pour CDG→KIX 2027-07-29: Extra data: line 1 column 235 (char 234)"
+        "Google Flights injoignable pour BRU→KIX 2027-07-29: Extra data: line 1 column 235 (char 234)"
       ],
       "combinations": 42,
       "status": "ok",
@@ -28,25 +27,24 @@
       "reason": "au-dessus du seuil",
       "alerted": false,
       "stats": {
-        "count": 16,
+        "count": 17,
         "min": 1081.0,
         "max": 1085.0,
         "median": 1081.0,
-        "avg": 1081.25,
+        "avg": 1081.47,
         "last": 1085.0
       }
     }
   ],
   "alerts_sent": 0,
   "errors": [
-    "Google Flights injoignable pour BRU→KIX 2027-07-28: Extra data: line 1 column 235 (char 234)",
-    "Google Flights injoignable pour CDG→KIX 2027-07-29: Extra data: line 1 column 235 (char 234)"
+    "Google Flights injoignable pour BRU→KIX 2027-07-29: Extra data: line 1 column 235 (char 234)"
   ],
   "providers": {
     "google_flights": {
       "attempts": 48,
-      "failures": 2,
-      "sample": "Google Flights injoignable pour BRU→KIX 2027-07-28: Extra data: line 1 column 235 (char 234)"
+      "failures": 1,
+      "sample": "Google Flights injoignable pour BRU→KIX 2027-07-29: Extra data: line 1 column 235 (char 234)"
     }
   },
   "provider_alerts": []
