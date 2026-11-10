@@ -1,5 +1,5 @@
 {
-  "ran_at": "2026-11-10T11:29:31Z",
+  "ran_at": "2026-11-10T18:46:44Z",
   "source": "api",
   "watches": [
     {
@@ -7,12 +7,14 @@
       "label": "Vacances Sterp 2027",
       "threshold": 900.0,
       "currency": "EUR",
-      "elapsed_s": 24.0,
-      "quotes_found": 278,
+      "elapsed_s": 37.6,
+      "quotes_found": 264,
       "errors": [
-        "Google Flights injoignable pour BRU→KIX 2027-07-29: Extra data: line 1 column 235 (char 234)"
+        "Google Flights injoignable pour CDG→HND 2027-07-30: Extra data: line 1 column 235 (char 234)",
+        "Google Flights injoignable pour AMS→NRT 2027-07-29: Extra data: line 1 column 236 (char 235)",
+        "Google Flights injoignable pour AMS→ITM 2027-07-28: Extra data: line 1 column 236 (char 235)"
       ],
-      "combinations": 42,
+      "combinations": 40,
       "status": "ok",
       "best_price": 1085.0,
       "best_route": "FRA→NRT",
@@ -27,24 +29,26 @@
       "reason": "au-dessus du seuil",
       "alerted": false,
       "stats": {
-        "count": 17,
+        "count": 18,
         "min": 1081.0,
         "max": 1085.0,
         "median": 1081.0,
-        "avg": 1081.47,
+        "avg": 1081.67,
         "last": 1085.0
       }
     }
   ],
   "alerts_sent": 0,
   "errors": [
-    "Google Flights injoignable pour BRU→KIX 2027-07-29: Extra data: line 1 column 235 (char 234)"
+    "Google Flights injoignable pour CDG→HND 2027-07-30: Extra data: line 1 column 235 (char 234)",
+    "Google Flights injoignable pour AMS→NRT 2027-07-29: Extra data: line 1 column 236 (char 235)",
+    "Google Flights injoignable pour AMS→ITM 2027-07-28: Extra data: line 1 column 236 (char 235)"
   ],
   "providers": {
     "google_flights": {
       "attempts": 48,
-      "failures": 1,
-      "sample": "Google Flights injoignable pour BRU→KIX 2027-07-29: Extra data: line 1 column 235 (char 234)"
+      "failures": 3,
+      "sample": "Google Flights injoignable pour CDG→HND 2027-07-30: Extra data: line 1 column 235 (char 234)"
     }
   },
   "provider_alerts": []
