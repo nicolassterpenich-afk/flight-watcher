@@ -1,5 +1,5 @@
 {
-  "ran_at": "2026-11-11T12:03:51Z",
+  "ran_at": "2026-11-11T19:46:19Z",
   "source": "api",
   "watches": [
     {
@@ -7,44 +7,39 @@
       "label": "Vacances Sterp 2027",
       "threshold": 900.0,
       "currency": "EUR",
-      "elapsed_s": 20.1,
-      "quotes_found": 270,
-      "errors": [
-        "Google Flights injoignable pour AMS→ITM 2027-07-30: Extra data: line 1 column 235 (char 234)"
-      ],
-      "combinations": 42,
+      "elapsed_s": 27.2,
+      "quotes_found": 277,
+      "errors": [],
+      "combinations": 43,
       "status": "ok",
-      "best_price": 1084.0,
+      "best_price": 1038.0,
       "best_route": "FRA→NRT",
       "best_depart": "2027-07-28",
       "best_return": "2027-08-19",
       "provider": "google_flights",
       "airlines": [
-        "Condor",
         "Etihad"
       ],
       "booking_url": "https://www.google.com/travel/flights/search?tfs=GhwSCjIwMjctMDctMjgoAmoFEgNGUkFyBRIDTlJUGhwSCjIwMjctMDgtMTkoAmoFEgNOUlRyBRIDRlJBQgEBSAGYAQE=&hl=fr&curr=EUR",
       "reason": "au-dessus du seuil",
       "alerted": false,
       "stats": {
-        "count": 21,
-        "min": 1081.0,
+        "count": 22,
+        "min": 1038.0,
         "max": 1085.0,
         "median": 1081.0,
-        "avg": 1082.0,
-        "last": 1084.0
+        "avg": 1080.0,
+        "last": 1038.0
       }
     }
   ],
   "alerts_sent": 0,
-  "errors": [
-    "Google Flights injoignable pour AMS→ITM 2027-07-30: Extra data: line 1 column 235 (char 234)"
-  ],
+  "errors": [],
   "providers": {
     "google_flights": {
       "attempts": 48,
-      "failures": 1,
-      "sample": "Google Flights injoignable pour AMS→ITM 2027-07-30: Extra data: line 1 column 235 (char 234)"
+      "failures": 0,
+      "sample": ""
     }
   },
   "provider_alerts": []
