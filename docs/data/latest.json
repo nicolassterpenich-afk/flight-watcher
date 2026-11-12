@@ -1,5 +1,5 @@
 {
-  "ran_at": "2026-11-12T01:46:25Z",
+  "ran_at": "2026-11-12T09:11:55Z",
   "source": "api",
   "watches": [
     {
@@ -7,15 +7,17 @@
       "label": "Vacances Sterp 2027",
       "threshold": 900.0,
       "currency": "EUR",
-      "elapsed_s": 45.7,
-      "quotes_found": 264,
+      "elapsed_s": 50.5,
+      "quotes_found": 256,
       "errors": [
-        "Google Flights injoignable pour AMS→NRT 2027-07-28: Extra data: line 1 column 232 (char 231)",
-        "Google Flights injoignable pour AMS→ITM 2027-07-30: Extra data: line 1 column 235 (char 234)"
+        "Google Flights injoignable pour BRU→NRT 2027-07-29: Extra data: line 1 column 236 (char 235)",
+        "Google Flights injoignable pour BRU→NRT 2027-07-28: Extra data: line 1 column 236 (char 235)",
+        "Google Flights injoignable pour CDG→ITM 2027-07-30: Extra data: line 1 column 236 (char 235)",
+        "Google Flights injoignable pour AMS→KIX 2027-07-28: Extra data: line 1 column 236 (char 235)"
       ],
-      "combinations": 41,
+      "combinations": 39,
       "status": "ok",
-      "best_price": 1038.0,
+      "best_price": 1037.0,
       "best_route": "FRA→NRT",
       "best_depart": "2027-07-28",
       "best_return": "2027-08-19",
@@ -27,25 +29,26 @@
       "reason": "au-dessus du seuil",
       "alerted": false,
       "stats": {
-        "count": 23,
-        "min": 1038.0,
+        "count": 24,
+        "min": 1037.0,
         "max": 1085.0,
         "median": 1081.0,
-        "avg": 1078.17,
-        "last": 1038.0
+        "avg": 1076.46,
+        "last": 1037.0
       }
     }
   ],
   "alerts_sent": 0,
   "errors": [
-    "Google Flights injoignable pour AMS→NRT 2027-07-28: Extra data: line 1 column 232 (char 231)",
-    "Google Flights injoignable pour AMS→ITM 2027-07-30: Extra data: line 1 column 235 (char 234)"
+    "Google Flights injoignable pour BRU→NRT 2027-07-29: Extra data: line 1 column 236 (char 235)",
+    "Google Flights injoignable pour BRU→NRT 2027-07-28: Extra data: line 1 column 236 (char 235)",
+    "Google Flights injoignable pour CDG→ITM 2027-07-30: Extra data: line 1 column 236 (char 235)"
   ],
   "providers": {
     "google_flights": {
       "attempts": 48,
-      "failures": 2,
-      "sample": "Google Flights injoignable pour AMS→NRT 2027-07-28: Extra data: line 1 column 232 (char 231)"
+      "failures": 4,
+      "sample": "Google Flights injoignable pour BRU→NRT 2027-07-29: Extra data: line 1 column 236 (char 235)"
     }
   },
   "provider_alerts": []
