@@ -1,5 +1,5 @@
 {
-  "ran_at": "2026-11-12T23:09:07Z",
+  "ran_at": "2026-11-13T03:30:27Z",
   "source": "api",
   "watches": [
     {
@@ -7,39 +7,50 @@
       "label": "Vacances Sterp 2027",
       "threshold": 900.0,
       "currency": "EUR",
-      "elapsed_s": 15.8,
-      "quotes_found": 279,
-      "errors": [],
-      "combinations": 43,
+      "elapsed_s": 63.0,
+      "quotes_found": 253,
+      "errors": [
+        "Google Flights injoignable pour BRU→KIX 2027-07-29: Extra data: line 1 column 234 (char 233)",
+        "Google Flights injoignable pour BRU→ITM 2027-07-28: Extra data: line 1 column 236 (char 235)",
+        "Google Flights injoignable pour CDG→ITM 2027-07-28: Extra data: line 1 column 234 (char 233)",
+        "Google Flights injoignable pour AMS→ITM 2027-07-28: Extra data: line 1 column 232 (char 231)",
+        "Google Flights injoignable pour FRA→HND 2027-07-30: Extra data: line 1 column 236 (char 235)"
+      ],
+      "combinations": 39,
       "status": "ok",
-      "best_price": 1037.0,
+      "best_price": 1039.0,
       "best_route": "FRA→NRT",
       "best_depart": "2027-07-28",
       "best_return": "2027-08-19",
       "provider": "google_flights",
       "airlines": [
+        "Condor",
         "Etihad"
       ],
       "booking_url": "https://www.google.com/travel/flights/search?tfs=GhwSCjIwMjctMDctMjgoAmoFEgNGUkFyBRIDTlJUGhwSCjIwMjctMDgtMTkoAmoFEgNOUlRyBRIDRlJBQgEBSAGYAQE=&hl=fr&curr=EUR",
       "reason": "au-dessus du seuil",
       "alerted": false,
       "stats": {
-        "count": 26,
+        "count": 27,
         "min": 1037.0,
         "max": 1085.0,
         "median": 1081.0,
-        "avg": 1073.42,
-        "last": 1037.0
+        "avg": 1072.15,
+        "last": 1039.0
       }
     }
   ],
   "alerts_sent": 0,
-  "errors": [],
+  "errors": [
+    "Google Flights injoignable pour BRU→KIX 2027-07-29: Extra data: line 1 column 234 (char 233)",
+    "Google Flights injoignable pour BRU→ITM 2027-07-28: Extra data: line 1 column 236 (char 235)",
+    "Google Flights injoignable pour CDG→ITM 2027-07-28: Extra data: line 1 column 234 (char 233)"
+  ],
   "providers": {
     "google_flights": {
       "attempts": 48,
-      "failures": 0,
-      "sample": ""
+      "failures": 5,
+      "sample": "Google Flights injoignable pour BRU→KIX 2027-07-29: Extra data: line 1 column 234 (char 233)"
     }
   },
   "provider_alerts": []
