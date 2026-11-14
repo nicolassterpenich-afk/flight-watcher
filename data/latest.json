@@ -1,5 +1,5 @@
 {
-  "ran_at": "2026-11-14T18:56:06Z",
+  "ran_at": "2026-11-14T22:52:17Z",
   "source": "api",
   "watches": [
     {
@@ -7,10 +7,12 @@
       "label": "Vacances Sterp 2027",
       "threshold": 900.0,
       "currency": "EUR",
-      "elapsed_s": 14.1,
-      "quotes_found": 274,
-      "errors": [],
-      "combinations": 43,
+      "elapsed_s": 33.7,
+      "quotes_found": 266,
+      "errors": [
+        "Google Flights injoignable pour CDG→HND 2027-07-29: Extra data: line 1 column 236 (char 235)"
+      ],
+      "combinations": 42,
       "status": "ok",
       "best_price": 1041.0,
       "best_route": "FRA→NRT",
@@ -25,22 +27,24 @@
       "reason": "au-dessus du seuil",
       "alerted": false,
       "stats": {
-        "count": 33,
+        "count": 34,
         "min": 1037.0,
         "max": 1112.0,
         "median": 1081.0,
-        "avg": 1068.52,
+        "avg": 1067.71,
         "last": 1041.0
       }
     }
   ],
   "alerts_sent": 0,
-  "errors": [],
+  "errors": [
+    "Google Flights injoignable pour CDG→HND 2027-07-29: Extra data: line 1 column 236 (char 235)"
+  ],
   "providers": {
     "google_flights": {
       "attempts": 48,
-      "failures": 0,
-      "sample": ""
+      "failures": 1,
+      "sample": "Google Flights injoignable pour CDG→HND 2027-07-29: Extra data: line 1 column 236 (char 235)"
     }
   },
   "provider_alerts": []
