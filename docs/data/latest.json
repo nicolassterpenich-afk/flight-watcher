@@ -1,5 +1,5 @@
 {
-  "ran_at": "2026-11-14T22:52:17Z",
+  "ran_at": "2026-11-15T02:21:12Z",
   "source": "api",
   "watches": [
     {
@@ -7,12 +7,16 @@
       "label": "Vacances Sterp 2027",
       "threshold": 900.0,
       "currency": "EUR",
-      "elapsed_s": 33.7,
-      "quotes_found": 266,
+      "elapsed_s": 56.9,
+      "quotes_found": 252,
       "errors": [
-        "Google Flights injoignable pour CDG→HND 2027-07-29: Extra data: line 1 column 236 (char 235)"
+        "Google Flights injoignable pour BRU→ITM 2027-07-28: Extra data: line 1 column 234 (char 233)",
+        "Google Flights injoignable pour BRU→ITM 2027-07-30: Extra data: line 1 column 236 (char 235)",
+        "Google Flights injoignable pour AMS→HND 2027-07-30: Extra data: line 1 column 235 (char 234)",
+        "Google Flights injoignable pour FRA→NRT 2027-07-29: Extra data: line 1 column 236 (char 235)",
+        "Google Flights injoignable pour FRA→HND 2027-07-29: Extra data: line 1 column 236 (char 235)"
       ],
-      "combinations": 42,
+      "combinations": 40,
       "status": "ok",
       "best_price": 1041.0,
       "best_route": "FRA→NRT",
@@ -27,24 +31,26 @@
       "reason": "au-dessus du seuil",
       "alerted": false,
       "stats": {
-        "count": 34,
+        "count": 35,
         "min": 1037.0,
         "max": 1112.0,
         "median": 1081.0,
-        "avg": 1067.71,
+        "avg": 1066.94,
         "last": 1041.0
       }
     }
   ],
   "alerts_sent": 0,
   "errors": [
-    "Google Flights injoignable pour CDG→HND 2027-07-29: Extra data: line 1 column 236 (char 235)"
+    "Google Flights injoignable pour BRU→ITM 2027-07-28: Extra data: line 1 column 234 (char 233)",
+    "Google Flights injoignable pour BRU→ITM 2027-07-30: Extra data: line 1 column 236 (char 235)",
+    "Google Flights injoignable pour AMS→HND 2027-07-30: Extra data: line 1 column 235 (char 234)"
   ],
   "providers": {
     "google_flights": {
       "attempts": 48,
-      "failures": 1,
-      "sample": "Google Flights injoignable pour CDG→HND 2027-07-29: Extra data: line 1 column 236 (char 235)"
+      "failures": 5,
+      "sample": "Google Flights injoignable pour BRU→ITM 2027-07-28: Extra data: line 1 column 234 (char 233)"
     }
   },
   "provider_alerts": []
