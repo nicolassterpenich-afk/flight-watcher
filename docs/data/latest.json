@@ -1,5 +1,5 @@
 {
-  "ran_at": "2026-11-16T08:15:47Z",
+  "ran_at": "2026-11-16T18:45:52Z",
   "source": "api",
   "watches": [
     {
@@ -7,16 +7,16 @@
       "label": "Vacances Sterp 2027",
       "threshold": 900.0,
       "currency": "EUR",
-      "elapsed_s": 69.3,
-      "quotes_found": 251,
+      "elapsed_s": 56.7,
+      "quotes_found": 249,
       "errors": [
-        "Google Flights injoignable pour BRU→NRT 2027-07-29: Extra data: line 1 column 235 (char 234)",
-        "Google Flights injoignable pour BRU→KIX 2027-07-29: Extra data: line 1 column 236 (char 235)",
-        "Google Flights injoignable pour BRU→ITM 2027-07-30: Extra data: line 1 column 236 (char 235)",
-        "Google Flights injoignable pour AMS→ITM 2027-07-30: Extra data: line 1 column 236 (char 235)",
-        "Google Flights injoignable pour FRA→KIX 2027-07-30: Extra data: line 1 column 236 (char 235)"
+        "Google Flights injoignable pour BRU→KIX 2027-07-28: Extra data: line 1 column 235 (char 234)",
+        "Google Flights injoignable pour CDG→NRT 2027-07-30: Extra data: line 1 column 236 (char 235)",
+        "Google Flights injoignable pour CDG→HND 2027-07-28: Extra data: line 1 column 236 (char 235)",
+        "Google Flights injoignable pour AMS→KIX 2027-07-28: Extra data: line 1 column 235 (char 234)",
+        "Google Flights injoignable pour AMS→KIX 2027-07-29: Extra data: line 1 column 235 (char 234)"
       ],
-      "combinations": 39,
+      "combinations": 38,
       "status": "ok",
       "best_price": 1041.0,
       "best_route": "FRA→NRT",
@@ -31,26 +31,26 @@
       "reason": "au-dessus du seuil",
       "alerted": false,
       "stats": {
-        "count": 40,
+        "count": 41,
         "min": 1037.0,
         "max": 1112.0,
         "median": 1081.0,
-        "avg": 1063.7,
+        "avg": 1063.15,
         "last": 1041.0
       }
     }
   ],
   "alerts_sent": 0,
   "errors": [
-    "Google Flights injoignable pour BRU→NRT 2027-07-29: Extra data: line 1 column 235 (char 234)",
-    "Google Flights injoignable pour BRU→KIX 2027-07-29: Extra data: line 1 column 236 (char 235)",
-    "Google Flights injoignable pour BRU→ITM 2027-07-30: Extra data: line 1 column 236 (char 235)"
+    "Google Flights injoignable pour BRU→KIX 2027-07-28: Extra data: line 1 column 235 (char 234)",
+    "Google Flights injoignable pour CDG→NRT 2027-07-30: Extra data: line 1 column 236 (char 235)",
+    "Google Flights injoignable pour CDG→HND 2027-07-28: Extra data: line 1 column 236 (char 235)"
   ],
   "providers": {
     "google_flights": {
       "attempts": 48,
-      "failures": 5,
-      "sample": "Google Flights injoignable pour BRU→NRT 2027-07-29: Extra data: line 1 column 235 (char 234)"
+      "failures": 6,
+      "sample": "Google Flights injoignable pour BRU→KIX 2027-07-28: Extra data: line 1 column 235 (char 234)"
     }
   },
   "provider_alerts": []
