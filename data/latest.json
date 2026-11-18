@@ -1,5 +1,5 @@
 {
-  "ran_at": "2026-11-18T02:02:10Z",
+  "ran_at": "2026-11-18T10:28:25Z",
   "source": "api",
   "watches": [
     {
@@ -7,13 +7,10 @@
       "label": "Vacances Sterp 2027",
       "threshold": 900.0,
       "currency": "EUR",
-      "elapsed_s": 37.2,
-      "quotes_found": 272,
-      "errors": [
-        "Google Flights injoignable pour CDG→HND 2027-07-28: Extra data: line 1 column 235 (char 234)",
-        "Google Flights injoignable pour CDG→HND 2027-07-30: Could not find flight data in the HTML response. The page may have been blocked by Google, or the HTML structure has changed."
-      ],
-      "combinations": 41,
+      "elapsed_s": 29.4,
+      "quotes_found": 284,
+      "errors": [],
+      "combinations": 43,
       "status": "ok",
       "best_price": 1043.0,
       "best_route": "FRA→NRT",
@@ -21,31 +18,29 @@
       "best_return": "2027-08-19",
       "provider": "google_flights",
       "airlines": [
+        "Condor",
         "Etihad"
       ],
       "booking_url": "https://www.google.com/travel/flights/search?tfs=GhwSCjIwMjctMDctMjgoAmoFEgNGUkFyBRIDTlJUGhwSCjIwMjctMDgtMTkoAmoFEgNOUlRyBRIDRlJBQgEBSAGYAQE=&hl=fr&curr=EUR",
       "reason": "au-dessus du seuil",
       "alerted": false,
       "stats": {
-        "count": 45,
+        "count": 46,
         "min": 1037.0,
         "max": 1112.0,
         "median": 1043.0,
-        "avg": 1061.36,
+        "avg": 1060.96,
         "last": 1043.0
       }
     }
   ],
   "alerts_sent": 0,
-  "errors": [
-    "Google Flights injoignable pour CDG→HND 2027-07-28: Extra data: line 1 column 235 (char 234)",
-    "Google Flights injoignable pour CDG→HND 2027-07-30: Could not find flight data in the HTML response. The page may have been blocked by Google, or the HTML structure has changed."
-  ],
+  "errors": [],
   "providers": {
     "google_flights": {
       "attempts": 48,
-      "failures": 2,
-      "sample": "Google Flights injoignable pour CDG→HND 2027-07-28: Extra data: line 1 column 235 (char 234)"
+      "failures": 0,
+      "sample": ""
     }
   },
   "provider_alerts": []
