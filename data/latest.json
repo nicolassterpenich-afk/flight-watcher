@@ -1,5 +1,5 @@
 {
-  "ran_at": "2026-11-18T18:58:44Z",
+  "ran_at": "2026-11-19T01:01:34Z",
   "source": "api",
   "watches": [
     {
@@ -7,12 +7,14 @@
       "label": "Vacances Sterp 2027",
       "threshold": 900.0,
       "currency": "EUR",
-      "elapsed_s": 19.9,
-      "quotes_found": 284,
-      "errors": [],
-      "combinations": 43,
+      "elapsed_s": 36.6,
+      "quotes_found": 282,
+      "errors": [
+        "Google Flights injoignable pour CDG→ITM 2027-07-30: Extra data: line 1 column 235 (char 234)"
+      ],
+      "combinations": 42,
       "status": "ok",
-      "best_price": 1043.0,
+      "best_price": 1044.0,
       "best_route": "FRA→NRT",
       "best_depart": "2027-07-28",
       "best_return": "2027-08-19",
@@ -25,22 +27,24 @@
       "reason": "au-dessus du seuil",
       "alerted": false,
       "stats": {
-        "count": 47,
+        "count": 48,
         "min": 1037.0,
         "max": 1112.0,
         "median": 1043.0,
-        "avg": 1060.57,
-        "last": 1043.0
+        "avg": 1060.23,
+        "last": 1044.0
       }
     }
   ],
   "alerts_sent": 0,
-  "errors": [],
+  "errors": [
+    "Google Flights injoignable pour CDG→ITM 2027-07-30: Extra data: line 1 column 235 (char 234)"
+  ],
   "providers": {
     "google_flights": {
       "attempts": 48,
-      "failures": 0,
-      "sample": ""
+      "failures": 1,
+      "sample": "Google Flights injoignable pour CDG→ITM 2027-07-30: Extra data: line 1 column 235 (char 234)"
     }
   },
   "provider_alerts": []
