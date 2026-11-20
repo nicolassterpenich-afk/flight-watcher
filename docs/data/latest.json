@@ -1,5 +1,5 @@
 {
-  "ran_at": "2026-11-19T18:27:16Z",
+  "ran_at": "2026-11-20T00:47:44Z",
   "source": "api",
   "watches": [
     {
@@ -7,50 +7,49 @@
       "label": "Vacances Sterp 2027",
       "threshold": 900.0,
       "currency": "EUR",
-      "elapsed_s": 65.3,
-      "quotes_found": 239,
+      "elapsed_s": 122.0,
+      "quotes_found": 70,
       "errors": [
-        "Google Flights injoignable pour BRU→NRT 2027-07-28: Extra data: line 1 column 236 (char 235)",
-        "Google Flights injoignable pour BRU→KIX 2027-07-29: Extra data: line 1 column 236 (char 235)",
-        "Google Flights injoignable pour BRU→ITM 2027-07-28: Extra data: line 1 column 236 (char 235)",
-        "Google Flights injoignable pour BRU→ITM 2027-07-29: Extra data: line 1 column 236 (char 235)",
-        "Google Flights injoignable pour CDG→NRT 2027-07-28: Extra data: line 1 column 235 (char 234)"
+        "Google Flights injoignable pour BRU→NRT 2027-07-29: Extra data: line 1 column 236 (char 235)",
+        "Google Flights injoignable pour BRU→HND 2027-07-28: Extra data: line 1 column 236 (char 235)",
+        "Google Flights injoignable pour BRU→KIX 2027-07-28: Extra data: line 1 column 236 (char 235)",
+        "Google Flights injoignable pour BRU→KIX 2027-07-30: Extra data: line 1 column 236 (char 235)",
+        "Google Flights injoignable pour BRU→ITM 2027-07-29: Extra data: line 1 column 236 (char 235)"
       ],
-      "combinations": 36,
+      "combinations": 11,
       "status": "ok",
-      "best_price": 1044.0,
-      "best_route": "FRA→NRT",
-      "best_depart": "2027-07-28",
-      "best_return": "2027-08-19",
+      "best_price": 1071.0,
+      "best_route": "FRA→HND",
+      "best_depart": "2027-07-29",
+      "best_return": "2027-08-20",
       "provider": "google_flights",
       "airlines": [
-        "Condor",
-        "Etihad"
+        "China Southern"
       ],
-      "booking_url": "https://www.google.com/travel/flights/search?tfs=GhwSCjIwMjctMDctMjgoAmoFEgNGUkFyBRIDTlJUGhwSCjIwMjctMDgtMTkoAmoFEgNOUlRyBRIDRlJBQgEBSAGYAQE=&hl=fr&curr=EUR",
+      "booking_url": "https://www.google.com/travel/flights/search?tfs=GhwSCjIwMjctMDctMjkoAmoFEgNGUkFyBRIDSE5EGhwSCjIwMjctMDgtMjAoAmoFEgNITkRyBRIDRlJBQgEBSAGYAQE=&hl=fr&curr=EUR",
       "reason": "au-dessus du seuil",
       "alerted": false,
       "stats": {
-        "count": 50,
+        "count": 51,
         "min": 1037.0,
         "max": 1112.0,
-        "median": 1043.5,
-        "avg": 1059.58,
-        "last": 1044.0
+        "median": 1044.0,
+        "avg": 1059.8,
+        "last": 1071.0
       }
     }
   ],
   "alerts_sent": 0,
   "errors": [
-    "Google Flights injoignable pour BRU→NRT 2027-07-28: Extra data: line 1 column 236 (char 235)",
-    "Google Flights injoignable pour BRU→KIX 2027-07-29: Extra data: line 1 column 236 (char 235)",
-    "Google Flights injoignable pour BRU→ITM 2027-07-28: Extra data: line 1 column 236 (char 235)"
+    "Google Flights injoignable pour BRU→NRT 2027-07-29: Extra data: line 1 column 236 (char 235)",
+    "Google Flights injoignable pour BRU→HND 2027-07-28: Extra data: line 1 column 236 (char 235)",
+    "Google Flights injoignable pour BRU→KIX 2027-07-28: Extra data: line 1 column 236 (char 235)"
   ],
   "providers": {
     "google_flights": {
       "attempts": 48,
-      "failures": 9,
-      "sample": "Google Flights injoignable pour BRU→NRT 2027-07-28: Extra data: line 1 column 236 (char 235)"
+      "failures": 35,
+      "sample": "Google Flights injoignable pour BRU→NRT 2027-07-29: Extra data: line 1 column 236 (char 235)"
     }
   },
   "provider_alerts": []
