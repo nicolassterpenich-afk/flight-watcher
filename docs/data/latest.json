@@ -1,5 +1,5 @@
 {
-  "ran_at": "2026-11-22T21:28:53Z",
+  "ran_at": "2026-11-23T01:55:08Z",
   "source": "api",
   "watches": [
     {
@@ -7,49 +7,43 @@
       "label": "Vacances Sterp 2027",
       "threshold": 900.0,
       "currency": "EUR",
-      "elapsed_s": 55.1,
-      "quotes_found": 247,
+      "elapsed_s": 24.9,
+      "quotes_found": 279,
       "errors": [
-        "Google Flights injoignable pour BRU→HND 2027-07-28: Extra data: line 1 column 236 (char 235)",
-        "Google Flights injoignable pour BRU→HND 2027-07-30: Extra data: line 1 column 235 (char 234)",
-        "Google Flights injoignable pour BRU→KIX 2027-07-30: Extra data: line 1 column 236 (char 235)",
-        "Google Flights injoignable pour BRU→ITM 2027-07-28: Extra data: line 1 column 236 (char 235)",
-        "Google Flights injoignable pour CDG→NRT 2027-07-29: Extra data: line 1 column 234 (char 233)"
+        "Google Flights injoignable pour AMS→ITM 2027-07-29: Could not find flight data in the HTML response. The page may have been blocked by Google, or the HTML structure has changed."
       ],
-      "combinations": 38,
+      "combinations": 42,
       "status": "ok",
-      "best_price": 1071.0,
-      "best_route": "FRA→HND",
+      "best_price": 1046.0,
+      "best_route": "BRU→HND",
       "best_depart": "2027-07-29",
       "best_return": "2027-08-20",
       "provider": "google_flights",
       "airlines": [
-        "China Southern"
+        "British Airways"
       ],
-      "booking_url": "https://www.google.com/travel/flights/search?tfs=GhwSCjIwMjctMDctMjkoAmoFEgNGUkFyBRIDSE5EGhwSCjIwMjctMDgtMjAoAmoFEgNITkRyBRIDRlJBQgEBSAGYAQE=&hl=fr&curr=EUR",
+      "booking_url": "https://www.google.com/travel/flights/search?tfs=GhwSCjIwMjctMDctMjkoAmoFEgNCUlVyBRIDSE5EGhwSCjIwMjctMDgtMjAoAmoFEgNITkRyBRIDQlJVQgEBSAGYAQE=&hl=fr&curr=EUR",
       "reason": "au-dessus du seuil",
       "alerted": false,
       "stats": {
-        "count": 61,
+        "count": 62,
         "min": 1037.0,
         "max": 1112.0,
         "median": 1045.0,
-        "avg": 1060.0,
-        "last": 1071.0
+        "avg": 1059.77,
+        "last": 1046.0
       }
     }
   ],
   "alerts_sent": 0,
   "errors": [
-    "Google Flights injoignable pour BRU→HND 2027-07-28: Extra data: line 1 column 236 (char 235)",
-    "Google Flights injoignable pour BRU→HND 2027-07-30: Extra data: line 1 column 235 (char 234)",
-    "Google Flights injoignable pour BRU→KIX 2027-07-30: Extra data: line 1 column 236 (char 235)"
+    "Google Flights injoignable pour AMS→ITM 2027-07-29: Could not find flight data in the HTML response. The page may have been blocked by Google, or the HTML structure has changed."
   ],
   "providers": {
     "google_flights": {
       "attempts": 48,
-      "failures": 7,
-      "sample": "Google Flights injoignable pour BRU→HND 2027-07-28: Extra data: line 1 column 236 (char 235)"
+      "failures": 1,
+      "sample": "Google Flights injoignable pour AMS→ITM 2027-07-29: Could not find flight data in the HTML response. The page may have been blocked by Google, or the HTML structure has changed."
     }
   },
   "provider_alerts": []
